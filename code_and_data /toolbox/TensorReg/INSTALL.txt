@@ -1,0 +1,29 @@
+Please remember to cite the appropriate references when you have used
+TensorReg Toolbox in your work. See page
+http://hua-zhou.github.io/softwares/tensorreg/
+for more details.
+
+To install the TensorReg Toolbox for MATLAB:
+
+1. Unpack the compressed file. In a linux environment, for example, this can
+   be done from the command line via:
+
+     unzip TensorReg_toolbox_0.0.2.zip
+
+   *or*
+
+     gunzip -c TensorReg_toolbox_0.0.2.tar.gz | tar xvf -
+
+   This should create a directory named *TensorReg_toolbox_0.0.2*.
+
+2. Rename the root directory from *TensorReg_toolbox_0.0.2* 
+   to *TensorReg*.
+
+3. Start MATLAB.
+
+4. Within MATLAB, cd to the *TensorReg* directory and execute the
+   following commands:
+
+     addpath(pwd) %<-- Add the TensorReg toolbox to the MATLAB path
+     savepath %<-- Save for future MATLAB sessions
+ 
