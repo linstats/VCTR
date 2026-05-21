@@ -1,5 +1,5 @@
-"""Data containers for VCTR."""
+"""Data containers for paired-eye VCTR."""
 
-from .dataset import SimulationDataset
+from .paired_dataset import PairedEyeDataset
 
-__all__ = ["SimulationDataset"]
+__all__ = ["PairedEyeDataset"]

@@ -1,4 +1,4 @@
-"""Selection metrics for sparse VCTR simulations."""
+"""Selection metrics for sparse paired-eye VCTR."""
 
 from __future__ import annotations
 
@@ -73,4 +73,3 @@ def _safe_ratio(numerator: int, denominator: int) -> float:
     if denominator == 0:
         return 0.0
     return float(numerator / denominator)
-

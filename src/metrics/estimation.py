@@ -1,4 +1,4 @@
-"""Basic estimation metrics for VCTR simulations."""
+"""Basic estimation metrics for paired-eye VCTR."""
 
 from __future__ import annotations
 
@@ -22,25 +22,13 @@ def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def miae(A_true: np.ndarray, A_hat: np.ndarray) -> float:
-    """Mean integrated absolute error for estimated coefficient functions.
-
-    At the current stage this follows the MATLAB simulation code directly:
-    the error is computed over the discretized evaluation grid by taking the
-    overall mean absolute deviation across all entries of ``A_true`` and
-    ``A_hat``.
-    """
+    """Mean integrated absolute error for estimated coefficient functions."""
 
     return mae(A_true, A_hat)
 
 
 def rmise(A_true: np.ndarray, A_hat: np.ndarray) -> float:
-    """Root mean integrated squared error for estimated coefficient functions.
-
-    At the current stage this follows the MATLAB simulation code directly:
-    the error is computed over the discretized evaluation grid by taking the
-    overall root mean squared deviation across all entries of ``A_true`` and
-    ``A_hat``.
-    """
+    """Root mean integrated squared error for estimated coefficient functions."""
 
     return rmse(A_true, A_hat)
 

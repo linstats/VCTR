@@ -1,4 +1,4 @@
-"""Evaluation metrics for VCTR simulations."""
+"""Evaluation metrics for paired-eye VCTR development."""
 
 from .estimation import (
     beta_mae,

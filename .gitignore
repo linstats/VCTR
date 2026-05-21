@@ -3,3 +3,6 @@ VaryingCoefLM.pdf
 VaryingCoefPLM.pdf
 AGENTS.md
 docs/aoas-overleaf/
+.DS_Store
+__pycache__/
+*.pyc
