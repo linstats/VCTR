@@ -4,5 +4,6 @@ VaryingCoefPLM.pdf
 AGENTS.md
 docs/aoas-overleaf/
 .DS_Store
+.vscode/
 __pycache__/
 *.pyc

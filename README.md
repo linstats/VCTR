@@ -58,8 +58,9 @@ $$
 
 当前 `src/` 中的 paired 主线，采用的三阶段实现约定是：
 
-1. 第一阶段：先按 working `iid` 模型估计  
-   $$
+1. 第一阶段：先按 working `iid` 模型估计
+
+   ```math
    \hat{\mathcal{A}}^{\dagger}(t_i)
    \;\to\;
    y_{ij}^{\dagger}
@@ -69,10 +70,11 @@ $$
    \langle \mathbf{X}_{ij}^{*}, \hat{\mathbf{A}}^{\dagger}(t_i)\rangle
    \;\to\;
    \hat{\boldsymbol{\beta}}^{\dagger}.
-   $$
+   ```
 
-2. 第二阶段：用第一阶段残差估计受试者内协方差  
-   $$
+2. 第二阶段：用第一阶段残差估计受试者内协方差
+
+   ```math
    \hat{\Sigma}
    =
    \hat{\sigma}^{2}
@@ -80,10 +82,11 @@ $$
    1 & \hat{\rho} \\
    \hat{\rho} & 1
    \end{pmatrix}.
-   $$
+   ```
 
-3. 第三阶段：带入 $`\hat{\Sigma}`$ 做加权重估  
-   $$
+3. 第三阶段：带入 $`\hat{\Sigma}`$ 做加权重估
+
+   ```math
    \hat{\mathcal{A}}^{*}(t_i)
    \;\to\;
    y_{ij}^{*}
@@ -93,7 +96,7 @@ $$
    \langle \mathbf{X}_{ij}^{*}, \hat{\mathbf{A}}^{*}(t_i)\rangle
    \;\to\;
    \hat{\boldsymbol{\beta}}^{*}.
-   $$
+   ```
 
 这里第 3 阶段明确采用 $`A^{*} \to y^{*} \to \beta^{*}`$ 的闭环实现，而不是继续使用第一阶段的 $`y^{\dagger}`$。
 当前默认 `ridge = 0`，以保持与论文第 2.3 节的无正则化公式一致；若后续手动开启 ridge，应理解为数值稳定策略，而不是论文原式的一部分。
