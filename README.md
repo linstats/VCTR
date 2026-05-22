@@ -56,6 +56,48 @@ $$
 - 同一受试者两只眼的误差项 $`(\epsilon_{i1}, \epsilon_{i2})^\top`$ 需要按受试者内相关结构建模；
 - Python 主线的接口、目录结构和实验入口都以 paired 为默认目标，而不是继续兼容 `iid`。
 
+当前 `src/` 中的 paired 主线，采用的三阶段实现约定是：
+
+1. 第一阶段：先按 working `iid` 模型估计  
+   $$
+   \hat{\mathcal{A}}^{\dagger}(t_i)
+   \;\to\;
+   y_{ij}^{\dagger}
+   =
+   y_{ij}
+   -
+   \langle \mathbf{X}_{ij}^{*}, \hat{\mathbf{A}}^{\dagger}(t_i)\rangle
+   \;\to\;
+   \hat{\boldsymbol{\beta}}^{\dagger}.
+   $$
+
+2. 第二阶段：用第一阶段残差估计受试者内协方差  
+   $$
+   \hat{\Sigma}
+   =
+   \hat{\sigma}^{2}
+   \begin{pmatrix}
+   1 & \hat{\rho} \\
+   \hat{\rho} & 1
+   \end{pmatrix}.
+   $$
+
+3. 第三阶段：带入 $`\hat{\Sigma}`$ 做加权重估  
+   $$
+   \hat{\mathcal{A}}^{*}(t_i)
+   \;\to\;
+   y_{ij}^{*}
+   =
+   y_{ij}
+   -
+   \langle \mathbf{X}_{ij}^{*}, \hat{\mathbf{A}}^{*}(t_i)\rangle
+   \;\to\;
+   \hat{\boldsymbol{\beta}}^{*}.
+   $$
+
+这里第 3 阶段明确采用 $`A^{*} \to y^{*} \to \beta^{*}`$ 的闭环实现，而不是继续使用第一阶段的 $`y^{\dagger}`$。
+当前默认 `ridge = 0`，以保持与论文第 2.3 节的无正则化公式一致；若后续手动开启 ridge，应理解为数值稳定策略，而不是论文原式的一部分。
+
 ## 仓库结构
 
 ### 根目录文件
@@ -114,7 +156,8 @@ $$
   - paired-eye VCTR 的核心模型接口与实现位置。
 
 - `src/experiments`
-  - paired 仿真和 paired 真实数据分析入口。
+  - paired 仿真实验入口。
+  - 当前已落地的是 `paired_case1_smoke.py` 与 `paired_case1_repetition.py`。
 
 - `src/utils`
   - 从旧 `iid` 主线提炼出来的通用 kernel / spline / penalty 工具。

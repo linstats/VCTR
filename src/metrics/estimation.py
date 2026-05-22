@@ -43,3 +43,23 @@ def beta_rmse(beta_true: np.ndarray, beta_hat: np.ndarray) -> float:
     """RMSE for estimated scalar coefficients."""
 
     return rmse(beta_true, beta_hat)
+
+
+def sigma2_abs_error(sigma2_true: float, sigma2_hat: float) -> float:
+    """Absolute error for the shared marginal variance estimate."""
+
+    return float(abs(float(sigma2_true) - float(sigma2_hat)))
+
+
+def rho_abs_error(rho_true: float, rho_hat: float) -> float:
+    """Absolute error for the shared correlation estimate."""
+
+    return float(abs(float(rho_true) - float(rho_hat)))
+
+
+def sigma_frobenius_error(Sigma_true: np.ndarray, Sigma_hat: np.ndarray) -> float:
+    """Frobenius-norm error for the shared covariance matrix estimate."""
+
+    Sigma_true = np.asarray(Sigma_true, dtype=float)
+    Sigma_hat = np.asarray(Sigma_hat, dtype=float)
+    return float(np.linalg.norm(Sigma_true - Sigma_hat, ord="fro"))
