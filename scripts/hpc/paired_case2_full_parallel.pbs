@@ -1,0 +1,45 @@
+#!/bin/bash
+#PBS -N paired_case2
+#PBS -q parallel
+#PBS -l select=1:ncpus=12:mem=64gb
+#PBS -l walltime=48:00:00
+#PBS -j oe
+
+set -euo pipefail
+
+PROJECT_ROOT="${PROJECT_ROOT:-$HOME/2026-tensor}"
+CONDA_MODULE="${CONDA_MODULE:-miniconda/4.12}"
+CONDA_ENV_PATH="${CONDA_ENV_PATH:-$HOME/conda-envs/vctr-py310}"
+N_JOBS="${N_JOBS:-12}"
+N_REP="${N_REP:-10}"
+SEED_BASE="${SEED_BASE:-123}"
+RUN_NAME="${RUN_NAME:-run_case2_full_part1}"
+RIDGE="${RIDGE:-1e-4}"
+
+module purge
+module load "$CONDA_MODULE"
+source activate "$CONDA_ENV_PATH"
+
+cd "$PROJECT_ROOT"
+
+echo "[info] host=$(hostname)"
+echo "[info] started_at=$(date)"
+echo "[info] project_root=$PROJECT_ROOT"
+echo "[info] conda_module=$CONDA_MODULE"
+echo "[info] conda_env_path=$CONDA_ENV_PATH"
+echo "[info] python=$(command -v python)"
+python --version
+echo "[info] n_jobs=$N_JOBS n_rep=$N_REP seed_base=$SEED_BASE run_name=$RUN_NAME ridge=$RIDGE"
+
+python src/experiments/paired_case2_repetition.py \
+  --n-subject-values 1000 1500 2000 \
+  --coef-types sqrt quadratic bump sin \
+  --n-rep "$N_REP" \
+  --seed-base "$SEED_BASE" \
+  --rho-values 0.0 0.3 0.6 0.9 \
+  --bandwidth 0.25 \
+  --ridge "$RIDGE" \
+  --n-jobs "$N_JOBS" \
+  --run-name "$RUN_NAME"
+
+echo "[info] finished_at=$(date)"

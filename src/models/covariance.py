@@ -70,10 +70,14 @@ def estimate_exchangeable_covariance(initial_result: InitialIidResult) -> Covari
     )
 
     sigma2_hat = float(np.mean(np.square(residual_pairs)))
+    rho_clipped = False
     if sigma2_hat <= 0:
         rho_hat = 0.0
     else:
         rho_hat = float(np.mean(residual_pairs[:, 0] * residual_pairs[:, 1]) / sigma2_hat)
+    if abs(rho_hat) > 0.999:
+        rho_hat = float(np.clip(rho_hat, -0.999, 0.999))
+        rho_clipped = True
     Sigma_hat = sigma2_hat * np.array([[1.0, rho_hat], [rho_hat, 1.0]], dtype=float)
 
     return CovarianceEstimate(
@@ -81,5 +85,9 @@ def estimate_exchangeable_covariance(initial_result: InitialIidResult) -> Covari
         rho_hat=rho_hat,
         Sigma_hat=Sigma_hat,
         residual_pairs=residual_pairs,
-        meta={"method": "equations_16_17"},
+        meta={
+            "method": "equations_16_17",
+            "rho_clipped": rho_clipped,
+            "rho_clip_threshold": 0.999,
+        },
     )

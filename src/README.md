@@ -112,6 +112,14 @@ src/
       命名，避免不同配置互相覆盖
     - 结果按任务完成后增量写盘，不需要等整批结束后一次性落盘
     - summary 中包含 `best_bandwidth_mean` 和 `best_bandwidth_std`
+  - `paired_case2_smoke.py` 和 `paired_case2_repetition.py` 是 `archive/python_iid_vctr/src/dgps/case2_baseline.py` 与 `archive/python_iid_vctr/src/experiments/reproduce_case2_matlab.py` 的 paired-eye analogue。
+  - `paired_case2_smoke.py` 默认把输出写到同名目录 `src/experiments/paired_case2_smoke/` 下的 `data/`、`estimates/`、`results/`。
+  - `paired_case2_repetition.py` 复用与 Case 1 相同的批量运行、增量写盘和结果汇总结构，但默认使用 `Case 2` 的 reduced-feature 设定：
+    - `n_subject=1000`
+    - `R=5`
+    - `S=64`
+    - `beta=(3,3)`
+  - 当前 `paired_case2` 仍然只在 reduced-feature 空间工作，不回到原始 3D tensor 层，也不实现 MATLAB `pred_summary_case2.m` 中的三模型 prediction comparison。
 - `utils/`
   - 从旧 `iid` 主线中提炼出来的通用数值工具。
   - 当前保留 kernel、spline、penalty 相关函数。
