@@ -18,7 +18,8 @@ from src.metrics import (
     beta_rmse,
     miae,
     rho_abs_error,
-    sigma2_abs_error,
+    sigma2_miae,
+    sigma2_rmise,
     sigma_frobenius_error,
 )
 from src.models import PairedEyeVCTRModel
@@ -40,13 +41,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--sigma2", type=float, default=1.0)
     parser.add_argument("--rho", type=float, default=0.3)
-    parser.add_argument("--bandwidth", type=float, default=0.25)
-    parser.add_argument("--bandwidth-method", type=str, default="stage1_kfold_cv")
+    parser.add_argument("--covariance-mode", type=str, default="exchangeable_varying_sigma")
+    parser.add_argument("--signal-bandwidth", type=float, default=0.25)
+    parser.add_argument("--signal-bandwidth-method", type=str, default="stage1_kfold_cv")
     parser.add_argument(
-        "--bandwidth-grid",
+        "--signal-bandwidth-grid",
         type=str,
         default=None,
-        help="Comma-separated bandwidth candidates. If provided while --bandwidth is omitted, auto CV is used.",
+        help="Comma-separated signal-bandwidth candidates. If provided while --signal-bandwidth is omitted, auto CV is used.",
+    )
+    parser.add_argument("--variance-bandwidth", type=float, default=0.25)
+    parser.add_argument("--variance-bandwidth-method", type=str, default="stage2_kfold_cv")
+    parser.add_argument(
+        "--variance-bandwidth-grid",
+        type=str,
+        default=None,
+        help="Comma-separated variance-bandwidth candidates. If provided while --variance-bandwidth is omitted, auto CV is used.",
     )
     parser.add_argument("--ridge", type=float, default=1e-4)
     return parser.parse_args()
@@ -69,7 +79,7 @@ def parse_bandwidth_grid(grid_arg: str | None) -> tuple[float, ...] | None:
         return None
     parts = [part.strip() for part in grid_arg.split(",") if part.strip()]
     if not parts:
-        raise ValueError("--bandwidth-grid must not be empty.")
+        raise ValueError("bandwidth grid must not be empty.")
     return tuple(float(part) for part in parts)
 
 
@@ -95,8 +105,8 @@ def maybe_warn_case2_stage1_sample_size(
     R: int,
     S: int,
     p0: int,
-    bandwidth: float | None,
-    bandwidth_grid: tuple[float, ...] | None,
+    signal_bandwidth: float | None,
+    signal_bandwidth_grid: tuple[float, ...] | None,
 ) -> None:
     """Print a warning when the Case 2 stage-1 local fit is clearly under-sampled."""
 
@@ -105,23 +115,23 @@ def maybe_warn_case2_stage1_sample_size(
     def effective_eye_obs(h: float) -> float:
         return 4.0 * n_subject * h
 
-    if bandwidth is not None:
-        approx_obs = effective_eye_obs(float(bandwidth))
+    if signal_bandwidth is not None:
+        approx_obs = effective_eye_obs(float(signal_bandwidth))
         if approx_obs < stage1_param_count:
             print(
                 "[warning] Case 2 stage-1 local regression appears under-sampled: "
-                f"n_subject={n_subject}, bandwidth={bandwidth:.4g}, "
+                f"n_subject={n_subject}, signal_bandwidth={signal_bandwidth:.4g}, "
                 f"approx_effective_eye_obs={approx_obs:.1f} < stage1_param_count={stage1_param_count}. "
                 "Expect unstable A_hat, near-identical paired residuals, and unreliable Sigma_hat."
             )
         return
 
-    if bandwidth_grid is None:
+    if signal_bandwidth_grid is None:
         return
 
     flagged = [
         (float(h), effective_eye_obs(float(h)))
-        for h in bandwidth_grid
+        for h in signal_bandwidth_grid
         if effective_eye_obs(float(h)) < stage1_param_count
     ]
     if not flagged:
@@ -164,13 +174,20 @@ def save_outputs(
         A_hat_iid=result.initial.A_hat,
         beta_hat_iid=result.initial.beta_hat,
         residuals_iid=result.initial.residuals,
-        best_bandwidth=result.initial.meta["bandwidth_selected"],
-        bandwidth_method=result.initial.meta["bandwidth_method"],
-        bandwidth_grid=np.asarray(result.initial.meta["bandwidth_grid"], dtype=float),
-        bandwidth_cv_scores=np.asarray(result.initial.meta["bandwidth_cv_scores"], dtype=object),
-        sigma2_hat=result.covariance.sigma2_hat,
+        covariance_mode=result.covariance.covariance_mode,
+        best_signal_bandwidth=result.initial.meta["signal_bandwidth_selected"],
+        signal_bandwidth_method=result.initial.meta["signal_bandwidth_method"],
+        signal_bandwidth_grid=np.asarray(result.initial.meta["signal_bandwidth_grid"], dtype=float),
+        signal_bandwidth_cv_scores=np.asarray(result.initial.meta["signal_bandwidth_cv_scores"], dtype=object),
+        best_variance_bandwidth=result.covariance.meta.get("variance_bandwidth_selected"),
+        variance_bandwidth_method=result.covariance.meta.get("variance_bandwidth_method"),
+        variance_bandwidth_grid=np.asarray(result.covariance.meta.get("variance_bandwidth_grid", []), dtype=float),
+        variance_bandwidth_cv_scores=np.asarray(result.covariance.meta.get("variance_bandwidth_cv_scores", []), dtype=object),
+        sigma2_hat_t=result.covariance.sigma2_hat_t,
+        sigma2_hat_mean=result.covariance.sigma2_hat,
         rho_hat=result.covariance.rho_hat,
         Sigma_hat=result.covariance.Sigma_hat,
+        Sigma_hat_blocks=result.covariance.Sigma_hat_blocks,
         A_hat_final=result.A_hat,
         beta_hat_final=result.beta_hat,
         fitted_values=result.fitted_values,
@@ -185,14 +202,15 @@ def main() -> None:
     args = parse_args()
     output_root = Path(__file__).with_suffix("")
     beta_true = parse_beta(args.beta, args.p0)
-    bandwidth_grid = parse_bandwidth_grid(args.bandwidth_grid)
+    signal_bandwidth_grid = parse_bandwidth_grid(args.signal_bandwidth_grid)
+    variance_bandwidth_grid = parse_bandwidth_grid(args.variance_bandwidth_grid)
     maybe_warn_case2_stage1_sample_size(
         n_subject=args.n_subject,
         R=args.R,
         S=args.S,
         p0=args.p0,
-        bandwidth=args.bandwidth,
-        bandwidth_grid=bandwidth_grid,
+        signal_bandwidth=args.signal_bandwidth,
+        signal_bandwidth_grid=signal_bandwidth_grid,
     )
 
     dataset = PairedCase2DGP(
@@ -207,13 +225,17 @@ def main() -> None:
     ).sample(seed=args.seed)
 
     model = PairedEyeVCTRModel(
-        bandwidth=args.bandwidth,
-        bandwidth_method=args.bandwidth_method,
-        bandwidth_grid=bandwidth_grid,
+        covariance_mode=args.covariance_mode,
+        signal_bandwidth=args.signal_bandwidth,
+        signal_bandwidth_method=args.signal_bandwidth_method,
+        signal_bandwidth_grid=signal_bandwidth_grid,
+        variance_bandwidth=args.variance_bandwidth,
+        variance_bandwidth_method=args.variance_bandwidth_method,
+        variance_bandwidth_grid=variance_bandwidth_grid,
         ridge=args.ridge,
     )
     result = model.fit(dataset)
-    best_bandwidth = float(result.initial.meta["bandwidth_selected"])
+    best_signal_bandwidth = float(result.initial.meta["signal_bandwidth_selected"])
 
     metrics = {
         "seed": args.seed,
@@ -223,17 +245,24 @@ def main() -> None:
         "p0": args.p0,
         "coef_type": args.coef_type,
         "beta_true": dataset.beta_true.tolist(),
-        "bandwidth": args.bandwidth,
-        "best_bandwidth": best_bandwidth,
-        "bandwidth_method": result.initial.meta["bandwidth_method"],
-        "bandwidth_grid": result.initial.meta["bandwidth_grid"],
-        "bandwidth_cv_scores": result.initial.meta["bandwidth_cv_scores"],
+        "covariance_mode": args.covariance_mode,
+        "signal_bandwidth": args.signal_bandwidth,
+        "best_signal_bandwidth": best_signal_bandwidth,
+        "signal_bandwidth_method": result.initial.meta["signal_bandwidth_method"],
+        "signal_bandwidth_grid": result.initial.meta["signal_bandwidth_grid"],
+        "signal_bandwidth_cv_scores": result.initial.meta["signal_bandwidth_cv_scores"],
+        "variance_bandwidth": args.variance_bandwidth,
+        "best_variance_bandwidth": result.covariance.meta.get("variance_bandwidth_selected"),
+        "variance_bandwidth_method": result.covariance.meta.get("variance_bandwidth_method"),
+        "variance_bandwidth_grid": result.covariance.meta.get("variance_bandwidth_grid"),
+        "variance_bandwidth_cv_scores": result.covariance.meta.get("variance_bandwidth_cv_scores"),
         "ridge": args.ridge,
         "miae_iid": miae(dataset.A_true, result.initial.A_hat),
         "miae_final": miae(dataset.A_true, result.A_hat),
         "beta_rmse_iid": beta_rmse(dataset.beta_true, result.initial.beta_hat),
         "beta_rmse_final": beta_rmse(dataset.beta_true, result.beta_hat),
-        "sigma2_abs_error": sigma2_abs_error(args.sigma2, result.covariance.sigma2_hat),
+        "sigma2_miae": sigma2_miae(args.sigma2, result.covariance.sigma2_hat_t),
+        "sigma2_rmise": sigma2_rmise(args.sigma2, result.covariance.sigma2_hat_t),
         "rho_abs_error": rho_abs_error(args.rho, result.covariance.rho_hat),
         "Sigma_fro_error": sigma_frobenius_error(dataset.Sigma_true, result.covariance.Sigma_hat),
     }

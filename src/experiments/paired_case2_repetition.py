@@ -27,7 +27,8 @@ from src.metrics import (
     miae,
     rho_abs_error,
     rmise,
-    sigma2_abs_error,
+    sigma2_miae,
+    sigma2_rmise,
     sigma_frobenius_error,
 )
 from src.models import PairedEyeVCTRModel
@@ -45,9 +46,13 @@ class PairedCase2Record:
     success: int
     error_message: str
     elapsed_seconds: float
-    bandwidth_input: str
-    bandwidth_method: str
-    best_bandwidth: float | None
+    covariance_mode: str
+    signal_bandwidth_input: str
+    signal_bandwidth_method: str
+    best_signal_bandwidth: float | None
+    variance_bandwidth_input: str
+    variance_bandwidth_method: str
+    best_variance_bandwidth: float | None
     sigma2_true: float
     rho_true: float
     miae_iid: float | None
@@ -58,7 +63,8 @@ class PairedCase2Record:
     rmise_final: float | None
     beta_mae_final: float | None
     beta_rmse_final: float | None
-    sigma2_abs_error: float | None
+    sigma2_miae: float | None
+    sigma2_rmise: float | None
     rho_abs_error: float | None
     Sigma_fro_error: float | None
 
@@ -100,13 +106,22 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional list of rho values. If provided, overrides --rho for batch runs.",
     )
-    parser.add_argument("--bandwidth", type=float, default=0.25)
-    parser.add_argument("--bandwidth-method", type=str, default="stage1_kfold_cv")
+    parser.add_argument("--covariance-mode", type=str, default="exchangeable_varying_sigma")
+    parser.add_argument("--signal-bandwidth", type=float, default=0.25)
+    parser.add_argument("--signal-bandwidth-method", type=str, default="stage1_kfold_cv")
     parser.add_argument(
-        "--bandwidth-grid",
+        "--signal-bandwidth-grid",
         type=str,
         default=None,
-        help="Comma-separated bandwidth candidates. If provided while --bandwidth is omitted, auto CV is used.",
+        help="Comma-separated signal-bandwidth candidates. If provided while --signal-bandwidth is omitted, auto CV is used.",
+    )
+    parser.add_argument("--variance-bandwidth", type=float, default=0.25)
+    parser.add_argument("--variance-bandwidth-method", type=str, default="stage2_kfold_cv")
+    parser.add_argument(
+        "--variance-bandwidth-grid",
+        type=str,
+        default=None,
+        help="Comma-separated variance-bandwidth candidates. If provided while --variance-bandwidth is omitted, auto CV is used.",
     )
     parser.add_argument("--ridge", type=float, default=1e-4)
     parser.add_argument("--n-jobs", type=int, default=1)
@@ -134,7 +149,7 @@ def parse_bandwidth_grid(grid_arg: str | None) -> tuple[float, ...] | None:
         return None
     parts = [part.strip() for part in grid_arg.split(",") if part.strip()]
     if not parts:
-        raise ValueError("--bandwidth-grid must not be empty.")
+        raise ValueError("bandwidth grid must not be empty.")
     return tuple(float(part) for part in parts)
 
 
@@ -158,8 +173,8 @@ def maybe_warn_case2_stage1_sample_size(
     R: int,
     S: int,
     p0: int,
-    bandwidth: float | None,
-    bandwidth_grid: tuple[float, ...] | None,
+    signal_bandwidth: float | None,
+    signal_bandwidth_grid: tuple[float, ...] | None,
 ) -> None:
     """Print a warning when the Case 2 stage-1 local fit is clearly under-sampled."""
 
@@ -168,23 +183,23 @@ def maybe_warn_case2_stage1_sample_size(
     def effective_eye_obs(h: float) -> float:
         return 4.0 * n_subject * h
 
-    if bandwidth is not None:
-        approx_obs = effective_eye_obs(float(bandwidth))
+    if signal_bandwidth is not None:
+        approx_obs = effective_eye_obs(float(signal_bandwidth))
         if approx_obs < stage1_param_count:
             print(
                 "[warning] Case 2 stage-1 local regression appears under-sampled: "
-                f"n_subject={n_subject}, bandwidth={bandwidth:.4g}, "
+                f"n_subject={n_subject}, signal_bandwidth={signal_bandwidth:.4g}, "
                 f"approx_effective_eye_obs={approx_obs:.1f} < stage1_param_count={stage1_param_count}. "
                 "Expect unstable A_hat, near-identical paired residuals, and unreliable Sigma_hat."
             )
         return
 
-    if bandwidth_grid is None:
+    if signal_bandwidth_grid is None:
         return
 
     flagged = [
         (float(h), effective_eye_obs(float(h)))
-        for h in bandwidth_grid
+        for h in signal_bandwidth_grid
         if effective_eye_obs(float(h)) < stage1_param_count
     ]
     if not flagged:
@@ -253,19 +268,32 @@ def run_one(
     seed: int,
     beta_true: tuple[float, ...],
     args: argparse.Namespace,
-    bandwidth_grid: tuple[float, ...] | None,
+    signal_bandwidth_grid: tuple[float, ...] | None,
+    variance_bandwidth_grid: tuple[float, ...] | None,
     output_root: Path,
 ) -> PairedCase2Record:
     start = time.perf_counter()
-    if args.bandwidth is not None:
-        bandwidth_input = f"{args.bandwidth:.12g}"
-        failure_bandwidth_method = "fixed"
-    elif bandwidth_grid is None:
-        bandwidth_input = f"{PairedEyeVCTRModel.DEFAULT_BANDWIDTH:.12g}"
-        failure_bandwidth_method = "default_fixed"
+    if args.signal_bandwidth is not None:
+        signal_bandwidth_input = f"{args.signal_bandwidth:.12g}"
+        failure_signal_bandwidth_method = "fixed"
+    elif signal_bandwidth_grid is None:
+        signal_bandwidth_input = f"{PairedEyeVCTRModel.DEFAULT_SIGNAL_BANDWIDTH:.12g}"
+        failure_signal_bandwidth_method = "default_fixed"
     else:
-        bandwidth_input = "auto"
-        failure_bandwidth_method = args.bandwidth_method
+        signal_bandwidth_input = "auto"
+        failure_signal_bandwidth_method = args.signal_bandwidth_method
+    if args.covariance_mode == "exchangeable_constant":
+        variance_bandwidth_input = "not_used"
+        failure_variance_bandwidth_method = "not_used"
+    elif args.variance_bandwidth is not None:
+        variance_bandwidth_input = f"{args.variance_bandwidth:.12g}"
+        failure_variance_bandwidth_method = "fixed"
+    elif variance_bandwidth_grid is None:
+        variance_bandwidth_input = f"{PairedEyeVCTRModel.DEFAULT_VARIANCE_BANDWIDTH:.12g}"
+        failure_variance_bandwidth_method = "default_fixed"
+    else:
+        variance_bandwidth_input = "auto"
+        failure_variance_bandwidth_method = args.variance_bandwidth_method
     try:
         dataset = PairedCase2DGP(
             n_subject=n_subject,
@@ -279,9 +307,13 @@ def run_one(
         ).sample(seed=seed)
 
         model = PairedEyeVCTRModel(
-            bandwidth=args.bandwidth,
-            bandwidth_method=args.bandwidth_method,
-            bandwidth_grid=bandwidth_grid,
+            covariance_mode=args.covariance_mode,
+            signal_bandwidth=args.signal_bandwidth,
+            signal_bandwidth_method=args.signal_bandwidth_method,
+            signal_bandwidth_grid=signal_bandwidth_grid,
+            variance_bandwidth=args.variance_bandwidth,
+            variance_bandwidth_method=args.variance_bandwidth_method,
+            variance_bandwidth_grid=variance_bandwidth_grid,
             ridge=args.ridge,
         )
         result = model.fit(dataset)
@@ -300,7 +332,7 @@ def run_one(
             )
 
         elapsed = time.perf_counter() - start
-        best_bandwidth = float(result.initial.meta["bandwidth_selected"])
+        best_signal_bandwidth = float(result.initial.meta["signal_bandwidth_selected"])
         return PairedCase2Record(
             n_subject=n_subject,
             coef_type=coef_type,
@@ -309,9 +341,13 @@ def run_one(
             success=1,
             error_message="",
             elapsed_seconds=elapsed,
-            bandwidth_input=bandwidth_input,
-            bandwidth_method=result.initial.meta["bandwidth_method"],
-            best_bandwidth=best_bandwidth,
+            covariance_mode=result.covariance.covariance_mode,
+            signal_bandwidth_input=signal_bandwidth_input,
+            signal_bandwidth_method=result.initial.meta["signal_bandwidth_method"],
+            best_signal_bandwidth=best_signal_bandwidth,
+            variance_bandwidth_input=variance_bandwidth_input,
+            variance_bandwidth_method=result.covariance.meta.get("variance_bandwidth_method"),
+            best_variance_bandwidth=result.covariance.meta.get("variance_bandwidth_selected"),
             sigma2_true=args.sigma2,
             rho_true=rho_true,
             miae_iid=miae(dataset.A_true, result.initial.A_hat),
@@ -322,7 +358,8 @@ def run_one(
             rmise_final=rmise(dataset.A_true, result.A_hat),
             beta_mae_final=beta_mae(dataset.beta_true, result.beta_hat),
             beta_rmse_final=beta_rmse(dataset.beta_true, result.beta_hat),
-            sigma2_abs_error=sigma2_abs_error(args.sigma2, result.covariance.sigma2_hat),
+            sigma2_miae=sigma2_miae(args.sigma2, result.covariance.sigma2_hat_t),
+            sigma2_rmise=sigma2_rmise(args.sigma2, result.covariance.sigma2_hat_t),
             rho_abs_error=rho_abs_error(rho_true, result.covariance.rho_hat),
             Sigma_fro_error=sigma_frobenius_error(dataset.Sigma_true, result.covariance.Sigma_hat),
         )
@@ -336,9 +373,13 @@ def run_one(
             success=0,
             error_message=f"{type(exc).__name__}: {exc}",
             elapsed_seconds=elapsed,
-            bandwidth_input=bandwidth_input,
-            bandwidth_method=failure_bandwidth_method,
-            best_bandwidth=None,
+            covariance_mode=args.covariance_mode,
+            signal_bandwidth_input=signal_bandwidth_input,
+            signal_bandwidth_method=failure_signal_bandwidth_method,
+            best_signal_bandwidth=None,
+            variance_bandwidth_input=variance_bandwidth_input,
+            variance_bandwidth_method=failure_variance_bandwidth_method,
+            best_variance_bandwidth=None,
             sigma2_true=args.sigma2,
             rho_true=rho_true,
             miae_iid=None,
@@ -349,7 +390,8 @@ def run_one(
             rmise_final=None,
             beta_mae_final=None,
             beta_rmse_final=None,
-            sigma2_abs_error=None,
+            sigma2_miae=None,
+            sigma2_rmise=None,
             rho_abs_error=None,
             Sigma_fro_error=None,
         )
@@ -384,13 +426,20 @@ def maybe_save_estimate_with_stem(output_root: Path, stem: str, result) -> None:
         A_hat_iid=result.initial.A_hat,
         beta_hat_iid=result.initial.beta_hat,
         residuals_iid=result.initial.residuals,
-        best_bandwidth=result.initial.meta["bandwidth_selected"],
-        bandwidth_method=result.initial.meta["bandwidth_method"],
-        bandwidth_grid=np.asarray(result.initial.meta["bandwidth_grid"], dtype=float),
-        bandwidth_cv_scores=np.asarray(result.initial.meta["bandwidth_cv_scores"], dtype=object),
-        sigma2_hat=result.covariance.sigma2_hat,
+        covariance_mode=result.covariance.covariance_mode,
+        best_signal_bandwidth=result.initial.meta["signal_bandwidth_selected"],
+        signal_bandwidth_method=result.initial.meta["signal_bandwidth_method"],
+        signal_bandwidth_grid=np.asarray(result.initial.meta["signal_bandwidth_grid"], dtype=float),
+        signal_bandwidth_cv_scores=np.asarray(result.initial.meta["signal_bandwidth_cv_scores"], dtype=object),
+        best_variance_bandwidth=result.covariance.meta.get("variance_bandwidth_selected"),
+        variance_bandwidth_method=result.covariance.meta.get("variance_bandwidth_method"),
+        variance_bandwidth_grid=np.asarray(result.covariance.meta.get("variance_bandwidth_grid", []), dtype=float),
+        variance_bandwidth_cv_scores=np.asarray(result.covariance.meta.get("variance_bandwidth_cv_scores", []), dtype=object),
+        sigma2_hat_t=result.covariance.sigma2_hat_t,
+        sigma2_hat_mean=result.covariance.sigma2_hat,
         rho_hat=result.covariance.rho_hat,
         Sigma_hat=result.covariance.Sigma_hat,
+        Sigma_hat_blocks=result.covariance.Sigma_hat_blocks,
         A_hat_final=result.A_hat,
         beta_hat_final=result.beta_hat,
         fitted_values=result.fitted_values,
@@ -416,9 +465,13 @@ def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) 
         "sigma2": args.sigma2,
         "rho": args.rho,
         "rho_values": args.rho_values,
-        "bandwidth": args.bandwidth,
-        "bandwidth_method": args.bandwidth_method,
-        "bandwidth_grid": args.bandwidth_grid,
+        "covariance_mode": args.covariance_mode,
+        "signal_bandwidth": args.signal_bandwidth,
+        "signal_bandwidth_method": args.signal_bandwidth_method,
+        "signal_bandwidth_grid": args.signal_bandwidth_grid,
+        "variance_bandwidth": args.variance_bandwidth,
+        "variance_bandwidth_method": args.variance_bandwidth_method,
+        "variance_bandwidth_grid": args.variance_bandwidth_grid,
         "ridge": args.ridge,
         "n_jobs": args.n_jobs,
         "save_data": args.save_data,
@@ -491,7 +544,8 @@ def write_progress_snapshot(
 def build_tasks(
     args: argparse.Namespace,
     beta_true: tuple[float, ...],
-    bandwidth_grid: tuple[float, ...] | None,
+    signal_bandwidth_grid: tuple[float, ...] | None,
+    variance_bandwidth_grid: tuple[float, ...] | None,
     output_root: Path,
 ) -> list[dict]:
     """Build the full repetition task list."""
@@ -511,7 +565,8 @@ def build_tasks(
                             "seed": seed,
                             "beta_true": beta_true,
                             "args": args,
-                            "bandwidth_grid": bandwidth_grid,
+                            "signal_bandwidth_grid": signal_bandwidth_grid,
+                            "variance_bandwidth_grid": variance_bandwidth_grid,
                             "output_root": output_root,
                         }
                     )
@@ -536,7 +591,8 @@ def print_progress_line(
         f"[{completed_jobs}/{total_jobs}] {status} "
         f"n_subject={record.n_subject} coef={record.coef_type:10s} rho={record.rho_true:.3f} "
         f"rep={record.rep + 1}/{n_rep} seed={record.seed} "
-        f"best_h={record.best_bandwidth if record.best_bandwidth is not None else 'NA'} "
+        f"best_h={record.best_signal_bandwidth if record.best_signal_bandwidth is not None else 'NA'} "
+        f"best_hbar={record.best_variance_bandwidth if record.best_variance_bandwidth is not None else 'NA'} "
         f"elapsed={format_duration(record.elapsed_seconds)} "
         f"eta={format_duration(eta_seconds)}"
     )
@@ -545,18 +601,19 @@ def print_progress_line(
 def run(args: argparse.Namespace) -> tuple[list[PairedCase2Record], Path]:
     base_output_root = Path(__file__).with_suffix("")
     beta_true = parse_beta(args.beta, args.p0)
-    bandwidth_grid = parse_bandwidth_grid(args.bandwidth_grid)
+    signal_bandwidth_grid = parse_bandwidth_grid(args.signal_bandwidth_grid)
+    variance_bandwidth_grid = parse_bandwidth_grid(args.variance_bandwidth_grid)
     for n_subject in args.n_subject_values:
         maybe_warn_case2_stage1_sample_size(
             n_subject=n_subject,
             R=args.R,
             S=args.S,
             p0=args.p0,
-            bandwidth=args.bandwidth,
-            bandwidth_grid=bandwidth_grid,
+            signal_bandwidth=args.signal_bandwidth,
+            signal_bandwidth_grid=signal_bandwidth_grid,
         )
     run_root = prepare_run_root(base_output_root, args.run_name)
-    tasks = build_tasks(args, beta_true, bandwidth_grid, run_root)
+    tasks = build_tasks(args, beta_true, signal_bandwidth_grid, variance_bandwidth_grid, run_root)
     records: list[PairedCase2Record] = []
     total_jobs = len(tasks)
     completed_jobs = 0
@@ -628,16 +685,21 @@ def run(args: argparse.Namespace) -> tuple[list[PairedCase2Record], Path]:
                     f"success={group_summary['n_success']}/{group_summary['n_rep']} "
                     f"MIAE_final={group_summary['miae_final_mean'] if group_summary['miae_final_mean'] is not None else 'NA'} "
                     f"({group_summary['miae_final_std'] if group_summary['miae_final_std'] is not None else 'NA'}) "
-                    f"best_h={group_summary['best_bandwidth_mean'] if group_summary['best_bandwidth_mean'] is not None else 'NA'} "
-                    f"({group_summary['best_bandwidth_std'] if group_summary['best_bandwidth_std'] is not None else 'NA'})"
+                    f"best_h={group_summary['best_signal_bandwidth_mean'] if group_summary['best_signal_bandwidth_mean'] is not None else 'NA'} "
+                    f"({group_summary['best_signal_bandwidth_std'] if group_summary['best_signal_bandwidth_std'] is not None else 'NA'}) "
+                    f"best_hbar={group_summary['best_variance_bandwidth_mean'] if group_summary['best_variance_bandwidth_mean'] is not None else 'NA'} "
+                    f"({group_summary['best_variance_bandwidth_std'] if group_summary['best_variance_bandwidth_std'] is not None else 'NA'})"
                 )
     return records, run_root
 
 
 def summarize(records: Iterable[PairedCase2Record]) -> list[dict[str, float | int | str]]:
-    grouped: dict[tuple[int, str, float, str], list[PairedCase2Record]] = {}
+    grouped: dict[tuple[int, str, float, str, str], list[PairedCase2Record]] = {}
     for rec in records:
-        grouped.setdefault((rec.n_subject, rec.coef_type, rec.rho_true, rec.bandwidth_method), []).append(rec)
+        grouped.setdefault(
+            (rec.n_subject, rec.coef_type, rec.rho_true, rec.covariance_mode, rec.signal_bandwidth_method),
+            [],
+        ).append(rec)
 
     metric_fields = (
         "miae_iid",
@@ -648,19 +710,22 @@ def summarize(records: Iterable[PairedCase2Record]) -> list[dict[str, float | in
         "rmise_final",
         "beta_mae_final",
         "beta_rmse_final",
-        "sigma2_abs_error",
+        "sigma2_miae",
+        "sigma2_rmise",
         "rho_abs_error",
         "Sigma_fro_error",
-        "best_bandwidth",
+        "best_signal_bandwidth",
+        "best_variance_bandwidth",
         "elapsed_seconds",
     )
     rows: list[dict[str, float | int | str]] = []
-    for (n_subject, coef_type, rho_true, bandwidth_method), vals in sorted(grouped.items()):
+    for (n_subject, coef_type, rho_true, covariance_mode, signal_bandwidth_method), vals in sorted(grouped.items()):
         row: dict[str, float | int | str] = {
             "n_subject": n_subject,
             "coef_type": coef_type,
             "rho_true": rho_true,
-            "bandwidth_method": bandwidth_method,
+            "covariance_mode": covariance_mode,
+            "signal_bandwidth_method": signal_bandwidth_method,
             "n_rep": len(vals),
             "n_success": int(sum(v.success for v in vals)),
             "n_fail": int(sum(1 - v.success for v in vals)),
@@ -696,12 +761,13 @@ def print_summary(summary: list[dict[str, float | int | str]]) -> None:
     for row in summary:
         print(
             f"n_subject={row['n_subject']}, coef={row['coef_type']}, rho={float(row['rho_true']):.3f}, "
-            f"method={row['bandwidth_method']}: "
+            f"mode={row['covariance_mode']}, signal_method={row['signal_bandwidth_method']}: "
             f"MIAE_final={fmt(row['miae_final_mean'])} ({fmt(row['miae_final_std'])}), "
             f"RMISE_final={fmt(row['rmise_final_mean'])} ({fmt(row['rmise_final_std'])}), "
             f"beta_MAE_final={fmt(row['beta_mae_final_mean'])} ({fmt(row['beta_mae_final_std'])}), "
             f"beta_RMSE_final={fmt(row['beta_rmse_final_mean'])} ({fmt(row['beta_rmse_final_std'])}), "
-            f"best_h={fmt(row['best_bandwidth_mean'])} ({fmt(row['best_bandwidth_std'])}), "
+            f"best_h={fmt(row['best_signal_bandwidth_mean'])} ({fmt(row['best_signal_bandwidth_std'])}), "
+            f"best_hbar={fmt(row['best_variance_bandwidth_mean'])} ({fmt(row['best_variance_bandwidth_std'])}), "
             f"success={row['n_success']}/{row['n_rep']}"
         )
 

@@ -45,10 +45,24 @@ def beta_rmse(beta_true: np.ndarray, beta_hat: np.ndarray) -> float:
     return rmse(beta_true, beta_hat)
 
 
-def sigma2_abs_error(sigma2_true: float, sigma2_hat: float) -> float:
-    """Absolute error for the shared marginal variance estimate."""
+def sigma2_miae(sigma2_true: np.ndarray | float, sigma2_hat: np.ndarray) -> float:
+    """MIAE for the estimated variance function ``sigma^2(t)``."""
 
-    return float(abs(float(sigma2_true) - float(sigma2_hat)))
+    sigma2_hat = np.asarray(sigma2_hat, dtype=float)
+    sigma2_true = np.asarray(sigma2_true, dtype=float)
+    if sigma2_true.ndim == 0:
+        sigma2_true = np.full_like(sigma2_hat, float(sigma2_true))
+    return mae(sigma2_true, sigma2_hat)
+
+
+def sigma2_rmise(sigma2_true: np.ndarray | float, sigma2_hat: np.ndarray) -> float:
+    """RMISE for the estimated variance function ``sigma^2(t)``."""
+
+    sigma2_hat = np.asarray(sigma2_hat, dtype=float)
+    sigma2_true = np.asarray(sigma2_true, dtype=float)
+    if sigma2_true.ndim == 0:
+        sigma2_true = np.full_like(sigma2_hat, float(sigma2_true))
+    return rmse(sigma2_true, sigma2_hat)
 
 
 def rho_abs_error(rho_true: float, rho_hat: float) -> float:

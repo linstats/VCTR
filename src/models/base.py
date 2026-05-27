@@ -26,11 +26,14 @@ class InitialIidResult:
 
 @dataclass(slots=True)
 class CovarianceEstimate:
-    """Estimated subject-common covariance for paired-eye residuals."""
+    """Estimated subject-level covariance blocks for paired-eye residuals."""
 
-    sigma2_hat: float
+    covariance_mode: str
     rho_hat: float
-    Sigma_hat: np.ndarray
+    sigma2_hat_t: np.ndarray
+    Sigma_hat_blocks: np.ndarray
+    Sigma_hat: np.ndarray | None = None
+    sigma2_hat: float | None = None
     residual_pairs: np.ndarray | None = None
     meta: dict[str, Any] = field(default_factory=dict)
 

@@ -8,7 +8,8 @@ from .estimation import (
     rho_abs_error,
     rmise,
     rmse,
-    sigma2_abs_error,
+    sigma2_miae,
+    sigma2_rmise,
     sigma_frobenius_error,
 )
 from .selection import accuracy, confusion_counts, f1_score, npv, ppv, sensitivity, specificity
@@ -20,7 +21,8 @@ __all__ = [
     "rmise",
     "beta_mae",
     "beta_rmse",
-    "sigma2_abs_error",
+    "sigma2_miae",
+    "sigma2_rmise",
     "rho_abs_error",
     "sigma_frobenius_error",
     "accuracy",

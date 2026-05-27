@@ -1,7 +1,11 @@
 """Core paired-eye VCTR model interfaces."""
 
 from .base import BasePairedVCTRModel, CovarianceEstimate, InitialIidResult, PairedVCTRResult
-from .covariance import estimate_exchangeable_covariance, regroup_residuals_by_subject
+from .covariance import (
+    estimate_exchangeable_covariance,
+    estimate_exchangeable_varying_sigma_covariance,
+    regroup_residuals_by_subject,
+)
 from .paired_vctr import PairedEyeVCTRModel
 
 __all__ = [
@@ -11,5 +15,6 @@ __all__ = [
     "PairedEyeVCTRModel",
     "PairedVCTRResult",
     "estimate_exchangeable_covariance",
+    "estimate_exchangeable_varying_sigma_covariance",
     "regroup_residuals_by_subject",
 ]
