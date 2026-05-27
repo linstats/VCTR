@@ -12,6 +12,26 @@
   - `archive/paired_case2_full_parallel.pbs`
 - 这两个脚本由于对应旧的模型/DGP 阶段，现统一作为历史参考保留
 
+### `paired_case1_altbase_varsigma_parallel.pbs`
+
+- 当前正式的 `paired_case1_altbase` varying-sigma HPC 模板
+- 直接放在 `hpc/` 根目录
+- 默认资源：
+  - `parallel`
+  - `12` CPUs
+  - `24gb` memory
+  - `36h` walltime
+- 默认实验：
+  - `n_subject = 1000 2000`
+  - `coef_types = base1 base2 base3 base4`
+  - `rho_values = 0.0 0.3 0.6 0.9`
+  - `R = 4`, `S = 25`, `p0 = 4`
+  - `beta = 2.0,1.0,-1.0,0.5`
+  - `covariance_mode = exchangeable_varying_sigma`
+  - `signal_bandwidth = 0.18`
+  - `variance_bandwidth = 0.18`
+  - `ridge = 1e-4`
+
 ### `README.md`
 
 - 本目录说明文件
