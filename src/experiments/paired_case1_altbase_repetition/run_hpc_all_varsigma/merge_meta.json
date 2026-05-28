@@ -1,0 +1,19 @@
+{
+  "n_records": 960,
+  "n_summary_rows": 32,
+  "parts": [
+    "run_altbase_varsigma_ns1000_2000_part1",
+    "run_altbase_varsigma_ns1000_2000_part2",
+    "run_altbase_varsigma_ns1000_2000_part3",
+    "run_altbase_varsigma_ns1000_2000_part4",
+    "run_altbase_varsigma_ns1000_2000_part5",
+    "run_altbase_varsigma_ns1000_2000_part6",
+    "run_altbase_varsigma_ns1000_2000_part7",
+    "run_altbase_varsigma_ns1000_2000_part8",
+    "run_altbase_varsigma_ns1000_2000_part9",
+    "run_altbase_varsigma_ns1000_2000_part10"
+  ],
+  "success_counts": {
+    "1": 960
+  }
+}

@@ -115,7 +115,7 @@ The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix
 
 \subsection{Paired Simulation for Case II}
 \paragraph*{DGP.}
-The tensor size is set to be $D=3$, $p_1=p_2=p_3=40$, and $S=64$. We split the tensor by $S^{(1)}=S^{(2)}=S^{(3)}=10$ and $p_1'=p_2'=p_3'=4$. Set the rank $R=5$, and covariate tensor:
+The tensor size is set to be $D=3$, $p_1=p_2=p_3=48$, and $S=27$. We split the tensor by $S^{(1)}=S^{(2)}=S^{(3)}=3$ and $p_1'=p_2'=p_3'=16$. Set the rank $R=6$, and covariate tensor:
 \begin{align*}
     \mathcal{X}_{ij}^{(s)}=\sum_{r=1}^{R}x^*_{ijrs}\mathbf{x}_{r}^{(s1)}\circ\mathbf{x}_{r}^{(s2)}\circ\mathbf{x}_{r}^{(s3)},
     \qwhereq
@@ -123,7 +123,7 @@ The tensor size is set to be $D=3$, $p_1=p_2=p_3=40$, and $S=64$. We split the t
 \end{align*}
 and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and obtained from the QR decomposition of a random matrix. The coefficient function is set to be $\mathcal{A}^{(s)}(t)=\sum_{r=1}^{R} \alpha_{rs}(t)\mathbf{x}_r^{(s1)}\circ \mathbf{x}_r^{(s2)}\circ\mathbf{x}_{r}^{(s3)}$ where $\alpha_{rs}(t)$ has 4 choises in Eq(\ref{eq-sim-coef1}) and (\ref{eq-sim-coef2}). Everything else is same as Case I.
 
-\paragraph{Simulation Results.} We vary $n=500/1000/2000$, coefficients $\mathcal{A}_1(t),\dots,\mathcal{A}_4(t)$, and correlation $\rho=0/0.3/0.6/0.9$. We report the error of both initial estimates $(\hat{\mathbf{A}}^\dagger,\;\hat{\bb}^\dagger)$ and final estimates $(\hat{\mathbf{A}}^*,\;\hat{\bb}^*)$, also the error of $(\hat{\sigma}^2, \hat{\rho})$.
+\paragraph{Simulation Results.} We vary $n=1000/2000$, coefficients $\mathcal{A}_1(t),\dots,\mathcal{A}_4(t)$, and correlation $\rho=0/0.3/0.6/0.9$. We report the error of both initial estimates $(\hat{\mathbf{A}}^\dagger,\;\hat{\bb}^\dagger)$ and final estimates $(\hat{\mathbf{A}}^*,\;\hat{\bb}^*)$, also the error of $(\hat{\sigma}^2, \hat{\rho})$.
 
 \noindent
 \textcolor{red}{Simulations to be done$\cdots$.}

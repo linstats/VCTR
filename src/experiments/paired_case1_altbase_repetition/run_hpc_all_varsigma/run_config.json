@@ -1,0 +1,83 @@
+{
+  "script": "src/experiments/paired_case1_altbase_repetition.py",
+  "created_at": "2026-05-27T17:09:12",
+  "run_name": "run_hpc_all_varsigma",
+  "total_jobs": 960,
+  "n_subject_values": [
+    1000,
+    2000
+  ],
+  "coef_types": [
+    "base1",
+    "base2",
+    "base3",
+    "base4"
+  ],
+  "n_rep": 3,
+  "seed_base": 123,
+  "R": 4,
+  "S": 25,
+  "p0": 4,
+  "beta": "2.0,1.0,-1.0,0.5",
+  "sigma2": 1.0,
+  "rho": 0.3,
+  "rho_values": [
+    0.0,
+    0.3,
+    0.6,
+    0.9
+  ],
+  "covariance_mode": "exchangeable_varying_sigma",
+  "signal_bandwidth": 0.18,
+  "signal_bandwidth_method": "stage1_kfold_cv",
+  "signal_bandwidth_grid": null,
+  "variance_bandwidth": 0.18,
+  "variance_bandwidth_method": "stage2_kfold_cv",
+  "variance_bandwidth_grid": null,
+  "ridge": 0.0001,
+  "n_jobs": 12,
+  "save_data": false,
+  "save_estimates": false,
+  "created_at_first": "2026-05-27T17:09:12",
+  "created_at_last": "2026-05-27T23:16:54",
+  "merged_from_run_names": [
+    "run_altbase_varsigma_ns1000_2000_part1",
+    "run_altbase_varsigma_ns1000_2000_part2",
+    "run_altbase_varsigma_ns1000_2000_part3",
+    "run_altbase_varsigma_ns1000_2000_part4",
+    "run_altbase_varsigma_ns1000_2000_part5",
+    "run_altbase_varsigma_ns1000_2000_part6",
+    "run_altbase_varsigma_ns1000_2000_part7",
+    "run_altbase_varsigma_ns1000_2000_part8",
+    "run_altbase_varsigma_ns1000_2000_part9",
+    "run_altbase_varsigma_ns1000_2000_part10"
+  ],
+  "merged_from_seed_bases": [
+    123,
+    126,
+    129,
+    132,
+    135,
+    138,
+    141,
+    144,
+    147,
+    150
+  ],
+  "n_merged_parts": 10,
+  "n_rep_per_part": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "n_rep_total": 30,
+  "total_records_expected": 960,
+  "merge_note": "Merged from 10 HPC part runs. summary_results.csv recomputed from concatenated raw_results.csv."
+}
