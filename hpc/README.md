@@ -32,6 +32,30 @@
   - `variance_bandwidth = 0.18`
   - `ridge = 1e-4`
 
+### `paired_case2_altbase_varsigma_parallel.pbs`
+
+- 当前正式的 `paired_case2_altbase` varying-sigma HPC 模板
+- 直接放在 `hpc/` 根目录
+- 默认资源：
+  - `parallel`
+  - `12` CPUs
+  - `16gb` memory
+  - `36h` walltime
+- 默认实验：
+  - `n_subject = 2000 5000`
+  - `coef_types = base1 base2 base3 base4`
+  - `rho_values = 0.0 0.3 0.6 0.9`
+  - `R = 6`, `S = 27`, `p0 = 4`
+  - `beta = 2.0,1.0,-1.0,0.5`
+  - `covariance_mode = exchangeable_varying_sigma`
+  - `signal_bandwidth = 0.20`
+  - `variance_bandwidth = 0.20`
+  - `ridge = 1e-4`
+- 默认提交组织方式：
+  - `10` parts
+  - 每个 part `3` reps
+  - `12` CPUs + `16gb` + `36h`
+
 ### `README.md`
 
 - 本目录说明文件

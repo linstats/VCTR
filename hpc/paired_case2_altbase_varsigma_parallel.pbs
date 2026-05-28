@@ -1,0 +1,70 @@
+#!/bin/bash
+#PBS -N paired_c2_alt
+#PBS -q parallel
+#PBS -l select=1:ncpus=12:mem=16gb
+#PBS -l walltime=36:00:00
+#PBS -j oe
+
+set -euo pipefail
+
+PROJECT_ROOT="${PROJECT_ROOT:-$HOME/2026-tensor}"
+CONDA_MODULE="${CONDA_MODULE:-miniconda/4.12}"
+CONDA_ENV_PATH="${CONDA_ENV_PATH:-$HOME/conda-envs/vctr-py310}"
+
+N_JOBS="${N_JOBS:-12}"
+N_REP="${N_REP:-3}"
+SEED_BASE="${SEED_BASE:-123}"
+RUN_NAME="${RUN_NAME:-run_case2_altbase_varsigma_R6_ns2000_5000_part1}"
+
+N_SUBJECT_VALUES="${N_SUBJECT_VALUES:-2000 5000}"
+COEF_TYPES="${COEF_TYPES:-base1 base2 base3 base4}"
+RHO_VALUES="${RHO_VALUES:-0.0 0.3 0.6 0.9}"
+
+R="${R:-6}"
+S="${S:-27}"
+P0="${P0:-4}"
+BETA="${BETA:-2.0,1.0,-1.0,0.5}"
+SIGMA2="${SIGMA2:-1.0}"
+COVARIANCE_MODE="${COVARIANCE_MODE:-exchangeable_varying_sigma}"
+SIGNAL_BANDWIDTH="${SIGNAL_BANDWIDTH:-0.20}"
+VARIANCE_BANDWIDTH="${VARIANCE_BANDWIDTH:-0.20}"
+RIDGE="${RIDGE:-1e-4}"
+
+module purge
+module load "$CONDA_MODULE"
+source activate "$CONDA_ENV_PATH"
+
+cd "$PROJECT_ROOT"
+
+echo "[info] host=$(hostname)"
+echo "[info] started_at=$(date)"
+echo "[info] project_root=$PROJECT_ROOT"
+echo "[info] conda_module=$CONDA_MODULE"
+echo "[info] conda_env_path=$CONDA_ENV_PATH"
+echo "[info] python=$(command -v python)"
+python --version
+echo "[info] template=10_parts_x_3_reps"
+echo "[info] n_jobs=$N_JOBS n_rep=$N_REP seed_base=$SEED_BASE run_name=$RUN_NAME"
+echo "[info] n_subject_values=$N_SUBJECT_VALUES coef_types=$COEF_TYPES rho_values=$RHO_VALUES"
+echo "[info] R=$R S=$S p0=$P0 beta=$BETA sigma2=$SIGMA2 covariance_mode=$COVARIANCE_MODE"
+echo "[info] signal_bandwidth=$SIGNAL_BANDWIDTH variance_bandwidth=$VARIANCE_BANDWIDTH ridge=$RIDGE"
+
+python src/experiments/paired_case2_altbase_repetition.py \
+  --n-subject-values ${N_SUBJECT_VALUES} \
+  --coef-types ${COEF_TYPES} \
+  --n-rep "$N_REP" \
+  --seed-base "$SEED_BASE" \
+  --R "$R" \
+  --S "$S" \
+  --p0 "$P0" \
+  --beta "$BETA" \
+  --sigma2 "$SIGMA2" \
+  --rho-values ${RHO_VALUES} \
+  --covariance-mode "$COVARIANCE_MODE" \
+  --signal-bandwidth "$SIGNAL_BANDWIDTH" \
+  --variance-bandwidth "$VARIANCE_BANDWIDTH" \
+  --ridge "$RIDGE" \
+  --n-jobs "$N_JOBS" \
+  --run-name "$RUN_NAME"
+
+echo "[info] finished_at=$(date)"
