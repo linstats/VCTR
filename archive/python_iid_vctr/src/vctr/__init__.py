@@ -1,1 +1,0 @@
-"""VCTR Python package skeleton."""
