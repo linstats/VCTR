@@ -27,7 +27,7 @@ src/
 ### `dgps/`
 
 - paired 仿真数据生成机制
-- 当前包含 paired Case 1 和 paired Case 2 的主 DGP
+- 当前包含 paired Case 1 / Case 2 reduced-feature DGP，以及 active 的 altbase Case 1 DGP
 
 ### `data/`
 
@@ -53,31 +53,39 @@ src/
 
 - paired 仿真实验入口
 - 当前主要包括：
-  - `paired_case1_smoke.py`
-  - `paired_case1_repetition.py`
-  - `paired_case2_smoke.py`
-  - `paired_case2_repetition.py`
+  - `paired_case1_altbase_smoke.py`
+  - `paired_case1_altbase_repetition.py`
+  - `paired_case2_altbase_smoke.py`
+  - `paired_case2_altbase_repetition.py`
+- 历史 constant variance 脚本及结果已归档到：
+  - `archive_const_var/`
 
 ### `utils/`
 
 - 从旧主线整理出的通用数值工具
 - 当前主要保留 kernel、spline、penalty 相关工具
 
-## 当前实验入口
+## 实验入口设计
 
-### Case 1
+### 当前主线
 
-- `paired_case1_smoke.py`
-  - 单次 smoke 运行，用于快速检查估计器能否跑通
-- `paired_case1_repetition.py`
-  - 批量重复模拟入口
+- `paired_case1_altbase_smoke.py`
+  - 单次 smoke 运行，用于快速检查 altbase paired Case 1 设计能否跑通
+- `paired_case1_altbase_repetition.py`
+  - 当前批量重复模拟入口
+  - 也是当前 HPC varying-sigma 实验主入口
 
-### Case 2
+### 归档实验
 
-- `paired_case2_smoke.py`
-  - 单次 smoke 运行
-- `paired_case2_repetition.py`
-  - 批量重复模拟入口
+- `archive_const_var/paired_case1_smoke.py`
+- `archive_const_var/paired_case1_repetition.py`
+- `archive_const_var/paired_case2_smoke.py`
+- `archive_const_var/paired_case2_repetition.py`
+
+这些脚本已经不再是当前主线，原因是：
+
+- 使用了 He Jiaxin 原文同一套 reduced-feature DGP
+- 没有引入估计量 `\hat{\sigma}(t)`
 
 ## 阅读建议
 

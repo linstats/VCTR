@@ -55,11 +55,12 @@ $$
 
 - 当前 paired-eye VCTR 的主开发线
 - 包含 paired 仿真、数据容器、模型、实验入口与通用工具
+- 当前实验主入口已切换到 altbase 版本，并以 `exchangeable_varying_sigma` 为默认正式方案
 
 ### `hpc/`
 
 - NUS HPC 相关目录
-- 当前用于集中放置 HPC 说明与历史 PBS 模板
+- 当前用于集中放置 HPC 说明、现行 PBS 模板与历史 PBS 模板
 - 历史 Case 2 PBS 脚本现已整理到 `hpc/archive/`
 
 ## 阅读顺序
@@ -76,3 +77,4 @@ $$
 - `archive/python_iid_vctr/` 保留旧的 Python `iid` 研究线
 - `src/` 默认面向 paired-eye VCTR
 - 当前 paired Python 主线已经实现 covariance-aware 的三阶段估计框架，并以 `exchangeable_varying_sigma` 为默认模式
+- 当前 paired 实验主入口为 `src/experiments/paired_case1_altbase_repetition.py`
