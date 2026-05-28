@@ -8,7 +8,7 @@ import numpy as np
 
 from src.data import PairedEyeDataset
 
-from .base import BasePairedDGP
+from ..base import BasePairedDGP
 
 
 @dataclass(slots=True)

@@ -1,0 +1,36 @@
+{
+  "seed": 1,
+  "n_subject": 20,
+  "R": 2,
+  "S": 2,
+  "p0": 2,
+  "coef_type": "quadratic",
+  "beta_true": [
+    3.0,
+    3.0
+  ],
+  "covariance_mode": "exchangeable_varying_sigma",
+  "signal_bandwidth": 0.13,
+  "best_signal_bandwidth": 0.13,
+  "signal_bandwidth_method": "fixed",
+  "signal_bandwidth_grid": [
+    0.13
+  ],
+  "signal_bandwidth_cv_scores": [],
+  "variance_bandwidth": 0.13,
+  "best_variance_bandwidth": 0.13,
+  "variance_bandwidth_method": "fixed",
+  "variance_bandwidth_grid": [
+    0.13
+  ],
+  "variance_bandwidth_cv_scores": [],
+  "ridge": 0.0,
+  "miae_iid": 1.084027457467537,
+  "miae_final": 1.3491602248613774,
+  "beta_rmse_iid": 0.48404952561257003,
+  "beta_rmse_final": 0.4548739111392005,
+  "sigma2_miae": 0.45050356232643063,
+  "sigma2_rmise": 0.4843856976512515,
+  "rho_abs_error": 0.3484445938608866,
+  "Sigma_fro_error": 0.6001500407801902
+}
