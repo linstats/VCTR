@@ -10,6 +10,7 @@ docs/aoas-overleaf/
 .vscode/
 __pycache__/
 *.pyc
+*.npz
 *.aux
 *.log
 *.out
