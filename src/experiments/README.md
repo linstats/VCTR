@@ -16,8 +16,73 @@
 - `paired_case2_altbase_repetition.py`
   - 用于 3D-equivalent alternative-base paired Case 2 设计的重复模拟主脚本。
   - 核心单次拟合逻辑复用了 `paired_case2_altbase_smoke.py`。
+- `run_case2_altbase_R6_S27_n5000_onefit_plot.sh`
+  - Case 2 风格的单次 fit 便捷脚本，固定 `n = 5000, R = 6, S = 27` 并打开函数绘图。
+  - 内部调用 `paired_case2_altbase_repetition.py --n-rep 1`，因此会生成独立 `run_name` 输出目录。
 
 这 4 个脚本都采用当前 paired-eye altbase DGP，并默认使用 `varying_sigma` 工作流。
+
+## 主要参数
+
+常用数据生成参数：
+
+- `--n-subject` 或 `--n-subject-values`: subject 数量。
+- `--coef-type` 或 `--coef-types`: 系数函数类型，当前支持 `base1` 到 `base4`。
+- `--R`, `--S`: reduced-feature 维度，其中 `A(t)` 与 `X^*` 的形状为 `R x S`。
+- `--p0`, `--beta`: 协变量维度与真实 `beta`。
+- `--sigma2`, `--rho` / `--rho-values`: paired-eye 误差方差与眼间相关。
+
+常用估计参数：
+
+- `--covariance-mode`: 当前主线通常使用 `exchangeable_varying_sigma`；也可用 `exchangeable_constant`。
+- `--signal-bandwidth`: `A(t)` local-linear smoothing 的 bandwidth；省略并提供 grid 时可触发 CV。
+- `--variance-bandwidth`: `sigma^2(t)` smoothing 的 bandwidth；constant covariance 模式下不使用。
+- `--ridge`: 数值稳定项。论文默认公式对应 `ridge = 0`；非零值应说明为稳定化选择。
+- `--n-jobs`: repetition 脚本的并行 worker 数。
+
+## 可选函数绘图
+
+当前 4 个主线脚本都支持可选绘图，默认关闭，保证旧命令不受影响。
+
+- `--plot-functions`: 打开绘图。
+- `--plot-a-indices`: 指定要画的 `A[r,s](t)` 分量，使用 Python/NumPy 的 0-based index；例如 `0:0,3:0`。
+- `--plot-max-a-panels`: 限制单张 `A` 图中的 panel 数；设为 `0` 时只画 `sigma^2(t)`。
+
+绘图内容：
+
+- `A_functions.png`: 画最终估计 `A_hat_final`，如果存在也叠加 stage-1 `A_hat_iid` 和模拟真值 `A_true`。
+- `sigma2_function.png`: 画估计的 `sigma2_hat_t`，如果能从 DGP metadata 或 `Sigma_true` 推断，也叠加真值。
+- 对 `exchangeable_constant`，`sigma2_hat_t` 是常数向量，因此图中是水平线；对 `exchangeable_varying_sigma`，图中是随 `t` 变化的曲线。
+
+示例：画数学记号中的 `A[1,1](t)`、`A[4,1](t)` 和 `sigma^2(t)`，脚本中写成 0-based `0:0,3:0`。
+
+```bash
+python src/experiments/paired_case1_altbase_repetition.py \
+  --n-subject-values 1000 \
+  --coef-types base1 \
+  --n-rep 1 \
+  --R 4 \
+  --S 25 \
+  --covariance-mode exchangeable_varying_sigma \
+  --signal-bandwidth 0.18 \
+  --variance-bandwidth 0.18 \
+  --plot-functions \
+  --plot-a-indices 0:0,3:0 \
+  --plot-max-a-panels 2
+```
+
+也可以直接运行已配置好的 Case 2 单次 fit 脚本：
+
+```bash
+bash src/experiments/run_case2_altbase_R6_S27_n5000_onefit_plot.sh
+```
+
+该脚本可通过环境变量覆盖默认值，例如：
+
+```bash
+COEF_TYPE=base4 SEED=456 PLOT_A_INDICES=0:0,3:0,5:26 PLOT_MAX_A_PANELS=3 \
+  bash src/experiments/run_case2_altbase_R6_S27_n5000_onefit_plot.sh
+```
 
 ## 归档脚本
 
@@ -50,6 +115,17 @@
 - `progress.json`
 - `results/raw_results.csv`
 - `results/summary_results.csv`
+- `plots/*_A_functions.png`，仅在传入 `--plot-functions` 时生成
+- `plots/*_sigma2_function.png`，仅在传入 `--plot-functions` 时生成
+
+Smoke 脚本还会保存：
+
+- `data/seed_XXXX_dataset.npz`
+- `estimates/seed_XXXX_estimate.npz`
+- `results/summary.json`
+- `results/metrics.json`
+
+Repetition 脚本默认只保存汇总 CSV；需要保存每次重复的 dataset 或 estimate 时，分别传入 `--save-data` 或 `--save-estimates`。
 
 ## 说明
 

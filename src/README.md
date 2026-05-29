@@ -57,13 +57,16 @@ src/
   - `paired_case1_altbase_repetition.py`
   - `paired_case2_altbase_smoke.py`
   - `paired_case2_altbase_repetition.py`
+- 支持可选绘图输出，用于检查估计的 `A[r,s](t)` 与 `sigma^2(t)`
 - 历史 constant variance 脚本及结果已归档到：
   - `archive_const_var/`
+- 具体实验参数和输出说明见 [src/experiments/README.md](/Users/lin/Desktop/Research/2026-tensor/src/experiments/README.md)
 
 ### `utils/`
 
 - 从旧主线整理出的通用数值工具
-- 当前主要保留 kernel、spline、penalty 相关工具
+- 当前主要保留 kernel、spline、penalty 与绘图相关工具
+- 具体工具职责见 [src/utils/README.md](/Users/lin/Desktop/Research/2026-tensor/src/utils/README.md)
 
 ## 实验入口设计
 
@@ -74,6 +77,12 @@ src/
 - `paired_case1_altbase_repetition.py`
   - 当前批量重复模拟入口
   - 也是当前 HPC varying-sigma 实验主入口
+- `paired_case2_altbase_smoke.py`
+  - 单次 smoke 运行，用于快速检查 3D-equivalent altbase paired Case 2 设计
+- `paired_case2_altbase_repetition.py`
+  - Case 2 批量重复模拟入口
+
+所有当前主线实验脚本默认不画图；需要诊断函数估计时，通过 `--plot-functions` 显式打开。
 
 ### 归档实验
 

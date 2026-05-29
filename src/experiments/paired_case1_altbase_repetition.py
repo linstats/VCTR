@@ -32,6 +32,7 @@ from src.metrics import (
     sigma_frobenius_error,
 )
 from src.models import PairedEyeVCTRModel
+from src.utils.plotting import parse_a_indices, save_function_plots
 
 
 DEFAULT_COEF_TYPES = ("base1", "base2", "base3", "base4")
@@ -133,6 +134,23 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--save-data", action="store_true")
     parser.add_argument("--save-estimates", action="store_true")
+    parser.add_argument(
+        "--plot-functions",
+        action="store_true",
+        help="Save diagnostic plots for selected A[r,s](t) components and sigma^2(t) for every successful repetition.",
+    )
+    parser.add_argument(
+        "--plot-a-indices",
+        type=str,
+        default="all",
+        help="Zero-based A component indices for plotting, e.g. 0:0,1:4, or all.",
+    )
+    parser.add_argument(
+        "--plot-max-a-panels",
+        type=int,
+        default=16,
+        help="Maximum number of A component panels to draw per repetition. Use 0 to disable A panels.",
+    )
     return parser.parse_args()
 
 
@@ -330,6 +348,14 @@ def run_one(
                 stem=artifact_stem(n_subject, coef_type, rho_true, rep, seed),
                 result=result,
             )
+        if args.plot_functions:
+            maybe_save_plots_with_stem(
+                output_root=output_root,
+                stem=artifact_stem(n_subject, coef_type, rho_true, rep, seed),
+                dataset=dataset,
+                result=result,
+                args=args,
+            )
 
         elapsed = time.perf_counter() - start
         best_signal_bandwidth = float(result.initial.meta["signal_bandwidth_selected"])
@@ -446,6 +472,23 @@ def maybe_save_estimate_with_stem(output_root: Path, stem: str, result) -> None:
     )
 
 
+def maybe_save_plots_with_stem(output_root: Path, stem: str, dataset, result, args: argparse.Namespace) -> list[Path]:
+    """Save optional function diagnostics under a unique repetition stem."""
+
+    max_a_panels = int(args.plot_max_a_panels)
+    if max_a_panels < 0:
+        raise ValueError("--plot-max-a-panels must be nonnegative.")
+    a_indices = [] if max_a_panels == 0 else parse_a_indices(args.plot_a_indices, result.A_hat.shape[-2:])
+    return save_function_plots(
+        output_dir=output_root / "plots",
+        stem=stem,
+        dataset=dataset,
+        result=result,
+        a_indices=a_indices,
+        max_a_panels=max_a_panels,
+    )
+
+
 def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) -> None:
     """Write the run configuration at the root of this run directory."""
 
@@ -476,6 +519,9 @@ def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) 
         "n_jobs": args.n_jobs,
         "save_data": args.save_data,
         "save_estimates": args.save_estimates,
+        "plot_functions": args.plot_functions,
+        "plot_a_indices": args.plot_a_indices,
+        "plot_max_a_panels": args.plot_max_a_panels,
     }
     with output_paths(run_root)["config"].open("w", encoding="utf-8") as f:
         json.dump(to_json_safe(run_config), f, indent=2)

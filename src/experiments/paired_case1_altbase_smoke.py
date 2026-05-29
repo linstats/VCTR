@@ -23,6 +23,7 @@ from src.metrics import (
     sigma_frobenius_error,
 )
 from src.models import PairedEyeVCTRModel
+from src.utils.plotting import parse_a_indices, save_function_plots
 
 
 def parse_args() -> argparse.Namespace:
@@ -59,6 +60,23 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated variance-bandwidth candidates. If provided while --variance-bandwidth is omitted, auto CV is used.",
     )
     parser.add_argument("--ridge", type=float, default=0.0)
+    parser.add_argument(
+        "--plot-functions",
+        action="store_true",
+        help="Save diagnostic plots for selected A[r,s](t) components and sigma^2(t).",
+    )
+    parser.add_argument(
+        "--plot-a-indices",
+        type=str,
+        default="all",
+        help="Zero-based A component indices for plotting, e.g. 0:0,1:4, or all.",
+    )
+    parser.add_argument(
+        "--plot-max-a-panels",
+        type=int,
+        default=16,
+        help="Maximum number of A component panels to draw when plotting. Use 0 to disable A panels.",
+    )
     return parser.parse_args()
 
 
@@ -155,6 +173,25 @@ def save_outputs(
         json.dump(to_json_safe(metrics), f, indent=2)
 
 
+def maybe_save_plots(output_root: Path, seed: int, dataset, result, args: argparse.Namespace) -> list[Path]:
+    """Save optional function diagnostics for this smoke run."""
+
+    if not args.plot_functions:
+        return []
+    max_a_panels = None if args.plot_max_a_panels is None else int(args.plot_max_a_panels)
+    if max_a_panels < 0:
+        raise ValueError("--plot-max-a-panels must be nonnegative.")
+    a_indices = [] if max_a_panels == 0 else parse_a_indices(args.plot_a_indices, result.A_hat.shape[-2:])
+    return save_function_plots(
+        output_dir=output_root / "plots",
+        stem=f"seed_{seed:04d}",
+        dataset=dataset,
+        result=result,
+        a_indices=a_indices,
+        max_a_panels=max_a_panels,
+    )
+
+
 def main() -> None:
     args = parse_args()
     output_root = Path(__file__).with_suffix("")
@@ -216,6 +253,9 @@ def main() -> None:
         "Sigma_fro_error": sigma_frobenius_error(dataset.Sigma_true, result.covariance.Sigma_hat),
     }
 
+    plot_paths = maybe_save_plots(output_root, args.seed, dataset, result, args)
+    if plot_paths:
+        metrics["plot_paths"] = [str(path) for path in plot_paths]
     save_outputs(output_root, args.seed, dataset, result, metrics)
     print(json.dumps(to_json_safe(metrics), indent=2))
 
