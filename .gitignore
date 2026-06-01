@@ -15,3 +15,16 @@ __pycache__/
 *.log
 *.out
 *.synctex.gz
+
+# Generated smoke outputs
+src/experiments/paired_case1_altbase_smoke/data/
+src/experiments/paired_case1_altbase_smoke/estimates/
+src/experiments/paired_case1_altbase_smoke/results/
+src/experiments/paired_case1_altbase_smoke/plots/
+src/experiments/paired_case2_altbase_smoke/data/
+src/experiments/paired_case2_altbase_smoke/estimates/
+src/experiments/paired_case2_altbase_smoke/results/
+src/experiments/paired_case2_altbase_smoke/plots/
+
+# Test workspace
+tests/
