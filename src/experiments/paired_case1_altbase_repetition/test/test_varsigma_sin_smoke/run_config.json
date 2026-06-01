@@ -1,0 +1,38 @@
+{
+  "script": "src/experiments/paired_case1_altbase_repetition.py",
+  "created_at": "2026-06-01T11:19:33",
+  "run_name": "test_varsigma_sin_smoke",
+  "total_jobs": 1,
+  "n_subject_values": [
+    80
+  ],
+  "coef_types": [
+    "base1"
+  ],
+  "n_rep": 1,
+  "seed_base": 123,
+  "R": 4,
+  "S": 25,
+  "p0": 4,
+  "beta": "2.0,1.0,-1.0,0.5",
+  "sigma2": 1.0,
+  "sigma2_function": "sin",
+  "rho": 0.3,
+  "rho_values": [
+    0.3
+  ],
+  "covariance_mode": "exchangeable_varying_sigma",
+  "signal_bandwidth": 0.18,
+  "signal_bandwidth_method": "stage1_kfold_cv",
+  "signal_bandwidth_grid": null,
+  "variance_bandwidth": 0.18,
+  "variance_bandwidth_method": "stage2_kfold_cv",
+  "variance_bandwidth_grid": null,
+  "ridge": 0.0,
+  "n_jobs": 1,
+  "save_data": false,
+  "save_estimates": false,
+  "plot_functions": false,
+  "plot_a_indices": "all",
+  "plot_max_a_panels": 16
+}

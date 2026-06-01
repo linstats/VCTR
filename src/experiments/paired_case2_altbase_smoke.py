@@ -14,14 +14,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.dgps import PairedCase2AltbaseDGP
+from src.dgps import SUPPORTED_SIGMA2_FUNCTIONS, PairedCase2AltbaseDGP
 from src.metrics import (
     beta_rmse,
     miae,
     rho_abs_error,
+    rho_error,
     sigma2_miae,
     sigma2_rmise,
-    sigma_frobenius_error,
 )
 from src.models import PairedEyeVCTRModel
 from src.utils.plotting import parse_a_indices, save_function_plots
@@ -37,6 +37,7 @@ class Case2AltbaseSmokeConfig:
     coef_type: str = "base1"
     beta_true: tuple[float, ...] | None = None
     sigma2: float = 1.0
+    sigma2_function: str = "constant"
     rho: float = 0.3
     covariance_mode: str = "exchangeable_varying_sigma"
     signal_bandwidth: float | None = 0.20
@@ -66,6 +67,7 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated beta vector. Default matches the 3D altbase design.",
     )
     parser.add_argument("--sigma2", type=float, default=1.0)
+    parser.add_argument("--sigma2-function", type=str, default="constant", choices=SUPPORTED_SIGMA2_FUNCTIONS)
     parser.add_argument("--rho", type=float, default=0.3)
     parser.add_argument("--covariance-mode", type=str, default="exchangeable_varying_sigma")
     parser.add_argument("--signal-bandwidth", type=float, default=0.20)
@@ -156,6 +158,7 @@ def build_config(args: argparse.Namespace) -> Case2AltbaseSmokeConfig:
         coef_type=args.coef_type,
         beta_true=parse_beta(args.beta, args.p0),
         sigma2=args.sigma2,
+        sigma2_function=args.sigma2_function,
         rho=args.rho,
         covariance_mode=args.covariance_mode,
         signal_bandwidth=args.signal_bandwidth,
@@ -182,6 +185,7 @@ def run_case2_altbase_once(config: Case2AltbaseSmokeConfig):
         coef_type=config.coef_type,
         beta_true=config.beta_true,
         sigma2=config.sigma2,
+        sigma2_function=config.sigma2_function,
         rho=config.rho,
     ).sample(seed=config.seed)
 
@@ -197,6 +201,8 @@ def run_case2_altbase_once(config: Case2AltbaseSmokeConfig):
     )
     result = model.fit(dataset)
     best_signal_bandwidth = float(result.initial.meta["signal_bandwidth_selected"])
+    sigma2_true_t = np.asarray(dataset.meta["sigma2_true_t"], dtype=float)
+    rho_signed_error = rho_error(config.rho, result.covariance.rho_hat)
 
     metrics = {
         "seed": config.seed,
@@ -206,6 +212,8 @@ def run_case2_altbase_once(config: Case2AltbaseSmokeConfig):
         "p0": config.p0,
         "coef_type": config.coef_type,
         "beta_true": dataset.beta_true.tolist(),
+        "sigma2": config.sigma2,
+        "sigma2_function": config.sigma2_function,
         "covariance_mode": config.covariance_mode,
         "signal_bandwidth": config.signal_bandwidth,
         "best_signal_bandwidth": best_signal_bandwidth,
@@ -222,10 +230,13 @@ def run_case2_altbase_once(config: Case2AltbaseSmokeConfig):
         "miae_final": miae(dataset.A_true, result.A_hat),
         "beta_rmse_iid": beta_rmse(dataset.beta_true, result.initial.beta_hat),
         "beta_rmse_final": beta_rmse(dataset.beta_true, result.beta_hat),
-        "sigma2_miae": sigma2_miae(config.sigma2, result.covariance.sigma2_hat_t),
-        "sigma2_rmise": sigma2_rmise(config.sigma2, result.covariance.sigma2_hat_t),
+        "sigma2_miae": sigma2_miae(sigma2_true_t, result.covariance.sigma2_hat_t),
+        "sigma2_rmise": sigma2_rmise(sigma2_true_t, result.covariance.sigma2_hat_t),
+        "rho_error": rho_signed_error,
         "rho_abs_error": rho_abs_error(config.rho, result.covariance.rho_hat),
-        "Sigma_fro_error": sigma_frobenius_error(dataset.Sigma_true, result.covariance.Sigma_hat),
+        "rho_mae": abs(rho_signed_error),
+        "rho_rmse": abs(rho_signed_error),
+        "Sigma_fro_error": None,
     }
     return dataset, result, metrics
 
@@ -254,6 +265,7 @@ def save_outputs(
         A_true=dataset.A_true,
         beta_true=dataset.beta_true,
         Sigma_true=dataset.Sigma_true,
+        sigma2_true_t=np.asarray(dataset.meta.get("sigma2_true_t", []), dtype=float),
     )
     np.savez_compressed(
         estimates_dir / f"seed_{seed:04d}_estimate.npz",

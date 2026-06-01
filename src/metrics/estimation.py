@@ -71,9 +71,21 @@ def rho_abs_error(rho_true: float, rho_hat: float) -> float:
     return float(abs(float(rho_true) - float(rho_hat)))
 
 
+def rho_error(rho_true: float, rho_hat: float) -> float:
+    """Signed error for the shared correlation estimate."""
+
+    return float(float(rho_hat) - float(rho_true))
+
+
 def sigma_frobenius_error(Sigma_true: np.ndarray, Sigma_hat: np.ndarray) -> float:
     """Frobenius-norm error for the shared covariance matrix estimate."""
 
     Sigma_true = np.asarray(Sigma_true, dtype=float)
     Sigma_hat = np.asarray(Sigma_hat, dtype=float)
+    if Sigma_true.ndim == 3 and Sigma_hat.shape == (2, 2):
+        Sigma_hat = np.broadcast_to(Sigma_hat, Sigma_true.shape)
+    if Sigma_hat.ndim == 3 and Sigma_true.shape == (2, 2):
+        Sigma_true = np.broadcast_to(Sigma_true, Sigma_hat.shape)
+    if Sigma_true.ndim == 3 and Sigma_hat.ndim == 3:
+        return float(np.sqrt(np.mean(np.sum(np.square(Sigma_true - Sigma_hat), axis=(1, 2)))))
     return float(np.linalg.norm(Sigma_true - Sigma_hat, ord="fro"))

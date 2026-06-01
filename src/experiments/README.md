@@ -22,6 +22,9 @@
 - `paired_case2_altbase_repetition/paired_case2_altbase_backfill.py`
   - 用于按缺失任务 manifest 精确补跑 Case 2 重复模拟。
   - 不再依赖 `n_rep` 自动展开任务，而是逐条消费 `part,n_subject,coef_type,rho_true,rep,seed` 清单。
+- `paired_case2_altbase_repetition/merge_case2_hpc_parts.py`
+  - 用于把本地旧的 `part1-8` 中断快照、HPC backfill 的 `part1-8` 完整结果，以及 HPC 上完整的 `part9-10` 合并成一套最终结果。
+  - 合并键固定为 `(n_subject, coef_type, rho_true, rep, seed)`，并优先保留旧快照中已成功的 `part1-8` 记录。
 - `run_case2_altbase_R6_S27_n5000_onefit_plot.sh`
   - Case 2 风格的单次 fit 便捷脚本，固定 `n = 5000, R = 6, S = 27` 并打开函数绘图。
   - 内部调用 `paired_case2_altbase_repetition.py --n-rep 1`，因此会生成独立 `run_name` 输出目录。

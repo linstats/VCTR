@@ -1,6 +1,6 @@
 {
   "seed": 1,
-  "n_subject": 60,
+  "n_subject": 80,
   "R": 3,
   "S": 27,
   "p0": 4,
@@ -11,6 +11,8 @@
     -1.0,
     0.5
   ],
+  "sigma2": 1.0,
+  "sigma2_function": "sin",
   "covariance_mode": "exchangeable_varying_sigma",
   "signal_bandwidth": 0.2,
   "best_signal_bandwidth": 0.2,
@@ -27,12 +29,18 @@
   ],
   "variance_bandwidth_cv_scores": [],
   "ridge": 0.0,
-  "miae_iid": 28.789446069504987,
-  "miae_final": 6.6329778315036005,
-  "beta_rmse_iid": 20.51228777228314,
-  "beta_rmse_final": 2.049792269045976,
-  "sigma2_miae": 23892.607249704593,
-  "sigma2_rmise": 36279.09973744624,
-  "rho_abs_error": 0.6592233966308705,
-  "Sigma_fro_error": 46821.73785356213
+  "miae_iid": 39.28103792964057,
+  "miae_final": 25.509046102852082,
+  "beta_rmse_iid": 13.534941222944823,
+  "beta_rmse_final": 53.583082711778985,
+  "sigma2_miae": 20297.106061128412,
+  "sigma2_rmise": 27453.945108962977,
+  "rho_error": 0.6835607150632859,
+  "rho_abs_error": 0.6835607150632859,
+  "rho_mae": 0.6835607150632859,
+  "rho_rmse": 0.6835607150632859,
+  "Sigma_fro_error": null,
+  "plot_paths": [
+    "/Users/lin/Desktop/Research/2026-tensor/src/experiments/paired_case2_altbase_smoke/plots/seed_0001_sigma2_function.png"
+  ]
 }

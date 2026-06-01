@@ -470,7 +470,11 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
         subject_indices = np.asarray(subject_indices, dtype=int).reshape(-1)
         A_true = None if dataset.A_true is None else dataset.A_true[subject_indices]
         beta_true = None if dataset.beta_true is None else np.asarray(dataset.beta_true, dtype=float).copy()
-        Sigma_true = None if dataset.Sigma_true is None else np.asarray(dataset.Sigma_true, dtype=float).copy()
+        if dataset.Sigma_true is None:
+            Sigma_true = None
+        else:
+            Sigma_true_arr = np.asarray(dataset.Sigma_true, dtype=float)
+            Sigma_true = Sigma_true_arr[subject_indices] if Sigma_true_arr.ndim == 3 else Sigma_true_arr.copy()
         return PairedEyeDataset(
             subject_ids=dataset.subject_ids[subject_indices],
             eye_ids=np.asarray(dataset.eye_ids).copy(),

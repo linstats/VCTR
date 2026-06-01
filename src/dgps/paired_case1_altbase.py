@@ -9,6 +9,7 @@ import numpy as np
 from src.data import PairedEyeDataset
 
 from .base import BasePairedDGP
+from .variance_functions import sigma2_curve
 
 
 @dataclass(slots=True)
@@ -22,6 +23,7 @@ class PairedCase1AltbaseDGP(BasePairedDGP):
     coef_type: str = "base1"
     beta_true: tuple[float, ...] | None = None
     sigma2: float = 1.0
+    sigma2_function: str = "constant"
     rho: float = 0.3
     eye_ids: tuple[int, int] = (0, 1)
 
@@ -46,15 +48,15 @@ class PairedCase1AltbaseDGP(BasePairedDGP):
         beta_true = self._resolve_beta_true()
         signal = np.sum(X * A_true[:, None, :, :], axis=(2, 3)) + Z @ beta_true[:, None]
 
-        Sigma_true = self.sigma2 * np.array(
-            [[1.0, self.rho], [self.rho, 1.0]],
-            dtype=float,
-        )
-        noise = rng.multivariate_normal(
-            mean=np.zeros(2, dtype=float),
-            cov=Sigma_true,
-            size=self.n_subject,
-        )
+        sigma2_true_t = sigma2_curve(t, base=self.sigma2, kind=self.sigma2_function)
+        exchangeable_base = np.array([[1.0, self.rho], [self.rho, 1.0]], dtype=float)
+        Sigma_true = sigma2_true_t[:, None, None] * exchangeable_base[None, :, :]
+        noise = np.empty((self.n_subject, 2), dtype=float)
+        for subject_idx in range(self.n_subject):
+            noise[subject_idx] = rng.multivariate_normal(
+                mean=np.zeros(2, dtype=float),
+                cov=Sigma_true[subject_idx],
+            )
         y = signal + noise
 
         return PairedEyeDataset(
@@ -77,6 +79,9 @@ class PairedCase1AltbaseDGP(BasePairedDGP):
                 "coef_type": self.coef_type,
                 "beta_true": beta_true.tolist(),
                 "sigma2": self.sigma2,
+                "sigma2_base": self.sigma2,
+                "sigma2_function": self.sigma2_function,
+                "sigma2_true_t": sigma2_true_t.tolist(),
                 "rho": self.rho,
                 "raw_equivalent_p1": 60,
                 "raw_equivalent_p2": 60,
@@ -100,6 +105,7 @@ class PairedCase1AltbaseDGP(BasePairedDGP):
             raise ValueError("eye_ids must contain exactly two eye labels.")
         self._resolve_beta_true()
         self._coefficient_base(np.array([0.25], dtype=float))
+        sigma2_curve(np.array([0.25], dtype=float), base=self.sigma2, kind=self.sigma2_function)
 
     def _resolve_beta_true(self) -> np.ndarray:
         """Return the true beta vector for the altbase paired Case 1 DGP."""

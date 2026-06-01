@@ -32,6 +32,51 @@
   - `variance_bandwidth = 0.18`
   - `ridge = 1e-4`
 
+### `paired_case1_altbase_varying_var_parallel.pbs`
+
+- 当前 `paired_case1_altbase` time-varying DGP variance HPC 模板
+- 结果默认写到：
+  - `src/experiments/paired_case1_altbase_repetition/hpc_varying_var/<sigma2_function>/part<id>/`
+- 默认资源：
+  - `parallel`
+  - `12` CPUs
+  - `24gb` memory
+  - `36h` walltime
+- 默认实验配置沿用 `hpc_const_var/run_config.json`：
+  - `n_subject = 1000 2000`
+  - `coef_types = base1 base2 base3 base4`
+  - `rho_values = 0.0 0.3 0.6 0.9`
+  - `R = 4`, `S = 25`, `p0 = 4`
+  - `beta = 2.0,1.0,-1.0,0.5`
+  - `sigma2 = 1.0`
+  - `covariance_mode = exchangeable_varying_sigma`
+  - `signal_bandwidth = 0.18`
+  - `variance_bandwidth = 0.18`
+  - `ridge = 1e-4`
+- 新增 DGP variance 参数：
+  - `SIGMA2_FUNCTION = sin | sin2 | mixed`
+
+### `submit_paired_case1_altbase_varying_var_8parts.sh`
+
+- 提交 `paired_case1_altbase_varying_var_parallel.pbs` 的便捷脚本
+- 默认提交 `3` 个 `sigma2_function`，每个拆成 `8` 个 part
+- 每个 part 使用 `12` workers
+- `30` 次 repetition 拆分为：
+  - `4,4,4,4,4,4,3,3`
+- seed 覆盖：
+  - part 1: `123-126`
+  - part 2: `127-130`
+  - part 3: `131-134`
+  - part 4: `135-138`
+  - part 5: `139-142`
+  - part 6: `143-146`
+  - part 7: `147-149`
+  - part 8: `150-152`
+- 可先用 dry run 核实命令：
+```bash
+DRY_RUN=1 bash hpc/submit_paired_case1_altbase_varying_var_8parts.sh
+```
+
 ### `paired_case2_altbase_varsigma_parallel.pbs`
 
 - 当前正式的 `paired_case2_altbase` varying-sigma HPC 模板

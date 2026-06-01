@@ -32,7 +32,7 @@ class PairedEyeDataset:
     - ``Z``: ``(n_subjects, p0)``
     - ``X``: ``(n_subjects, 2, *tensor_shape)``
     - ``y``: ``(n_subjects, 2)``
-    - ``Sigma_true``: optional subject-common ``(2, 2)`` covariance matrix
+    - ``Sigma_true``: optional ``(2, 2)`` matrix or ``(n_subjects, 2, 2)`` blocks
     """
 
     subject_ids: np.ndarray
@@ -71,8 +71,8 @@ class PairedEyeDataset:
             raise ValueError("y must have shape (n_subject, 2).")
         if self.Sigma_true is not None:
             self.Sigma_true = np.asarray(self.Sigma_true, dtype=float)
-            if self.Sigma_true.shape != (2, 2):
-                raise ValueError("Sigma_true must have shape (2, 2).")
+            if self.Sigma_true.shape != (2, 2) and self.Sigma_true.shape != (n_subject, 2, 2):
+                raise ValueError("Sigma_true must have shape (2, 2) or (n_subject, 2, 2).")
 
     @property
     def n_subject(self) -> int:

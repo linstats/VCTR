@@ -20,16 +20,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.dgps import PairedCase1AltbaseDGP
+from src.dgps import SUPPORTED_SIGMA2_FUNCTIONS, PairedCase1AltbaseDGP
 from src.metrics import (
     beta_mae,
     beta_rmse,
     miae,
     rho_abs_error,
+    rho_error,
     rmise,
     sigma2_miae,
     sigma2_rmise,
-    sigma_frobenius_error,
 )
 from src.models import PairedEyeVCTRModel
 from src.utils.plotting import parse_a_indices, save_function_plots
@@ -55,7 +55,9 @@ class PairedCase1AltbaseRecord:
     variance_bandwidth_method: str
     best_variance_bandwidth: float | None
     sigma2_true: float
+    sigma2_function: str
     rho_true: float
+    rho_error: float | None
     miae_iid: float | None
     rmise_iid: float | None
     beta_mae_iid: float | None
@@ -99,6 +101,7 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated beta vector. Default matches the altbase design.",
     )
     parser.add_argument("--sigma2", type=float, default=1.0)
+    parser.add_argument("--sigma2-function", type=str, default="constant", choices=SUPPORTED_SIGMA2_FUNCTIONS)
     parser.add_argument("--rho", type=float, default=0.3)
     parser.add_argument(
         "--rho-values",
@@ -234,6 +237,7 @@ def maybe_save_dataset(output_root: Path, seed: int, dataset) -> None:
         A_true=dataset.A_true,
         beta_true=dataset.beta_true,
         Sigma_true=dataset.Sigma_true,
+        sigma2_true_t=np.asarray(dataset.meta.get("sigma2_true_t", []), dtype=float),
     )
 
 
@@ -321,6 +325,7 @@ def run_one(
             coef_type=coef_type,
             beta_true=beta_true,
             sigma2=args.sigma2,
+            sigma2_function=args.sigma2_function,
             rho=rho_true,
         ).sample(seed=seed)
 
@@ -359,6 +364,8 @@ def run_one(
 
         elapsed = time.perf_counter() - start
         best_signal_bandwidth = float(result.initial.meta["signal_bandwidth_selected"])
+        sigma2_true_t = np.asarray(dataset.meta["sigma2_true_t"], dtype=float)
+        rho_signed_error = rho_error(rho_true, result.covariance.rho_hat)
         return PairedCase1AltbaseRecord(
             n_subject=n_subject,
             coef_type=coef_type,
@@ -375,7 +382,9 @@ def run_one(
             variance_bandwidth_method=result.covariance.meta.get("variance_bandwidth_method"),
             best_variance_bandwidth=result.covariance.meta.get("variance_bandwidth_selected"),
             sigma2_true=args.sigma2,
+            sigma2_function=args.sigma2_function,
             rho_true=rho_true,
+            rho_error=rho_signed_error,
             miae_iid=miae(dataset.A_true, result.initial.A_hat),
             rmise_iid=rmise(dataset.A_true, result.initial.A_hat),
             beta_mae_iid=beta_mae(dataset.beta_true, result.initial.beta_hat),
@@ -384,10 +393,10 @@ def run_one(
             rmise_final=rmise(dataset.A_true, result.A_hat),
             beta_mae_final=beta_mae(dataset.beta_true, result.beta_hat),
             beta_rmse_final=beta_rmse(dataset.beta_true, result.beta_hat),
-            sigma2_miae=sigma2_miae(args.sigma2, result.covariance.sigma2_hat_t),
-            sigma2_rmise=sigma2_rmise(args.sigma2, result.covariance.sigma2_hat_t),
+            sigma2_miae=sigma2_miae(sigma2_true_t, result.covariance.sigma2_hat_t),
+            sigma2_rmise=sigma2_rmise(sigma2_true_t, result.covariance.sigma2_hat_t),
             rho_abs_error=rho_abs_error(rho_true, result.covariance.rho_hat),
-            Sigma_fro_error=sigma_frobenius_error(dataset.Sigma_true, result.covariance.Sigma_hat),
+            Sigma_fro_error=None,
         )
     except Exception as exc:
         elapsed = time.perf_counter() - start
@@ -407,7 +416,9 @@ def run_one(
             variance_bandwidth_method=failure_variance_bandwidth_method,
             best_variance_bandwidth=None,
             sigma2_true=args.sigma2,
+            sigma2_function=args.sigma2_function,
             rho_true=rho_true,
+            rho_error=None,
             miae_iid=None,
             rmise_iid=None,
             beta_mae_iid=None,
@@ -439,6 +450,7 @@ def maybe_save_dataset_with_stem(output_root: Path, stem: str, dataset) -> None:
         A_true=dataset.A_true,
         beta_true=dataset.beta_true,
         Sigma_true=dataset.Sigma_true,
+        sigma2_true_t=np.asarray(dataset.meta.get("sigma2_true_t", []), dtype=float),
     )
 
 
@@ -506,6 +518,7 @@ def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) 
         "p0": args.p0,
         "beta": args.beta,
         "sigma2": args.sigma2,
+        "sigma2_function": args.sigma2_function,
         "rho": args.rho,
         "rho_values": args.rho_values,
         "covariance_mode": args.covariance_mode,
@@ -731,10 +744,17 @@ def run(args: argparse.Namespace) -> tuple[list[PairedCase1AltbaseRecord], Path]
 
 
 def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, float | int | str]]:
-    grouped: dict[tuple[int, str, float, str, str], list[PairedCase1AltbaseRecord]] = {}
+    grouped: dict[tuple[int, str, float, str, str, str], list[PairedCase1AltbaseRecord]] = {}
     for rec in records:
         grouped.setdefault(
-            (rec.n_subject, rec.coef_type, rec.rho_true, rec.covariance_mode, rec.signal_bandwidth_method),
+            (
+                rec.n_subject,
+                rec.coef_type,
+                rec.rho_true,
+                rec.sigma2_function,
+                rec.covariance_mode,
+                rec.signal_bandwidth_method,
+            ),
             [],
         ).append(rec)
 
@@ -750,17 +770,25 @@ def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, flo
         "sigma2_miae",
         "sigma2_rmise",
         "rho_abs_error",
-        "Sigma_fro_error",
+        "rho_error",
         "best_signal_bandwidth",
         "best_variance_bandwidth",
         "elapsed_seconds",
     )
     rows: list[dict[str, float | int | str]] = []
-    for (n_subject, coef_type, rho_true, covariance_mode, signal_bandwidth_method), vals in sorted(grouped.items()):
+    for (
+        n_subject,
+        coef_type,
+        rho_true,
+        sigma2_function,
+        covariance_mode,
+        signal_bandwidth_method,
+    ), vals in sorted(grouped.items()):
         row: dict[str, float | int | str] = {
             "n_subject": n_subject,
             "coef_type": coef_type,
             "rho_true": rho_true,
+            "sigma2_function": sigma2_function,
             "covariance_mode": covariance_mode,
             "signal_bandwidth_method": signal_bandwidth_method,
             "n_rep": len(vals),
@@ -774,6 +802,9 @@ def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, flo
             )
             row[f"{field}_mean"] = float(np.mean(arr)) if arr.size else None
             row[f"{field}_std"] = float(np.std(arr, ddof=0)) if arr.size else None
+        rho_errors = np.array([v.rho_error for v in vals if v.rho_error is not None], dtype=float)
+        row["rho_mae"] = float(np.mean(np.abs(rho_errors))) if rho_errors.size else None
+        row["rho_rmse"] = float(np.sqrt(np.mean(np.square(rho_errors)))) if rho_errors.size else None
         rows.append(row)
     return rows
 
@@ -798,13 +829,17 @@ def print_summary(summary: list[dict[str, float | int | str]]) -> None:
     for row in summary:
         print(
             f"n_subject={row['n_subject']}, coef={row['coef_type']}, rho={float(row['rho_true']):.3f}, "
-            f"mode={row['covariance_mode']}, signal_method={row['signal_bandwidth_method']}: "
+            f"sigma2={row['sigma2_function']}, mode={row['covariance_mode']}, "
+            f"signal_method={row['signal_bandwidth_method']}: "
             f"MIAE_final={fmt(row['miae_final_mean'])} ({fmt(row['miae_final_std'])}), "
             f"RMISE_final={fmt(row['rmise_final_mean'])} ({fmt(row['rmise_final_std'])}), "
             f"beta_MAE_final={fmt(row['beta_mae_final_mean'])} ({fmt(row['beta_mae_final_std'])}), "
             f"beta_RMSE_final={fmt(row['beta_rmse_final_mean'])} ({fmt(row['beta_rmse_final_std'])}), "
             f"best_h={fmt(row['best_signal_bandwidth_mean'])} ({fmt(row['best_signal_bandwidth_std'])}), "
             f"best_hbar={fmt(row['best_variance_bandwidth_mean'])} ({fmt(row['best_variance_bandwidth_std'])}), "
+            f"sigma2_MIAE={fmt(row['sigma2_miae_mean'])} ({fmt(row['sigma2_miae_std'])}), "
+            f"sigma2_RMISE={fmt(row['sigma2_rmise_mean'])} ({fmt(row['sigma2_rmise_std'])}), "
+            f"rho_MAE={fmt(row['rho_mae'])}, rho_RMSE={fmt(row['rho_rmse'])}, "
             f"success={row['n_success']}/{row['n_rep']}"
         )
 
