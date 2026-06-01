@@ -56,6 +56,24 @@
   - 每个 part `3` reps
   - `12` CPUs + `16gb` + `36h`
 
+### `paired_case2_altbase_backfill_parallel.pbs`
+
+- `paired_case2_altbase` 精确补跑的 PBS 模板
+- 配合：
+  - `src/experiments/paired_case2_altbase_repetition/audit_case2_hpc_parts.py`
+  - `src/experiments/paired_case2_altbase_repetition/paired_case2_altbase_backfill.py`
+- 默认资源：
+  - `parallel`
+  - `12` CPUs
+  - `16gb` memory
+  - `72h` walltime
+- 通过环境变量传入：
+  - `MANIFEST_PATH`
+  - `RUN_NAME`
+  - `N_JOBS`
+- manifest 每行一个缺失任务，字段固定为：
+  - `part,n_subject,coef_type,rho_true,rep,seed`
+
 ### `README.md`
 
 - 本目录说明文件

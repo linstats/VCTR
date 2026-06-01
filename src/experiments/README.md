@@ -16,6 +16,12 @@
 - `paired_case2_altbase_repetition.py`
   - 用于 3D-equivalent alternative-base paired Case 2 设计的重复模拟主脚本。
   - 核心单次拟合逻辑复用了 `paired_case2_altbase_smoke.py`。
+- `paired_case2_altbase_repetition/audit_case2_hpc_parts.py`
+  - 用于审计 HPC 上中断/超时的 Case 2 part 结果快照。
+  - 根据 `run_config.json` 与 `results/raw_results.csv` 恢复理论任务集，并输出精确缺失清单与 backfill 提交脚本。
+- `paired_case2_altbase_repetition/paired_case2_altbase_backfill.py`
+  - 用于按缺失任务 manifest 精确补跑 Case 2 重复模拟。
+  - 不再依赖 `n_rep` 自动展开任务，而是逐条消费 `part,n_subject,coef_type,rho_true,rep,seed` 清单。
 - `run_case2_altbase_R6_S27_n5000_onefit_plot.sh`
   - Case 2 风格的单次 fit 便捷脚本，固定 `n = 5000, R = 6, S = 27` 并打开函数绘图。
   - 内部调用 `paired_case2_altbase_repetition.py --n-rep 1`，因此会生成独立 `run_name` 输出目录。
@@ -117,6 +123,13 @@ COEF_TYPE=base4 SEED=456 PLOT_A_INDICES=0:0,3:0,5:26 PLOT_MAX_A_PANELS=3 \
 - `results/summary_results.csv`
 - `plots/*_A_functions.png`，仅在传入 `--plot-functions` 时生成
 - `plots/*_sigma2_function.png`，仅在传入 `--plot-functions` 时生成
+
+HPC 审计与补跑附加输出：
+
+- `paired_case2_altbase_repetition/hpc_snapshot_*/audit/part*_missing.csv`
+- `paired_case2_altbase_repetition/hpc_snapshot_*/audit/all_missing.csv`
+- `paired_case2_altbase_repetition/hpc_snapshot_*/audit/submit_backfill.sh`
+- `paired_case2_altbase_repetition/backfill_runs/<run_name>/results/raw_results.csv`
 
 Smoke 脚本还会保存：
 
