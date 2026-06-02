@@ -101,7 +101,21 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated beta vector. Default matches the altbase design.",
     )
     parser.add_argument("--sigma2", type=float, default=1.0)
-    parser.add_argument("--sigma2-function", type=str, default="constant", choices=SUPPORTED_SIGMA2_FUNCTIONS)
+    parser.add_argument(
+        "--sigma2-function",
+        type=str,
+        default=None,
+        choices=SUPPORTED_SIGMA2_FUNCTIONS,
+        help="Optional single sigma2(t) function. If provided, overrides --sigma2-functions.",
+    )
+    parser.add_argument(
+        "--sigma2-functions",
+        type=str,
+        nargs="+",
+        default=["constant"],
+        choices=SUPPORTED_SIGMA2_FUNCTIONS,
+        help="Sigma2(t) functions to iterate over in repetition runs.",
+    )
     parser.add_argument("--rho", type=float, default=0.3)
     parser.add_argument(
         "--rho-values",
@@ -200,6 +214,14 @@ def resolved_rho_values(args: argparse.Namespace) -> list[float]:
     return [float(value) for value in (args.rho_values or [args.rho])]
 
 
+def resolved_sigma2_functions(args: argparse.Namespace) -> list[str]:
+    """Return the sigma2(t) functions to iterate over for this run."""
+
+    if args.sigma2_function is not None:
+        return [str(args.sigma2_function)]
+    return [str(value) for value in args.sigma2_functions]
+
+
 def prepare_run_root(base_dir: Path, run_name: str | None) -> Path:
     """Create and return the run-specific output directory."""
 
@@ -275,16 +297,24 @@ def rho_label(rho: float) -> str:
     return f"{rho:.3f}".replace("-", "m").replace(".", "p")
 
 
-def artifact_stem(n_subject: int, coef_type: str, rho: float, rep: int, seed: int) -> str:
+def artifact_stem(
+    n_subject: int,
+    coef_type: str,
+    sigma2_function: str,
+    rho: float,
+    rep: int,
+    seed: int,
+) -> str:
     """Return a unique artifact stem for one repetition."""
 
-    return f"n{n_subject}_{coef_type}_rho{rho_label(rho)}_rep{rep:03d}_seed{seed:04d}"
+    return f"n{n_subject}_{coef_type}_{sigma2_function}_rho{rho_label(rho)}_rep{rep:03d}_seed{seed:04d}"
 
 
 def run_one(
     *,
     n_subject: int,
     coef_type: str,
+    sigma2_function: str,
     rho_true: float,
     rep: int,
     seed: int,
@@ -325,7 +355,7 @@ def run_one(
             coef_type=coef_type,
             beta_true=beta_true,
             sigma2=args.sigma2,
-            sigma2_function=args.sigma2_function,
+            sigma2_function=sigma2_function,
             rho=rho_true,
         ).sample(seed=seed)
 
@@ -344,19 +374,19 @@ def run_one(
         if args.save_data:
             maybe_save_dataset_with_stem(
                 output_root=output_root,
-                stem=artifact_stem(n_subject, coef_type, rho_true, rep, seed),
+                stem=artifact_stem(n_subject, coef_type, sigma2_function, rho_true, rep, seed),
                 dataset=dataset,
             )
         if args.save_estimates:
             maybe_save_estimate_with_stem(
                 output_root=output_root,
-                stem=artifact_stem(n_subject, coef_type, rho_true, rep, seed),
+                stem=artifact_stem(n_subject, coef_type, sigma2_function, rho_true, rep, seed),
                 result=result,
             )
         if args.plot_functions:
             maybe_save_plots_with_stem(
                 output_root=output_root,
-                stem=artifact_stem(n_subject, coef_type, rho_true, rep, seed),
+                stem=artifact_stem(n_subject, coef_type, sigma2_function, rho_true, rep, seed),
                 dataset=dataset,
                 result=result,
                 args=args,
@@ -382,7 +412,7 @@ def run_one(
             variance_bandwidth_method=result.covariance.meta.get("variance_bandwidth_method"),
             best_variance_bandwidth=result.covariance.meta.get("variance_bandwidth_selected"),
             sigma2_true=args.sigma2,
-            sigma2_function=args.sigma2_function,
+            sigma2_function=sigma2_function,
             rho_true=rho_true,
             rho_error=rho_signed_error,
             miae_iid=miae(dataset.A_true, result.initial.A_hat),
@@ -416,7 +446,7 @@ def run_one(
             variance_bandwidth_method=failure_variance_bandwidth_method,
             best_variance_bandwidth=None,
             sigma2_true=args.sigma2,
-            sigma2_function=args.sigma2_function,
+            sigma2_function=sigma2_function,
             rho_true=rho_true,
             rho_error=None,
             miae_iid=None,
@@ -519,6 +549,7 @@ def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) 
         "beta": args.beta,
         "sigma2": args.sigma2,
         "sigma2_function": args.sigma2_function,
+        "sigma2_functions": resolved_sigma2_functions(args),
         "rho": args.rho,
         "rho_values": args.rho_values,
         "covariance_mode": args.covariance_mode,
@@ -612,23 +643,25 @@ def build_tasks(
     tasks: list[dict] = []
     for n_subject in args.n_subject_values:
         for coef_type in args.coef_types:
-            for rho_true in resolved_rho_values(args):
-                for rep in range(args.n_rep):
-                    seed = args.seed_base + rep
-                    tasks.append(
-                        {
-                            "n_subject": n_subject,
-                            "coef_type": coef_type,
-                            "rho_true": rho_true,
-                            "rep": rep,
-                            "seed": seed,
-                            "beta_true": beta_true,
-                            "args": args,
-                            "signal_bandwidth_grid": signal_bandwidth_grid,
-                            "variance_bandwidth_grid": variance_bandwidth_grid,
-                            "output_root": output_root,
-                        }
-                    )
+            for sigma2_function in resolved_sigma2_functions(args):
+                for rho_true in resolved_rho_values(args):
+                    for rep in range(args.n_rep):
+                        seed = args.seed_base + rep
+                        tasks.append(
+                            {
+                                "n_subject": n_subject,
+                                "coef_type": coef_type,
+                                "sigma2_function": sigma2_function,
+                                "rho_true": rho_true,
+                                "rep": rep,
+                                "seed": seed,
+                                "beta_true": beta_true,
+                                "args": args,
+                                "signal_bandwidth_grid": signal_bandwidth_grid,
+                                "variance_bandwidth_grid": variance_bandwidth_grid,
+                                "output_root": output_root,
+                            }
+                        )
     return tasks
 
 
@@ -648,7 +681,8 @@ def print_progress_line(
     eta_seconds = avg_elapsed * (total_jobs - completed_jobs)
     print(
         f"[{completed_jobs}/{total_jobs}] {status} "
-        f"n_subject={record.n_subject} coef={record.coef_type:10s} rho={record.rho_true:.3f} "
+        f"n_subject={record.n_subject} coef={record.coef_type:10s} "
+        f"sigma2={record.sigma2_function:8s} rho={record.rho_true:.3f} "
         f"rep={record.rep + 1}/{n_rep} seed={record.seed} "
         f"best_h={record.best_signal_bandwidth if record.best_signal_bandwidth is not None else 'NA'} "
         f"best_hbar={record.best_variance_bandwidth if record.best_variance_bandwidth is not None else 'NA'} "
@@ -721,25 +755,28 @@ def run(args: argparse.Namespace) -> tuple[list[PairedCase1AltbaseRecord], Path]
 
     for n_subject in args.n_subject_values:
         for coef_type in args.coef_types:
-            for rho_true in resolved_rho_values(args):
-                group_records = [
-                    record
-                    for record in records
-                    if record.n_subject == n_subject
-                    and record.coef_type == coef_type
-                    and record.rho_true == rho_true
-                ]
-                group_summary = summarize(group_records)[0]
-                print(
-                    f"[group done] n_subject={n_subject} coef={coef_type:10s} rho={rho_true:.3f} "
-                    f"success={group_summary['n_success']}/{group_summary['n_rep']} "
-                    f"MIAE_final={group_summary['miae_final_mean'] if group_summary['miae_final_mean'] is not None else 'NA'} "
-                    f"({group_summary['miae_final_std'] if group_summary['miae_final_std'] is not None else 'NA'}) "
-                    f"best_h={group_summary['best_signal_bandwidth_mean'] if group_summary['best_signal_bandwidth_mean'] is not None else 'NA'} "
-                    f"({group_summary['best_signal_bandwidth_std'] if group_summary['best_signal_bandwidth_std'] is not None else 'NA'}) "
-                    f"best_hbar={group_summary['best_variance_bandwidth_mean'] if group_summary['best_variance_bandwidth_mean'] is not None else 'NA'} "
-                    f"({group_summary['best_variance_bandwidth_std'] if group_summary['best_variance_bandwidth_std'] is not None else 'NA'})"
-                )
+            for sigma2_function in resolved_sigma2_functions(args):
+                for rho_true in resolved_rho_values(args):
+                    group_records = [
+                        record
+                        for record in records
+                        if record.n_subject == n_subject
+                        and record.coef_type == coef_type
+                        and record.sigma2_function == sigma2_function
+                        and record.rho_true == rho_true
+                    ]
+                    group_summary = summarize(group_records)[0]
+                    print(
+                        f"[group done] n_subject={n_subject} coef={coef_type:10s} "
+                        f"sigma2={sigma2_function:8s} rho={rho_true:.3f} "
+                        f"success={group_summary['n_success']}/{group_summary['n_rep']} "
+                        f"MIAE_final={group_summary['miae_final_mean'] if group_summary['miae_final_mean'] is not None else 'NA'} "
+                        f"({group_summary['miae_final_std'] if group_summary['miae_final_std'] is not None else 'NA'}) "
+                        f"best_h={group_summary['best_signal_bandwidth_mean'] if group_summary['best_signal_bandwidth_mean'] is not None else 'NA'} "
+                        f"({group_summary['best_signal_bandwidth_std'] if group_summary['best_signal_bandwidth_std'] is not None else 'NA'}) "
+                        f"best_hbar={group_summary['best_variance_bandwidth_mean'] if group_summary['best_variance_bandwidth_mean'] is not None else 'NA'} "
+                        f"({group_summary['best_variance_bandwidth_std'] if group_summary['best_variance_bandwidth_std'] is not None else 'NA'})"
+                    )
     return records, run_root
 
 

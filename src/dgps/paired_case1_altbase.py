@@ -124,6 +124,12 @@ class PairedCase1AltbaseDGP(BasePairedDGP):
         base1 = 5.0 * np.square(t - 0.2)
         base2 = np.exp(-np.square(3.0 * t - 1.0)) - 0.75
         base3 = np.sin(2.0 * np.pi * (t - 0.5))
+        base5 = (
+            1.10 * np.exp(-0.5 * np.square((t - 0.30) / 0.08))
+            - 0.95 * np.exp(-0.5 * np.square((t - 0.72) / 0.11))
+        )
+        base6_raw = 18.0 * (t - 0.2) * (t - 0.55) * (t - 0.85)
+        base6 = base6_raw - np.mean(base6_raw)
         if self.coef_type == "base1":
             return base1
         if self.coef_type == "base2":
@@ -132,4 +138,10 @@ class PairedCase1AltbaseDGP(BasePairedDGP):
             return base3
         if self.coef_type == "base4":
             return 0.45 * base1 + 0.35 * base2 + 0.20 * base3
-        raise ValueError("coef_type must be one of {'base1', 'base2', 'base3', 'base4'}.")
+        if self.coef_type == "base5":
+            return base5
+        if self.coef_type == "base6":
+            return base6
+        raise ValueError(
+            "coef_type must be one of {'base1', 'base2', 'base3', 'base4', 'base5', 'base6'}."
+        )
