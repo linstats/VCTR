@@ -56,6 +56,8 @@ class PairedCase1AltbaseRecord:
     best_variance_bandwidth: float | None
     sigma2_true: float
     sigma2_function: str
+    a_eval_mode: str
+    a_eval_selected_points: int
     rho_true: float
     rho_error: float | None
     miae_iid: float | None
@@ -94,6 +96,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--R", type=int, default=4)
     parser.add_argument("--S", type=int, default=25)
     parser.add_argument("--p0", type=int, default=4)
+    parser.add_argument("--a-eval-mode", type=str, default="full", choices=["full", "anchor_grid"])
+    parser.add_argument("--a-eval-num-points", type=int, default=500)
+    parser.add_argument("--a-eval-grid", type=str, default="quantile", choices=["quantile", "uniform"])
+    parser.add_argument("--a-interp", type=str, default="linear", choices=["linear"])
     parser.add_argument(
         "--beta",
         type=str,
@@ -142,6 +148,8 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated variance-bandwidth candidates. If provided while --variance-bandwidth is omitted, auto CV is used.",
     )
     parser.add_argument("--ridge", type=float, default=0.0)
+    parser.add_argument("--large-n-threshold", type=int, default=2000)
+    parser.add_argument("--prompt-accelerate-large-n", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--n-jobs", type=int, default=1)
     parser.add_argument(
         "--run-name",
@@ -186,6 +194,32 @@ def parse_bandwidth_grid(grid_arg: str | None) -> tuple[float, ...] | None:
     if not parts:
         raise ValueError("bandwidth grid must not be empty.")
     return tuple(float(part) for part in parts)
+
+
+def a_eval_mode_explicitly_requested() -> bool:
+    return any(arg == "--a-eval-mode" or arg.startswith("--a-eval-mode=") for arg in sys.argv[1:])
+
+
+def maybe_prompt_for_large_n_acceleration(args: argparse.Namespace) -> None:
+    if not args.prompt_accelerate_large_n:
+        return
+    if max(args.n_subject_values) <= args.large_n_threshold:
+        return
+    if a_eval_mode_explicitly_requested():
+        return
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        return
+
+    prompt = (
+        f"Detected n_subject > {args.large_n_threshold}. "
+        f"Enable anchor-grid acceleration with {args.a_eval_num_points} evaluation points? [Y/n]: "
+    )
+    try:
+        response = input(prompt).strip().lower()
+    except EOFError:
+        return
+    if response in {"", "y", "yes"}:
+        args.a_eval_mode = "anchor_grid"
 
 
 def to_json_safe(obj):
@@ -361,6 +395,10 @@ def run_one(
 
         model = PairedEyeVCTRModel(
             covariance_mode=args.covariance_mode,
+            a_eval_mode=args.a_eval_mode,
+            a_eval_num_points=args.a_eval_num_points,
+            a_eval_grid=args.a_eval_grid,
+            a_interp=args.a_interp,
             signal_bandwidth=args.signal_bandwidth,
             signal_bandwidth_method=args.signal_bandwidth_method,
             signal_bandwidth_grid=signal_bandwidth_grid,
@@ -413,6 +451,8 @@ def run_one(
             best_variance_bandwidth=result.covariance.meta.get("variance_bandwidth_selected"),
             sigma2_true=args.sigma2,
             sigma2_function=sigma2_function,
+            a_eval_mode=result.initial.meta.get("a_eval_mode", "full"),
+            a_eval_selected_points=int(result.initial.meta.get("a_eval_selected_points", n_subject)),
             rho_true=rho_true,
             rho_error=rho_signed_error,
             miae_iid=miae(dataset.A_true, result.initial.A_hat),
@@ -447,6 +487,8 @@ def run_one(
             best_variance_bandwidth=None,
             sigma2_true=args.sigma2,
             sigma2_function=sigma2_function,
+            a_eval_mode=args.a_eval_mode,
+            a_eval_selected_points=min(n_subject, args.a_eval_num_points) if args.a_eval_mode == "anchor_grid" else n_subject,
             rho_true=rho_true,
             rho_error=None,
             miae_iid=None,
@@ -546,6 +588,10 @@ def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) 
         "R": args.R,
         "S": args.S,
         "p0": args.p0,
+        "a_eval_mode": args.a_eval_mode,
+        "a_eval_num_points": args.a_eval_num_points,
+        "a_eval_grid": args.a_eval_grid,
+        "a_interp": args.a_interp,
         "beta": args.beta,
         "sigma2": args.sigma2,
         "sigma2_function": args.sigma2_function,
@@ -560,6 +606,8 @@ def write_run_config(run_root: Path, args: argparse.Namespace, total_jobs: int) 
         "variance_bandwidth_method": args.variance_bandwidth_method,
         "variance_bandwidth_grid": args.variance_bandwidth_grid,
         "ridge": args.ridge,
+        "large_n_threshold": args.large_n_threshold,
+        "prompt_accelerate_large_n": args.prompt_accelerate_large_n,
         "n_jobs": args.n_jobs,
         "save_data": args.save_data,
         "save_estimates": args.save_estimates,
@@ -693,6 +741,7 @@ def print_progress_line(
 
 def run(args: argparse.Namespace) -> tuple[list[PairedCase1AltbaseRecord], Path]:
     base_output_root = Path(__file__).with_suffix("")
+    maybe_prompt_for_large_n_acceleration(args)
     beta_true = parse_beta(args.beta, args.p0)
     signal_bandwidth_grid = parse_bandwidth_grid(args.signal_bandwidth_grid)
     variance_bandwidth_grid = parse_bandwidth_grid(args.variance_bandwidth_grid)
@@ -781,7 +830,7 @@ def run(args: argparse.Namespace) -> tuple[list[PairedCase1AltbaseRecord], Path]
 
 
 def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, float | int | str]]:
-    grouped: dict[tuple[int, str, float, str, str, str], list[PairedCase1AltbaseRecord]] = {}
+    grouped: dict[tuple[int, str, float, str, str, int, str, str], list[PairedCase1AltbaseRecord]] = {}
     for rec in records:
         grouped.setdefault(
             (
@@ -789,6 +838,8 @@ def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, flo
                 rec.coef_type,
                 rec.rho_true,
                 rec.sigma2_function,
+                rec.a_eval_mode,
+                rec.a_eval_selected_points,
                 rec.covariance_mode,
                 rec.signal_bandwidth_method,
             ),
@@ -818,6 +869,8 @@ def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, flo
         coef_type,
         rho_true,
         sigma2_function,
+        a_eval_mode,
+        a_eval_selected_points,
         covariance_mode,
         signal_bandwidth_method,
     ), vals in sorted(grouped.items()):
@@ -826,6 +879,8 @@ def summarize(records: Iterable[PairedCase1AltbaseRecord]) -> list[dict[str, flo
             "coef_type": coef_type,
             "rho_true": rho_true,
             "sigma2_function": sigma2_function,
+            "a_eval_mode": a_eval_mode,
+            "a_eval_selected_points": a_eval_selected_points,
             "covariance_mode": covariance_mode,
             "signal_bandwidth_method": signal_bandwidth_method,
             "n_rep": len(vals),
@@ -867,6 +922,7 @@ def print_summary(summary: list[dict[str, float | int | str]]) -> None:
         print(
             f"n_subject={row['n_subject']}, coef={row['coef_type']}, rho={float(row['rho_true']):.3f}, "
             f"sigma2={row['sigma2_function']}, mode={row['covariance_mode']}, "
+            f"a_eval={row['a_eval_mode']}({row['a_eval_selected_points']}), "
             f"signal_method={row['signal_bandwidth_method']}: "
             f"MIAE_final={fmt(row['miae_final_mean'])} ({fmt(row['miae_final_std'])}), "
             f"RMISE_final={fmt(row['rmise_final_mean'])} ({fmt(row['rmise_final_std'])}), "

@@ -23,6 +23,10 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
     """Paired-eye VCTR estimator for reduced-feature paired data."""
 
     covariance_mode: str = "exchangeable_varying_sigma"
+    a_eval_mode: str = "full"
+    a_eval_num_points: int = 500
+    a_eval_grid: str = "quantile"
+    a_interp: str = "linear"
     signal_bandwidth: float | None = None
     signal_bandwidth_method: str = "stage1_kfold_cv"
     signal_bandwidth_grid: tuple[float, ...] | None = None
@@ -64,16 +68,19 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
         n_features = x_mat.shape[1]
         p0 = flat.Z.shape[1]
         x_subject_eye = dataset.X.reshape(n_subject, 2, n_features)
+        t_eval, a_eval_meta = self._resolve_a_eval_targets(dataset.t)
 
-        A_hat_flat, beta_local = self._estimate_stage1_A(
+        A_hat_anchor, beta_local_anchor = self._estimate_stage1_A(
             flat_Z=flat.Z,
             flat_X=x_mat,
             flat_y=flat.y,
             flat_t=flat.t,
-            t_eval=dataset.t,
+            t_eval=t_eval,
             p0=p0,
             bandwidth=bandwidth,
         )
+        A_hat_flat = self._interpolate_eval_matrix(t_eval, A_hat_anchor, dataset.t)
+        beta_local = self._interpolate_eval_matrix(t_eval, beta_local_anchor, dataset.t)
 
         signal_hat = np.sum(x_subject_eye * A_hat_flat[:, None, :], axis=2)
         y_dagger = dataset.y - signal_hat
@@ -95,6 +102,7 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
                 "beta_local": beta_local,
                 "signal_hat": signal_hat,
                 "y_dagger": y_dagger,
+                **a_eval_meta,
             },
         )
 
@@ -137,11 +145,12 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
         p0 = dataset.Z.shape[1]
         Sigma_inv_blocks = invert_blocks(covariance.Sigma_hat_blocks)
         selected_bandwidth = self._selected_signal_bandwidth_from_initial(initial_result)
+        t_eval, a_eval_meta = self._resolve_a_eval_targets(dataset.t)
 
-        A_hat_flat = np.zeros((n_subject, n_features), dtype=float)
-        beta_local = np.zeros((n_subject, p0), dtype=float)
+        A_hat_anchor = np.zeros((t_eval.shape[0], n_features), dtype=float)
+        beta_local_anchor = np.zeros((t_eval.shape[0], p0), dtype=float)
 
-        for i, t0 in enumerate(dataset.t):
+        for i, t0 in enumerate(t_eval):
             lhs = np.zeros((p0 + 2 * n_features, p0 + 2 * n_features), dtype=float)
             rhs = np.zeros(p0 + 2 * n_features, dtype=float)
             for subj in range(n_subject):
@@ -159,8 +168,11 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
                 rhs += Vi.T @ Wi @ yi
 
             para_hat = np.linalg.solve(lhs + self.ridge * np.eye(lhs.shape[0]), rhs)
-            beta_local[i] = para_hat[:p0]
-            A_hat_flat[i] = para_hat[p0 : p0 + n_features]
+            beta_local_anchor[i] = para_hat[:p0]
+            A_hat_anchor[i] = para_hat[p0 : p0 + n_features]
+
+        A_hat_flat = self._interpolate_eval_matrix(t_eval, A_hat_anchor, dataset.t)
+        beta_local = self._interpolate_eval_matrix(t_eval, beta_local_anchor, dataset.t)
 
         signal_hat = np.sum(x_mat * A_hat_flat[:, None, :], axis=2)
         y_star = dataset.y - signal_hat
@@ -192,6 +204,7 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
                 "variance_bandwidth_grid": covariance.meta.get("variance_bandwidth_grid"),
                 "variance_bandwidth_cv_scores": covariance.meta.get("variance_bandwidth_cv_scores"),
                 "variance_bandwidth_cv_metric": covariance.meta.get("variance_bandwidth_cv_metric"),
+                **a_eval_meta,
             },
         )
 
@@ -570,6 +583,87 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
             raise ValueError(
                 "covariance_mode must be 'exchangeable_constant' or 'exchangeable_varying_sigma'."
             )
+
+    def _resolve_a_eval_targets(self, t: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        t = np.asarray(t, dtype=float).reshape(-1)
+        if t.size == 0:
+            raise ValueError("t must not be empty.")
+        if self.a_eval_num_points < 2:
+            raise ValueError("a_eval_num_points must be at least 2.")
+        if self.a_eval_mode not in {"full", "anchor_grid"}:
+            raise ValueError("a_eval_mode must be 'full' or 'anchor_grid'.")
+        if self.a_eval_grid not in {"quantile", "uniform"}:
+            raise ValueError("a_eval_grid must be 'quantile' or 'uniform'.")
+        if self.a_interp != "linear":
+            raise ValueError("a_interp must be 'linear'.")
+
+        requested_points = int(self.a_eval_num_points)
+        if self.a_eval_mode == "full" or t.size <= requested_points:
+            return t.copy(), {
+                "a_eval_mode": "full",
+                "a_eval_requested_num_points": requested_points,
+                "a_eval_selected_points": int(t.size),
+                "a_eval_grid": self.a_eval_grid,
+                "a_interp": self.a_interp,
+                "a_eval_used_acceleration": False,
+            }
+
+        n_eval = min(t.size, requested_points)
+        if self.a_eval_grid == "quantile":
+            idx = np.unique(np.round(np.linspace(0, t.size - 1, num=n_eval)).astype(int))
+            t_eval = t[idx]
+        else:
+            t_eval = np.linspace(float(t[0]), float(t[-1]), num=n_eval, dtype=float)
+        return np.asarray(t_eval, dtype=float), {
+            "a_eval_mode": "anchor_grid",
+            "a_eval_requested_num_points": requested_points,
+            "a_eval_selected_points": int(np.asarray(t_eval).shape[0]),
+            "a_eval_grid": self.a_eval_grid,
+            "a_interp": self.a_interp,
+            "a_eval_used_acceleration": True,
+        }
+
+    def _interpolate_eval_matrix(
+        self,
+        source_t: np.ndarray,
+        source_values: np.ndarray,
+        target_t: np.ndarray,
+    ) -> np.ndarray:
+        source_t = np.asarray(source_t, dtype=float).reshape(-1)
+        target_t = np.asarray(target_t, dtype=float).reshape(-1)
+        source_values = np.asarray(source_values, dtype=float)
+        if source_values.ndim != 2:
+            raise ValueError("source_values must have shape (n_eval, n_columns).")
+        if source_values.shape[0] != source_t.shape[0]:
+            raise ValueError("source_t and source_values must have the same first dimension.")
+        if source_t.shape[0] == target_t.shape[0] and np.array_equal(source_t, target_t):
+            return source_values.copy()
+
+        unique_t, unique_values = self._compress_duplicate_knots(source_t, source_values)
+        if unique_t.shape[0] == 1:
+            return np.repeat(unique_values, target_t.shape[0], axis=0)
+
+        interpolated = np.empty((target_t.shape[0], unique_values.shape[1]), dtype=float)
+        for col in range(unique_values.shape[1]):
+            interpolated[:, col] = np.interp(target_t, unique_t, unique_values[:, col])
+        return interpolated
+
+    def _compress_duplicate_knots(
+        self,
+        source_t: np.ndarray,
+        source_values: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        unique_t, inverse = np.unique(source_t, return_inverse=True)
+        if unique_t.shape[0] == source_t.shape[0]:
+            return unique_t, source_values
+
+        aggregated = np.zeros((unique_t.shape[0], source_values.shape[1]), dtype=float)
+        counts = np.zeros(unique_t.shape[0], dtype=float)
+        for row_idx, unique_idx in enumerate(inverse):
+            aggregated[unique_idx] += source_values[row_idx]
+            counts[unique_idx] += 1.0
+        aggregated /= counts[:, None]
+        return unique_t, aggregated
 
     def _kernel_sqrt_weights(self, t: np.ndarray, t0: float, bandwidth: float) -> np.ndarray:
         return kernel_sqrt_weights(t, t0, bandwidth, kernel="epanechnikov")

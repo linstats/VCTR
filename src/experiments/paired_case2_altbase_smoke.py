@@ -34,6 +34,10 @@ class Case2AltbaseSmokeConfig:
     R: int = 3
     S: int = 27
     p0: int = 4
+    a_eval_mode: str = "full"
+    a_eval_num_points: int = 500
+    a_eval_grid: str = "quantile"
+    a_interp: str = "linear"
     coef_type: str = "base1"
     beta_true: tuple[float, ...] | None = None
     sigma2: float = 1.0
@@ -59,6 +63,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--R", type=int, default=3)
     parser.add_argument("--S", type=int, default=27)
     parser.add_argument("--p0", type=int, default=4)
+    parser.add_argument("--a-eval-mode", type=str, default="full", choices=["full", "anchor_grid"])
+    parser.add_argument("--a-eval-num-points", type=int, default=500)
+    parser.add_argument("--a-eval-grid", type=str, default="quantile", choices=["quantile", "uniform"])
+    parser.add_argument("--a-interp", type=str, default="linear", choices=["linear"])
     parser.add_argument("--coef-type", type=str, default="base1")
     parser.add_argument(
         "--beta",
@@ -155,6 +163,10 @@ def build_config(args: argparse.Namespace) -> Case2AltbaseSmokeConfig:
         R=args.R,
         S=args.S,
         p0=args.p0,
+        a_eval_mode=args.a_eval_mode,
+        a_eval_num_points=args.a_eval_num_points,
+        a_eval_grid=args.a_eval_grid,
+        a_interp=args.a_interp,
         coef_type=args.coef_type,
         beta_true=parse_beta(args.beta, args.p0),
         sigma2=args.sigma2,
@@ -191,6 +203,10 @@ def run_case2_altbase_once(config: Case2AltbaseSmokeConfig):
 
     model = PairedEyeVCTRModel(
         covariance_mode=config.covariance_mode,
+        a_eval_mode=config.a_eval_mode,
+        a_eval_num_points=config.a_eval_num_points,
+        a_eval_grid=config.a_eval_grid,
+        a_interp=config.a_interp,
         signal_bandwidth=config.signal_bandwidth,
         signal_bandwidth_method=config.signal_bandwidth_method,
         signal_bandwidth_grid=config.signal_bandwidth_grid,
@@ -210,6 +226,12 @@ def run_case2_altbase_once(config: Case2AltbaseSmokeConfig):
         "R": config.R,
         "S": config.S,
         "p0": config.p0,
+        "a_eval_mode": result.initial.meta.get("a_eval_mode"),
+        "a_eval_requested_num_points": result.initial.meta.get("a_eval_requested_num_points"),
+        "a_eval_selected_points": result.initial.meta.get("a_eval_selected_points"),
+        "a_eval_grid": result.initial.meta.get("a_eval_grid"),
+        "a_interp": result.initial.meta.get("a_interp"),
+        "a_eval_used_acceleration": result.initial.meta.get("a_eval_used_acceleration"),
         "coef_type": config.coef_type,
         "beta_true": dataset.beta_true.tolist(),
         "sigma2": config.sigma2,
