@@ -6,7 +6,7 @@
 
 - `paired_case1_altbase_smoke.py`
   - 用于 alternative-base paired Case 1 设计的单次 smoke test。
-  - 使用较新的 `base1` 到 `base4` 系数函数设定，并采用了估计量 `\hat{\sigma}(t)`。
+  - 使用较新的 `base1` 到 `base6` 系数函数设定，并采用了估计量 `\hat{\sigma}(t)`。
 - `paired_case1_altbase_repetition.py`
   - 用于 alternative-base paired Case 1 设计的重复模拟主脚本。
   - 这是当前 2D-equivalent altbase varying-sigma 实验的主要入口脚本。
@@ -36,10 +36,11 @@
 常用数据生成参数：
 
 - `--n-subject` 或 `--n-subject-values`: subject 数量。
-- `--coef-type` 或 `--coef-types`: 系数函数类型，当前支持 `base1` 到 `base4`。
+- `--coef-type` 或 `--coef-types`: 系数函数类型，当前支持 `base1` 到 `base6`；脚本默认仍跑 `base1` 到 `base4`，A5/A6 需要显式传入 `base5 base6`。
 - `--R`, `--S`: reduced-feature 维度，其中 `A(t)` 与 `X^*` 的形状为 `R x S`。
 - `--p0`, `--beta`: 协变量维度与真实 `beta`。
 - `--sigma2`, `--rho` / `--rho-values`: paired-eye 误差方差与眼间相关。
+- `--sigma2-function` / `--sigma2-functions`: DGP 方差函数，支持 `constant`, `sin`, `sin2`, `mixed`。
 
 常用估计参数：
 
@@ -48,6 +49,15 @@
 - `--variance-bandwidth`: `sigma^2(t)` smoothing 的 bandwidth；constant covariance 模式下不使用。
 - `--ridge`: 数值稳定项。论文默认公式对应 `ridge = 0`；非零值应说明为稳定化选择。
 - `--n-jobs`: repetition 脚本的并行 worker 数。
+
+## Case 1 当前进度
+
+Case 1 altbase 现在分成两个结果方向：
+
+- A1-A4: `constant/sin/sin2/mixed` 四种 DGP variance 已跑完；其中 `sin/sin2/mixed` 的结果位于 `paired_case1_altbase_repetition/hpc_varying_var_retry1/`，已用于 LaTeX 表格补充。
+- A5-A6: `constant/sin/sin2/mixed` 四种 DGP variance 作为 HPC backfill 补跑，结果目录为 `paired_case1_altbase_repetition/hpc_base56_allsigma/`。
+
+LaTeX 表格生成和排版材料位于 `docs/0607-prorgress/`；HPC 提交模板和 seed 分段细节见 `hpc/README.md`。
 
 ## 可选函数绘图
 
@@ -133,6 +143,13 @@ HPC 审计与补跑附加输出：
 - `paired_case2_altbase_repetition/hpc_snapshot_*/audit/all_missing.csv`
 - `paired_case2_altbase_repetition/hpc_snapshot_*/audit/submit_backfill.sh`
 - `paired_case2_altbase_repetition/backfill_runs/<run_name>/results/raw_results.csv`
+
+Case 1 HPC 结果目录目前常见为：
+
+- `paired_case1_altbase_repetition/hpc_const_var/`: Case 1(a), A1-A4, constant DGP variance。
+- `paired_case1_altbase_repetition/hpc_varying_var_retry1/`: Case 1(b)-1(d), A1-A4, `sin/sin2/mixed` DGP variance；这批结果已用于 LaTeX 表格补充。
+- `paired_case1_altbase_repetition/hpc_base56_allsigma/`: A5-A6 的 `constant/sin/sin2/mixed` all-sigma HPC 补跑结果。
+- `paired_case1_altbase_repetition/summarize_hpc_varying_var.py`: 汇总多 part HPC 结果并生成 `results/summary_results.csv` 的脚本。
 
 Smoke 脚本还会保存：
 

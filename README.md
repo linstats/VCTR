@@ -30,7 +30,8 @@ $$
 
 - `\mathcal{A}(t)` 是随 `t` 变化的张量系数函数；
 - 同一受试者双眼误差需要按受试者内相关结构建模；
-- 当前 Python 主线默认采用 `exchangeable_varying_sigma`，即 `\sigma^2(t)` 随 `t` 变化，而 `\rho` 为共享常数；
+- 当前 Python 主线默认采用 `exchangeable_varying_sigma`，即 `\sigma^2(t)` 可随 `t` 变化，而 `\rho` 为共享常数；
+- 当前 Case 1 altbase DGP 支持 6 个系数函数 `base1` 到 `base6`，并支持 `sigma2_function = constant | sin | sin2 | mixed`；
 - `\boldsymbol{\beta}` 在当前实现中仍是全局常向量，不随 `t` 变化。
 
 当前 `src/` 中的实现遵循三阶段思路：
@@ -55,7 +56,7 @@ $$
 
 - 当前 paired-eye VCTR 的主开发线
 - 包含 paired 仿真、数据容器、模型、实验入口与通用工具
-- 当前实验主入口已切换到 altbase 版本，并以 `exchangeable_varying_sigma` 为默认正式方案
+- 当前实验主入口已切换到 altbase 版本，并以 `exchangeable_varying_sigma` 为默认正式方案；Case 1 altbase 现在同时覆盖 `base1` 到 `base6` 和 constant / time-varying DGP variance
 
 ### `hpc/`
 
@@ -77,4 +78,4 @@ $$
 - `archive/python_iid_vctr/` 保留旧的 Python `iid` 研究线
 - `src/` 默认面向 paired-eye VCTR
 - 当前 paired Python 主线已经实现 covariance-aware 的三阶段估计框架，并以 `exchangeable_varying_sigma` 为默认模式
-- 当前 paired 实验主入口为 `src/experiments/paired_case1_altbase_repetition.py`
+- 当前 paired 实验主入口为 `src/experiments/paired_case1_altbase_repetition.py`；该入口用于 Case 1 A1-A4 已完成的 varying-variance 汇总，也用于 A5-A6 的 all-sigma HPC 补跑

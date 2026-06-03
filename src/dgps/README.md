@@ -39,7 +39,8 @@
 - `A(t_i)`，形状为 `(R, S)`，并采用可分离结构
   - `A(t_i)[r, s] = base(t_i) * sqrt(r / R) * sqrt(s / S)`
 - paired-eye 噪声，服从 exchangeable covariance
-  - `Sigma = sigma2 * [[1, rho], [rho, 1]]`
+  - `Sigma_i = sigma2(t_i) * [[1, rho], [rho, 1]]`
+  - `sigma2(t)` 由 `sigma2_function` 控制，可为常数或随 `t` 变化
 
 默认参数为：
 
@@ -50,16 +51,19 @@
 - `coef_type = "base1"`
 - `beta_true = (2.0, 1.0, -1.0, 0.5)`（未显式传入时使用）
 - `sigma2 = 1.0`
+- `sigma2_function = "constant"`
 - `rho = 0.3`
 
-## Altbase 的 4 个 base
+## Altbase 的 6 个 base
 
-当前支持 4 个系数函数基底：
+当前支持 6 个系数函数基底：
 
 - `base1(t) = 5.0 * (t - 0.2)^2`
 - `base2(t) = exp(-((3t - 1)^2)) - 0.75`
 - `base3(t) = sin(2pi(t - 0.5))`
 - `base4(t) = 0.45 * base1(t) + 0.35 * base2(t) + 0.20 * base3(t)`
+- `base5(t) = 1.10 * exp(-0.5 * ((t - 0.30) / 0.08)^2) - 0.95 * exp(-0.5 * ((t - 0.72) / 0.11)^2)`
+- `base6(t) = 18.0 * (t - 0.2) * (t - 0.55) * (t - 0.85)`，并在当前样本的 `t` 网格上中心化
 
 因此 `coef_type` 必须是：
 
@@ -67,6 +71,19 @@
 - `base2`
 - `base3`
 - `base4`
+- `base5`
+- `base6`
+
+## DGP variance functions
+
+当前 DGP 方差函数由 `sigma2_function` 控制，支持：
+
+- `constant`: `sigma2(t) = sigma2`
+- `sin`: `sigma2(t) = sigma2 * (1 + 0.3 * sin(2pi t))`
+- `sin2`: `sigma2(t) = sigma2 * (0.5 + 0.5 * sin(pi t)^2)`
+- `mixed`: `sigma2(t) = sigma2 * (1 + 0.25 * cos(2pi t) + 0.1 * sin(4pi t))`
+
+这些函数只改变 DGP 的真实误差方差曲线；估计器仍通过 `exchangeable_varying_sigma` 从 stage-1 残差估计 `\hat{\sigma}^2(t)` 和共享 `\hat{\rho}`。
 
 ## 与 raw-tensor 设定的对应
 
@@ -117,7 +134,7 @@
 - 同样生成 `t_i ~ Uniform(0,1)`、`z_i ~ N(0, I_{p0})`
 - 同样直接生成 `X_{ij}^* ~ N(0, I)`，而不是显式 raw tensor
 - 同样使用 `A(t_i)[r,s] = base(t_i) * sqrt(r/R) * sqrt(s/S)`
-- 同样使用 `base1` 到 `base4`
+- 同样使用 `base1` 到 `base6`
 - 同样使用 paired-eye exchangeable covariance
 - 同样默认 `p0 = 4` 和 `beta_true = (2.0, 1.0, -1.0, 0.5)`
 
@@ -164,7 +181,7 @@
 
 - 默认规模不同
 - 旧版使用 `sqrt / quadratic / bump / sin` 这组 base
-- 当前 active 版本改成了 `base1` 到 `base4` 的新 altbase 设计
+- 当前 active 版本改成了 `base1` 到 `base6` 的新 altbase 设计
 - 当前 active 版本同时支持
   - `paired_case1_altbase.py`：2D-equivalent `R = 4, S = 25`
   - `paired_case2_altbase.py`：3D-equivalent `R = 3, S = 27`
