@@ -10,18 +10,33 @@
     \large\textsc{Simulation Ideas}
 \end{center}
 
-For each observation $i\in [n]$, denote by its tensor covariate $\mathcal{X}_i\in\bbR^{p_1\times\cdots\times p_D}$, one-way covariates $\mathbf{z}_i\in\bbR^{p_0}$, and two responses $y_{ij}\in\bbR$ where $j=1,2$ represents two eyes. Let $t\in[0,1]$ be the observation time, $\mathcal{A}(t)=(\alpha_{j_1,\dots,j_d}(t))\in\bbR^{p_1\times\cdots\times p_D}$ be the unknown tensor coefficient function, and $\bb\in\bbR^{p_0}$ be the coefficients. The model is assumed to be
+% For each observation $i\in [n]$, denote by its tensor covariate $\mathcal{X}_i\in\bbR^{p_1\times\cdots\times p_D}$, one-way covariates $\mathbf{z}_i\in\bbR^{p_0}$, and two responses $y_{ij}\in\bbR$ where $j=1,2$ represents two eyes. Let $t\in[0,1]$ be the observation time, $\mathcal{A}(t)=(\alpha_{j_1,\dots,j_d}(t))\in\bbR^{p_1\times\cdots\times p_D}$ be the unknown tensor coefficient function, and $\bb\in\bbR^{p_0}$ be the coefficients. The model is assumed to be
+The model is assumed to be
 \begin{align}
 \label{eq-model0}
 y_{ij}
-&= \left\langle \mathcal{X}_{ij}, \mathcal{A}(t_i) \right\rangle
-   + \mathbf{z}_i^\top \boldsymbol{\beta}
-   + \epsilon_{ij} = \sum_{s=1}^S
-   \left\langle \mathcal{X}_{ij}^{(s)}, \mathcal{A}^{(s)}(t_i) \right\rangle
-   + \mathbf{z}_i^\top \boldsymbol{\beta}
-   + \epsilon_{ij} \\
-\intertext{by a rank-$R$ CP decomposition, we can reorganize it in a matrix form}
-&\approx \sum_{s=1}^S \sum_{r=1}^R
+% &= \left\langle \mathcal{X}_{ij}, \mathcal{A}(t_i) \right\rangle
+%    + \mathbf{z}_i^\top \boldsymbol{\beta}
+%    + \epsilon_{ij} = \sum_{s=1}^S
+%    \left\langle \mathcal{X}_{ij}^{(s)}, \mathcal{A}^{(s)}(t_i) \right\rangle
+%    + \mathbf{z}_i^\top \boldsymbol{\beta}
+%    + \epsilon_{ij} \\
+% \intertext{by a rank-$R$ CP decomposition, we can reorganize it in a matrix form}
+% &\approx \sum_{s=1}^S \sum_{r=1}^R
+%    x_{ijrs}^{*}
+%    \left\langle
+%    \mathcal{U}_r^{(s)},
+%    \mathcal{A}^{(s)}(t_i)
+%    \right\rangle
+%    + \mathbf{z}_i^\top \boldsymbol{\beta}
+%    + \epsilon_{ij} 
+%    = \left\langle \mathbf{X}_{ij}^{*}, \mathbf{A}(t_i) \right\rangle
+%    + \mathbf{z}_i^\top \boldsymbol{\beta}
+%    + \epsilon_{ij},
+%    \nonumber
+= \left\langle \mathcal{X}_{ij}, \mathcal{A}(t_i) \right\rangle
++ \mathbf{z}_i^\top \boldsymbol{\beta} + \epsilon_{ij}
+\approx \sum_{s=1}^S \sum_{r=1}^R
    x_{ijrs}^{*}
    \left\langle
    \mathcal{U}_r^{(s)},
@@ -29,10 +44,9 @@ y_{ij}
    \right\rangle
    + \mathbf{z}_i^\top \boldsymbol{\beta}
    + \epsilon_{ij} 
-   = \left\langle \mathbf{X}_{ij}^{*}, \mathbf{A}(t_i) \right\rangle
+= \left\langle \mathbf{X}_{ij}^{*}, \mathbf{A}(t_i) \right\rangle
    + \mathbf{z}_i^\top \boldsymbol{\beta}
-   + \epsilon_{ij},
-   \nonumber
+   + \epsilon_{ij}
 \end{align}
 where matrix $\mathbf{X}_{ij}^{*}\coloneq(x_{ijrs}^*)\in\bbR^{R\times S}$, and $\mathbf{A}(t)\coloneq (\alpha_{rs}(t))\in\bbR^{R\times S}$ with $\alpha_{rs}(t)\coloneq \innerprod{\mathcal{U}_r^{(s)}}{\mathcal{A}^{(s)}(t)}$. Within one patient, the eyes are correlated by
 \begin{align*}
@@ -56,8 +70,8 @@ The tensor size is set to be $D=2$, $p_1=p_2=60$, and split by $p_1'=p_2'=12$ su
     x_{ijrs}^*\iid \normal(0,1).
 \end{align*}
 and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and obtained from the QR decomposition of a random matrix. The coefficient function is set to be $\mathcal{A}^{(s)}(t)=\sum_{r=1}^{R} \alpha_{rs}(t)\mathbf{x}_r^{(s1)}\circ \mathbf{x}_r^{(s2)}$ where $\alpha_{rs}(t)$ has 4 choices:
-\begin{align}
-    \label{eq-sim-coef1}
+\begin{align*}
+    % \label{eq-sim-coef1}
     &\alpha_{1rs}(t)=
     5\sqrt{\frac{rs}{RS}}(t-0.2)^2,\quad
     \alpha_{2rs}(t)=
@@ -71,15 +85,26 @@ and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and
     0.45\cdot 5(t-0.2)^2
     +0.35\bigl(e^{-(3t-1)^2}-0.75\bigr)
     +0.20\sin\bigl(2\pi(t-0.5)\bigr)
-    \Bigr].
-    \label{eq-sim-coef2}
-\end{align}
+    \Bigr],\\
+    &\alpha_{5rs}(t)=
+    \sqrt{\frac{rs}{RS}}
+    \Biggl[
+    1.10\exp\!\left\{-\frac{(t-0.30)^2}{2(0.08)^2}\right\}
+    -0.95\exp\!\left\{-\frac{(t-0.72)^2}{2(0.11)^2}\right\}
+    \Biggr],\\
+    &\alpha_{6rs}(t)=
+    \sqrt{\frac{rs}{RS}}
+    \Bigl[
+    18(t-0.2)(t-0.55)(t-0.85)-0.05
+    \Bigr]
+    % \label{eq-sim-coef2}
+\end{align*}
 The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix (iid entries) and $\bb=(2.0,1.0,-1.0,0.5)^\top$. We will vary $\sigma^2(t)$ to 4 subcases as Case 1(a)-(d).
 \begin{align}
     \sigma_0(t)\equiv 1,\quad
     \sigma_1(t)=1+0.3\sin(2\pi t),\quad
-    \sigma_2(t)=1+0.25\cos(2\pi t),\qandq
-    \sigma_3(t)=0.5+0.5\sin^2(\pi t)
+    \sigma_2(t)=1+0.25\cos(2\pi t)+0.1 \sin(4\pi t),\qandq
+    \sigma_3(t)=0.5+0.5\sin^2(\pi t).
 \end{align}
 
 \paragraph{Estimation Steps.} (1) We treat the paired data as iid, and get initial estimate $\hat{\mathbf{A}}^\dagger(t)$ and $\hat{\bb}^\dagger$. (2) Then estimate covariance structure $\hat{\sigma}^2(t)$ by eq(15)-(16) in AOAS draft.
@@ -117,6 +142,7 @@ The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix
 \paragraph{Simulation Results.} We vary $n=1000/2000$, coefficients $\alpha_{1rs}(t),\dots,\alpha_{4rs}(t)$, and correlation $\rho=0/0.3/0.6/0.9$. We report the error of both initial estimates $(\hat{\mathbf{A}}^\dagger,\;\hat{\bb}^\dagger)$ and final estimates $(\hat{\mathbf{A}}^*,\;\hat{\bb}^*)$, also the error of $(\hat{\sigma}^2, \hat{\rho})$.
 
 \input{paired_case1_tables.tex}
+\clearpage
 \input{appendix.tex}
 
 
