@@ -55,7 +55,7 @@
 Case 1 altbase 现在分成两个结果方向：
 
 - A1-A4: `constant/sin/sin2/mixed` 四种 DGP variance 已跑完；其中 `sin/sin2/mixed` 的结果位于 `paired_case1_altbase_repetition/hpc_varying_var_retry1/`，已用于 LaTeX 表格补充。
-- A5-A6: `constant/sin/sin2/mixed` 四种 DGP variance 作为 HPC backfill 补跑，结果目录为 `paired_case1_altbase_repetition/hpc_base56_allsigma/`。
+- A5-A6: `constant/sin/sin2/mixed` 四种 DGP variance 的 8-part HPC 补充实验已完成 merge，结果目录为 `paired_case1_altbase_repetition/hpc_base56_allsigma/`，并已用于 LaTeX 表格补充。
 
 LaTeX 表格生成和排版材料位于 `docs/0607-prorgress/`；HPC 提交模板和 seed 分段细节见 `hpc/README.md`。
 
@@ -148,8 +148,9 @@ Case 1 HPC 结果目录目前常见为：
 
 - `paired_case1_altbase_repetition/hpc_const_var/`: Case 1(a), A1-A4, constant DGP variance。
 - `paired_case1_altbase_repetition/hpc_varying_var_retry1/`: Case 1(b)-1(d), A1-A4, `sin/sin2/mixed` DGP variance；这批结果已用于 LaTeX 表格补充。
-- `paired_case1_altbase_repetition/hpc_base56_allsigma/`: A5-A6 的 `constant/sin/sin2/mixed` all-sigma HPC 补跑结果。
+- `paired_case1_altbase_repetition/hpc_base56_allsigma/`: A5-A6 的 `constant/sin/sin2/mixed` all-sigma HPC 补充实验结果；当前目录下已包含 merge 后的 `run_config.json`、`results/raw_results.csv`、`results/summary_results.csv` 和 `merge_meta.json`。
 - `paired_case1_altbase_repetition/summarize_hpc_varying_var.py`: 汇总多 part HPC 结果并生成 `results/summary_results.csv` 的脚本。
+- `paired_case1_altbase_repetition/summarize_hpc_base56_allsigma.py`: 汇总 `hpc_base56_allsigma/part1-8` 并生成总 `run_config.json`、`results/raw_results.csv`、`results/summary_results.csv` 和 `merge_meta.json` 的脚本。
 
 Smoke 脚本还会保存：
 

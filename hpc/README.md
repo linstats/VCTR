@@ -148,6 +148,8 @@ DRY_RUN=1 bash hpc/submit_paired_case1_altbase_varying_var_8parts.sh
   - `signal_bandwidth = 0.18`
   - `variance_bandwidth = 0.18`
   - `ridge = 1e-4`
+- 这套 `8` part 任务现已完成；本地合并结果目录为：
+  - `src/experiments/paired_case1_altbase_repetition/hpc_base56_allsigma/`
 
 ### `submit_paired_case1_altbase_base56_allsigma_8parts.sh`
 
@@ -174,6 +176,8 @@ DRY_RUN=1 bash hpc/submit_paired_case1_altbase_base56_allsigma_8parts.sh
 ```bash
 bash hpc/submit_paired_case1_altbase_base56_allsigma_8parts.sh
 ```
+
+- 当前这批提交已完成，并已用于生成 Case 1 `A_5/A_6` 的合并结果与 LaTeX 表格。
 
 ### `paired_case2_altbase_varsigma_parallel.pbs`
 
