@@ -48,7 +48,21 @@
 - `--signal-bandwidth`: `A(t)` local-linear smoothing 的 bandwidth；省略并提供 grid 时可触发 CV。
 - `--variance-bandwidth`: `sigma^2(t)` smoothing 的 bandwidth；constant covariance 模式下不使用。
 - `--ridge`: 数值稳定项。论文默认公式对应 `ridge = 0`；非零值应说明为稳定化选择。
+- `--a-eval-mode`: `A(t)` evaluation 模式，当前支持 `full` 和 `anchor_grid`；默认 `full`。
+- `--a-eval-num-points`: anchor-grid 模式下请求使用的 `t0` 点数；默认 `500`。
+- `--a-eval-grid`: anchor-grid 的取点方式；当前支持 `quantile` 和 `uniform`。
+- `--a-interp`: anchor-grid 回填到全部 `t_i` 时使用的插值方式；当前支持 `linear`。
+- `--prompt-accelerate-large-n`: 交互式 CLI 下，当 `n_subject > threshold` 时是否询问启用加速。
+- `--large-n-threshold`: 触发交互询问的大样本阈值；当前默认 `2000`。
 - `--n-jobs`: repetition 脚本的并行 worker 数。
+
+关于 anchor-grid acceleration：
+
+- 默认仍是 `full`，保证旧命令和历史实验结果口径不变。
+- `anchor_grid` 只减少 stage 1 / stage 3 的外层 `t0` evaluation 点数。
+- 实现方式是：先在 anchor 点估计 `A(t0)`，再插值回全部 `t_i`。
+- 当 `a_eval_num_points >= n_subject` 时，实际行为会退化为 full-eval。
+- 对 repetition 脚本，如果当前是交互式 CLI，且本次 run 的 `max(n_subject_values) > large_n_threshold`，并且用户没有显式传 `--a-eval-mode`，脚本会询问是否启用 `anchor_grid`。
 
 ## Case 1 当前进度
 
@@ -103,6 +117,26 @@ COEF_TYPE=base4 SEED=456 PLOT_A_INDICES=0:0,3:0,5:26 PLOT_MAX_A_PANELS=3 \
   bash src/experiments/run_case2_altbase_R6_S27_n5000_onefit_plot.sh
 ```
 
+如果想显式启用 anchor-grid acceleration，可以在 repetition 脚本中传入例如：
+
+```bash
+python src/experiments/paired_case2_altbase_repetition.py \
+  --n-subject-values 5000 \
+  --coef-types base5 \
+  --rho-values 0.6 \
+  --sigma2-functions mixed \
+  --n-rep 1 \
+  --R 6 \
+  --S 27 \
+  --covariance-mode exchangeable_varying_sigma \
+  --signal-bandwidth 0.18 \
+  --variance-bandwidth 0.18 \
+  --a-eval-mode anchor_grid \
+  --a-eval-num-points 500 \
+  --a-eval-grid quantile \
+  --a-interp linear
+```
+
 ## 归档脚本
 
 - `archive_const_var/paired_case1_smoke.py`
@@ -137,6 +171,11 @@ COEF_TYPE=base4 SEED=456 PLOT_A_INDICES=0:0,3:0,5:26 PLOT_MAX_A_PANELS=3 \
 - `plots/*_A_functions.png`，仅在传入 `--plot-functions` 时生成
 - `plots/*_sigma2_function.png`，仅在传入 `--plot-functions` 时生成
 
+当前 `raw_results.csv` / `summary_results.csv` 也会记录与加速模式相关的字段，例如：
+
+- `a_eval_mode`
+- `a_eval_selected_points`
+
 HPC 审计与补跑附加输出：
 
 - `paired_case2_altbase_repetition/hpc_snapshot_*/audit/part*_missing.csv`
@@ -160,6 +199,21 @@ Smoke 脚本还会保存：
 - `results/metrics.json`
 
 Repetition 脚本默认只保存汇总 CSV；需要保存每次重复的 dataset 或 estimate 时，分别传入 `--save-data` 或 `--save-estimates`。
+
+## 本地验证目录
+
+当前一个重要的本地算法验证目录是：
+
+- `paired_case2_altbase_repetition/anchor_check/`
+
+它用于对 `full` 与 `anchor_grid` 做大样本本地验证，当前包含：
+
+- `run_config.json`
+- `progress.json`
+- `results/raw_results.csv`
+- `results/summary_results.csv`
+- `plots/`
+- `README.md`
 
 ## 说明
 

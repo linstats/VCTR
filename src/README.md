@@ -47,6 +47,7 @@ src/
 
 - paired-eye VCTR 的核心模型模块
 - 包含结果对象、协方差估计 helper 与主 estimator
+- 当前主 estimator 已支持可选的 anchor-grid acceleration，用于大样本下减少 `A(t)` 的 evaluation 点数；默认仍为 `full`，保证旧实验兼容
 - 具体模型说明见 [src/models/README.md](/Users/lin/Desktop/Research/2026-tensor/src/models/README.md)
 
 ### `experiments/`
@@ -81,6 +82,7 @@ src/
   - 单次 smoke 运行，用于快速检查 3D-equivalent altbase paired Case 2 设计
 - `paired_case2_altbase_repetition.py`
   - Case 2 批量重复模拟入口
+- 当前 repetition 入口已支持可选的 anchor-grid acceleration 参数，并可在交互式大样本运行时询问是否启用
 
 所有当前主线实验脚本默认不画图；需要诊断函数估计时，通过 `--plot-functions` 显式打开。
 

@@ -310,6 +310,41 @@ $$
 - 与论文第 2.3 节的无正则化公式保持一致
 - 若手动设置为非零，应理解为数值稳定策略
 
+### `a_eval_*`
+
+这组参数控制 stage 1 和 stage 3 中 `A(t)` 的 evaluation grid。
+
+- `a_eval_mode`
+- `a_eval_num_points`
+- `a_eval_grid`
+- `a_interp`
+
+行为约定：
+
+- `a_eval_mode = "full"`
+  - 默认模式
+  - 在全部 subject 的 `t_i` 上直接估计 `A(t_i)`
+- `a_eval_mode = "anchor_grid"`
+  - 只在一组 anchor `t0` 上估计 `A(t0)`
+  - 再沿 `t` 轴插值回全部 `t_i`
+  - 当前首版只支持确定性的 `quantile` / `uniform` grid 和 `linear` interpolation
+
+其中：
+
+- `a_eval_num_points`
+  - 请求使用多少个 anchor evaluation points
+  - 若 `a_eval_num_points >= n_subject`，则实际行为退化为 full-eval
+- `a_eval_grid`
+  - 当前支持 `quantile` 和 `uniform`
+- `a_interp`
+  - 当前支持 `linear`
+
+这组参数只改变 stage 1 / stage 3 外层 `t0` 的估计点数，不改变：
+
+- stage 2 的 `\sigma^2(t)` kernel smoothing 路径
+- 最终输出 `A_hat` 的 shape；插值回填后仍是 `(n_subject, R, S)`
+- 默认结果口径；不显式启用时仍与旧实验兼容
+
 ## 6. 输出对象与结果解释
 
 调用：
@@ -340,12 +375,15 @@ result = model.fit(dataset)
 - stage 1
   - `signal_bandwidth_selected`
   - `signal_bandwidth_method`
+  - `a_eval_mode`
+  - `a_eval_selected_points`
   - `y_dagger`
 - stage 2
   - `variance_bandwidth_selected`
   - `variance_bandwidth_method`
   - `rho_clipped`
 - stage 3
+  - `a_eval_used_acceleration`
   - `y_star`
   - `Sigma_inv_blocks`
 
