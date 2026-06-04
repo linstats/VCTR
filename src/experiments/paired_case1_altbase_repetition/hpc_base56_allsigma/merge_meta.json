@@ -1,0 +1,69 @@
+{
+  "n_records": 1920,
+  "n_summary_rows": 64,
+  "parts": [
+    "part1",
+    "part2",
+    "part3",
+    "part4",
+    "part5",
+    "part6",
+    "part7",
+    "part8"
+  ],
+  "expected_total_records": 1920,
+  "missing_total_records": 0,
+  "part_record_counts": [
+    {
+      "part": "part1",
+      "expected_records": 256,
+      "actual_records": 256,
+      "missing_records": 0
+    },
+    {
+      "part": "part2",
+      "expected_records": 256,
+      "actual_records": 256,
+      "missing_records": 0
+    },
+    {
+      "part": "part3",
+      "expected_records": 256,
+      "actual_records": 256,
+      "missing_records": 0
+    },
+    {
+      "part": "part4",
+      "expected_records": 256,
+      "actual_records": 256,
+      "missing_records": 0
+    },
+    {
+      "part": "part5",
+      "expected_records": 256,
+      "actual_records": 256,
+      "missing_records": 0
+    },
+    {
+      "part": "part6",
+      "expected_records": 256,
+      "actual_records": 256,
+      "missing_records": 0
+    },
+    {
+      "part": "part7",
+      "expected_records": 192,
+      "actual_records": 192,
+      "missing_records": 0
+    },
+    {
+      "part": "part8",
+      "expected_records": 192,
+      "actual_records": 192,
+      "missing_records": 0
+    }
+  ],
+  "success_counts": {
+    "1": 1920
+  }
+}
