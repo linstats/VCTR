@@ -1,0 +1,29 @@
+{
+  "script": "src/experiments/paired_case2_altbase_repetition/test/test_anchor_eval_n5000_full_vs_anchor.py",
+  "created_at": "2026-06-04T11:41:40",
+  "run_name": "test_anchor_eval_n50_smoke",
+  "n_subject": 50,
+  "R": 6,
+  "S": 27,
+  "p0": 4,
+  "coef_type": "base5",
+  "rho": 0.6,
+  "sigma2": 1.0,
+  "sigma2_function": "mixed",
+  "beta": "2.0,1.0,-1.0,0.5",
+  "signal_bandwidth": 0.2,
+  "variance_bandwidth": 0.2,
+  "ridge": 0.0001,
+  "full_seeds": [
+    123,
+    124
+  ],
+  "anchor_seed_start": 123,
+  "anchor_seed_end": 124,
+  "anchor_points": [
+    10,
+    20
+  ],
+  "full_workers": 2,
+  "anchor_workers": 2
+}
