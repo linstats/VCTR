@@ -1,4 +1,5 @@
 \documentclass[10pt]{notes}
+\usepackage{graphicx}
 \usepackage{pdflscape}
 \usepackage{multirow}
 \usepackage{arydshln}
@@ -101,10 +102,10 @@ and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and
 \end{align*}
 The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix (iid entries) and $\bb=(2.0,1.0,-1.0,0.5)^\top$. We will vary $\sigma^2(t)$ to 4 subcases as Case 1(a)-(d).
 \begin{align}
-    \sigma_0(t)\equiv 1,\quad
-    \sigma_1(t)=1+0.3\sin(2\pi t),\quad
-    \sigma_2(t)=1+0.25\cos(2\pi t)+0.1 \sin(4\pi t),\qandq
-    \sigma_3(t)=0.5+0.5\sin^2(\pi t).
+    \sigma^2_0(t)\equiv 1,\quad
+    \sigma^2_1(t)=1+0.3\sin(2\pi t),\quad
+    \sigma^2_2(t)=1+0.25\cos(2\pi t)+0.1 \sin(4\pi t),\qandq
+    \sigma^2_3(t)=0.5+0.5\sin^2(\pi t).
 \end{align}
 
 \paragraph{Estimation Steps.} (1) We treat the paired data as iid, and get initial estimate $\hat{\mathbf{A}}^\dagger(t)$ and $\hat{\bb}^\dagger$. (2) Then estimate covariance structure $\hat{\sigma}^2(t)$ by eq(15)-(16) in AOAS draft.
@@ -142,8 +143,51 @@ The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix
 \paragraph{Simulation Results.} We vary $n=1000/2000$, coefficients $\alpha_{1rs}(t),\dots,\alpha_{4rs}(t)$, and correlation $\rho=0/0.3/0.6/0.9$. We report the error of both initial estimates $(\hat{\mathbf{A}}^\dagger,\;\hat{\bb}^\dagger)$ and final estimates $(\hat{\mathbf{A}}^*,\;\hat{\bb}^*)$, also the error of $(\hat{\sigma}^2, \hat{\rho})$.
 
 \input{paired_case1_tables.tex}
-\clearpage
-\input{appendix.tex}
 
+\clearpage
+% \noindent
+% We can find common patterns in Table 1-4:
+% \begin{enumerate}
+%     \setlength{\itemsep}{-3pt}
+%     \item When $\rho=0$, there is almost no difference between iid estimation $(\hat{\mathbf{A}}^\dagger(t), \hat{\bb}^\dagger)$ and paired estimation $(\hat{\mathbf{A}}^*(t), \hat{\bb}^*)$.
+%     \item The larger the $\rho$ is, the better the paired estimation $\hat{\mathbf{A}}^*(t)$ is than iid $\hat{\mathbf{A}}^\dagger(t)$.
+%     \item The larger the $\rho$ is, the harder it is to estimate both $\bb$ and the correlation $\rho$.
+%     \item All estimation errors generally decrease as $n$ increases.
+% \end{enumerate}
+\noindent
+Below we present three examples, with fitted-versus-true curves for $\mathbf{A}_2$, $\mathbf{A}_4$, and $\mathbf{A}_6$, respectively. These plots show that our method is effective across a range of different $\mathbf{A}(t)$ configurations.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{fig_case1_A_r01_s18.png}
+    \hfill
+    \includegraphics[width=0.48\textwidth]{fig_case1_A_r00_s13.png}
+
+    \vspace{0.8em}
+
+    \includegraphics[width=0.48\textwidth]{fig_case1_A_r02_s21.png}
+    \hfill
+    \includegraphics[width=0.48\textwidth]{fig_case1_A_r00_s05.png}
+    \caption{Selected estimated coefficient-function curves from Case 1.}
+\end{figure}
+
+\noindent
+We also present 3 examples of fitted-versus-true curves for $\sigma^2(t)$. They show that our method is effective for estimating the variance function across different settings.
+
+\begin{figure}[!htbp]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{fig_case1_sigma2_seed0127.png}
+        \caption{True $    \sigma^2(t)=1+0.3\sin(2\pi t)$.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{fig_case1_sigma2_seed0145.png}
+        \caption{True $\sigma^2(t)=0.5+0.5\sin^2(\pi t)$.}
+    \end{subfigure}
+    \caption{Selected estimated variance-function curves from Case 1.}
+\end{figure}
 
 \end{document}

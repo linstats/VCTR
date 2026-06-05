@@ -28,3 +28,6 @@ src/experiments/paired_case2_altbase_smoke/plots/
 
 # Test workspace
 tests/
+
+# Diagnostic full A-panel plot exports
+src/experiments/case1_2d_repetition/diagnostics/fit_plots/**/plots_all_A/
