@@ -9,7 +9,7 @@ DRY_RUN="${DRY_RUN:-0}"
 
 PBS_SCRIPT="${PBS_SCRIPT:-hpc/paired_case1_altbase_varying_var_parallel.pbs}"
 SIGMA2_FUNCTIONS="${SIGMA2_FUNCTIONS:-sin:sin2:mixed}"
-RUN_ROOT="${RUN_ROOT:-hpc_varying_var}"
+RUN_ROOT="${RUN_ROOT:-hpc_runs/a1a4_varying_sigma/hpc_raw_parts}"
 
 PART_REPS=(4 4 4 4 4 4 3 3)
 PART_SEEDS=(123 127 131 135 139 143 147 150)

@@ -54,8 +54,8 @@ src/
 
 - paired 仿真实验入口
 - 当前主要包括：
-  - `paired_case1_altbase_smoke.py`
-  - `paired_case1_altbase_repetition.py`
+  - `case1_2d_smoke.py`
+  - `case1_2d_repetition.py`
   - `paired_case2_altbase_smoke.py`
   - `paired_case2_altbase_repetition.py`
 - 支持可选绘图输出，用于检查估计的 `A[r,s](t)` 与 `sigma^2(t)`
@@ -73,9 +73,9 @@ src/
 
 ### 当前主线
 
-- `paired_case1_altbase_smoke.py`
+- `case1_2d_smoke.py`
   - 单次 smoke 运行，用于快速检查 altbase paired Case 1 设计能否跑通
-- `paired_case1_altbase_repetition.py`
+- `case1_2d_repetition.py`
   - 当前批量重复模拟入口
   - 也是当前 HPC varying-sigma 实验主入口
 - `paired_case2_altbase_smoke.py`

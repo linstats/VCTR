@@ -1,0 +1,46 @@
+{
+  "seed": 1,
+  "n_subject": 80,
+  "R": 4,
+  "S": 25,
+  "p0": 4,
+  "coef_type": "base1",
+  "beta_true": [
+    2.0,
+    1.0,
+    -1.0,
+    0.5
+  ],
+  "sigma2": 1.0,
+  "sigma2_function": "sin",
+  "covariance_mode": "exchangeable_varying_sigma",
+  "signal_bandwidth": 0.18,
+  "best_signal_bandwidth": 0.18,
+  "signal_bandwidth_method": "fixed",
+  "signal_bandwidth_grid": [
+    0.18
+  ],
+  "signal_bandwidth_cv_scores": [],
+  "variance_bandwidth": 0.18,
+  "best_variance_bandwidth": 0.18,
+  "variance_bandwidth_method": "fixed",
+  "variance_bandwidth_grid": [
+    0.18
+  ],
+  "variance_bandwidth_cv_scores": [],
+  "ridge": 0.0,
+  "miae_iid": 15.663483140833792,
+  "miae_final": 39.889954445673034,
+  "beta_rmse_iid": 16.72091049862257,
+  "beta_rmse_final": 5.922200767138174,
+  "sigma2_miae": 9606.11940618281,
+  "sigma2_rmise": 14731.789628451565,
+  "rho_error": 0.6990000000000001,
+  "rho_abs_error": 0.6990000000000001,
+  "rho_mae": 0.6990000000000001,
+  "rho_rmse": 0.6990000000000001,
+  "Sigma_fro_error": null,
+  "plot_paths": [
+    "/Users/lin/Desktop/Research/2026-tensor/src/experiments/case1_2d_smoke/plots/seed_0001_sigma2_function.png"
+  ]
+}

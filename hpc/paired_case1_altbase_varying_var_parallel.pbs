@@ -17,7 +17,7 @@ SEED_BASE="${SEED_BASE:-123}"
 SIGMA2_FUNCTIONS="${SIGMA2_FUNCTIONS:-sin:sin2:mixed}"
 SIGMA2_FUNCTION_LIST="${SIGMA2_FUNCTIONS//:/ }"
 PART_ID="${PART_ID:-1}"
-RUN_ROOT="${RUN_ROOT:-hpc_varying_var}"
+RUN_ROOT="${RUN_ROOT:-hpc_runs/a1a4_varying_sigma/hpc_raw_parts}"
 
 N_SUBJECT_VALUES="${N_SUBJECT_VALUES:-1000 2000}"
 COEF_TYPES="${COEF_TYPES:-base1 base2 base3 base4}"
@@ -56,7 +56,7 @@ for sigma2_function in ${SIGMA2_FUNCTION_LIST}; do
   run_name="${RUN_ROOT}/${sigma2_function}/part${PART_ID}"
   echo "[info] starting sigma2_function=${sigma2_function} run_name=${run_name} at $(date)"
 
-  python src/experiments/paired_case1_altbase_repetition.py \
+  python src/experiments/case1_2d_repetition.py \
     --n-subject-values ${N_SUBJECT_VALUES} \
     --coef-types ${COEF_TYPES} \
     --n-rep "$N_REP" \

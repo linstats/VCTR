@@ -4,10 +4,10 @@
 
 ## 当前脚本
 
-- `paired_case1_altbase_smoke.py`
+- `case1_2d_smoke.py`
   - 用于 alternative-base paired Case 1 设计的单次 smoke test。
   - 使用较新的 `base1` 到 `base6` 系数函数设定，并采用了估计量 `\hat{\sigma}(t)`。
-- `paired_case1_altbase_repetition.py`
+- `case1_2d_repetition.py`
   - 用于 alternative-base paired Case 1 设计的重复模拟主脚本。
   - 这是当前 2D-equivalent altbase varying-sigma 实验的主要入口脚本。
 - `paired_case2_altbase_smoke.py`
@@ -68,8 +68,8 @@
 
 Case 1 altbase 现在分成两个结果方向：
 
-- A1-A4: `constant/sin/sin2/mixed` 四种 DGP variance 已跑完；其中 `sin/sin2/mixed` 的结果位于 `paired_case1_altbase_repetition/hpc_varying_var_retry1/`，已用于 LaTeX 表格补充。
-- A5-A6: `constant/sin/sin2/mixed` 四种 DGP variance 的 8-part HPC 补充实验已完成 merge，结果目录为 `paired_case1_altbase_repetition/hpc_base56_allsigma/`，并已用于 LaTeX 表格补充。
+- A1-A4: `constant/sin/sin2/mixed` 四种 DGP variance 已跑完；结果现整理在 `case1_2d_repetition/hpc_runs/a1a4_constant/` 与 `case1_2d_repetition/hpc_runs/a1a4_varying_sigma/`。
+- A5-A6: `constant/sin/sin2/mixed` 四种 DGP variance 的 8-part HPC 补充实验已完成 merge，结果目录为 `case1_2d_repetition/hpc_runs/a5a6_allsigma/`。
 
 LaTeX 表格生成和排版材料位于 `docs/0607-prorgress/`；HPC 提交模板和 seed 分段细节见 `hpc/README.md`。
 
@@ -90,7 +90,7 @@ LaTeX 表格生成和排版材料位于 `docs/0607-prorgress/`；HPC 提交模�
 示例：画数学记号中的 `A[1,1](t)`、`A[4,1](t)` 和 `sigma^2(t)`，脚本中写成 0-based `0:0,3:0`。
 
 ```bash
-python src/experiments/paired_case1_altbase_repetition.py \
+python src/experiments/case1_2d_repetition.py \
   --n-subject-values 1000 \
   --coef-types base1 \
   --n-rep 1 \
@@ -155,8 +155,8 @@ python src/experiments/paired_case2_altbase_repetition.py \
 
 每个 `*_smoke.py` 或 `*_repetition.py` 脚本，都会把结果写到同目录下一个与脚本同名的输出文件夹中。例如：
 
-- `paired_case1_altbase_smoke.py` -> `paired_case1_altbase_smoke/`
-- `paired_case1_altbase_repetition.py` -> `paired_case1_altbase_repetition/`
+- `case1_2d_smoke.py` -> `case1_2d_smoke/`
+- `case1_2d_repetition.py` -> `case1_2d_repetition/`
 - `paired_case2_altbase_smoke.py` -> `paired_case2_altbase_smoke/`
 - `paired_case2_altbase_repetition.py` -> `paired_case2_altbase_repetition/`
 
@@ -185,11 +185,9 @@ HPC 审计与补跑附加输出：
 
 Case 1 HPC 结果目录目前常见为：
 
-- `paired_case1_altbase_repetition/hpc_const_var/`: Case 1(a), A1-A4, constant DGP variance。
-- `paired_case1_altbase_repetition/hpc_varying_var_retry1/`: Case 1(b)-1(d), A1-A4, `sin/sin2/mixed` DGP variance；这批结果已用于 LaTeX 表格补充。
-- `paired_case1_altbase_repetition/hpc_base56_allsigma/`: A5-A6 的 `constant/sin/sin2/mixed` all-sigma HPC 补充实验结果；当前目录下已包含 merge 后的 `run_config.json`、`results/raw_results.csv`、`results/summary_results.csv` 和 `merge_meta.json`。
-- `paired_case1_altbase_repetition/summarize_hpc_varying_var.py`: 汇总多 part HPC 结果并生成 `results/summary_results.csv` 的脚本。
-- `paired_case1_altbase_repetition/summarize_hpc_base56_allsigma.py`: 汇总 `hpc_base56_allsigma/part1-8` 并生成总 `run_config.json`、`results/raw_results.csv`、`results/summary_results.csv` 和 `merge_meta.json` 的脚本。
+- `case1_2d_repetition/hpc_runs/a1a4_constant/`: A1-A4 的 `constant` 结果；`results/` 为已合并结果，`hpc_raw_parts/` 为原始分 part 输出。
+- `case1_2d_repetition/hpc_runs/a1a4_varying_sigma/`: A1-A4 的 `sin/sin2/mixed` 结果；`results/` 为已合并结果，`hpc_raw_parts/` 为原始分 part 输出。
+- `case1_2d_repetition/hpc_runs/a5a6_allsigma/`: A5-A6 的 `constant/sin/sin2/mixed` 结果；`results/` 为已合并结果，`hpc_raw_parts/` 为原始分 part 输出。
 
 Smoke 脚本还会保存：
 
@@ -219,8 +217,8 @@ Repetition 脚本默认只保存汇总 CSV；需要保存每次重复的 dataset
 
 - `src/experiments` 是当前 active paired-eye 实验目录。
 - 当前主线实验入口是 altbase 版本：
-  - `paired_case1_altbase_smoke.py`
-  - `paired_case1_altbase_repetition.py`
+  - `case1_2d_smoke.py`
+  - `case1_2d_repetition.py`
   - `paired_case2_altbase_smoke.py`
   - `paired_case2_altbase_repetition.py`
 - 其中可按解释层区分为：

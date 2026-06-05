@@ -8,7 +8,7 @@ N_JOBS="${N_JOBS:-12}"
 DRY_RUN="${DRY_RUN:-0}"
 
 PBS_SCRIPT="${PBS_SCRIPT:-hpc/paired_case1_altbase_base56_allsigma_parallel.pbs}"
-RUN_ROOT="${RUN_ROOT:-hpc_base56_allsigma}"
+RUN_ROOT="${RUN_ROOT:-hpc_runs/a5a6_allsigma/hpc_raw_parts}"
 
 PART_REPS=(4 4 4 4 4 4 3 3)
 PART_SEEDS=(123 127 131 135 139 143 147 150)

@@ -14,7 +14,7 @@ CONDA_ENV_PATH="${CONDA_ENV_PATH:-$HOME/conda-envs/vctr-py310}"
 N_JOBS="${N_JOBS:-12}"
 N_REP="${N_REP:-4}"
 SEED_BASE="${SEED_BASE:-123}"
-RUN_ROOT="${RUN_ROOT:-hpc_base56_allsigma}"
+RUN_ROOT="${RUN_ROOT:-hpc_runs/a5a6_allsigma/hpc_raw_parts}"
 PART_ID="${PART_ID:-1}"
 
 N_SUBJECT_VALUES="${N_SUBJECT_VALUES:-1000 2000}"
@@ -53,7 +53,7 @@ echo "[info] n_subject_values=$N_SUBJECT_VALUES coef_types=$COEF_TYPES sigma2_fu
 echo "[info] R=$R S=$S p0=$P0 beta=$BETA sigma2=$SIGMA2 covariance_mode=$COVARIANCE_MODE"
 echo "[info] signal_bandwidth=$SIGNAL_BANDWIDTH variance_bandwidth=$VARIANCE_BANDWIDTH ridge=$RIDGE"
 
-python src/experiments/paired_case1_altbase_repetition.py \
+python src/experiments/case1_2d_repetition.py \
   --n-subject-values ${N_SUBJECT_VALUES} \
   --coef-types ${COEF_TYPES} \
   --sigma2-functions ${SIGMA2_FUNCTIONS} \

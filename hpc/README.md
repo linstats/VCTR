@@ -32,7 +32,7 @@ source activate $HOME/conda-envs/vctr-py310
 这个环境已验证可以运行：
 
 ```bash
-python src/experiments/paired_case1_altbase_repetition.py --help
+python src/experiments/case1_2d_repetition.py --help
 ```
 
 PBS 脚本不要假设继承交互 shell 环境；每个批处理脚本都应显式执行 `module purge`、`module load miniconda/4.12` 和 `source activate $HOME/conda-envs/vctr-py310`。
@@ -85,13 +85,13 @@ PBS 脚本不要假设继承交互 shell 环境；每个批处理脚本都应显
 
 - 当前 `paired_case1_altbase` time-varying DGP variance HPC 模板
 - 结果默认写到：
-  - `src/experiments/paired_case1_altbase_repetition/hpc_varying_var/<sigma2_function>/part<id>/`
+  - `src/experiments/case1_2d_repetition/hpc_runs/a1a4_varying_sigma/hpc_raw_parts/<sigma2_function>/part<id>/`
 - 默认资源：
   - `parallel`
   - `12` CPUs
   - `24gb` memory
   - `36h` walltime
-- 默认实验配置沿用 `hpc_const_var/run_config.json`：
+- 默认实验配置沿用 `case1_2d_repetition/hpc_runs/a1a4_constant/run_config.json`：
   - `n_subject = 1000 2000`
   - `coef_types = base1 base2 base3 base4`
   - `rho_values = 0.0 0.3 0.6 0.9`
@@ -130,7 +130,7 @@ DRY_RUN=1 bash hpc/submit_paired_case1_altbase_varying_var_8parts.sh
 
 - 当前 `paired_case1_altbase` A5/A6 all-sigma HPC 补跑模板
 - 结果默认写到：
-  - `src/experiments/paired_case1_altbase_repetition/hpc_base56_allsigma/part<id>/`
+  - `src/experiments/case1_2d_repetition/hpc_runs/a5a6_allsigma/hpc_raw_parts/part<id>/`
 - 默认资源：
   - `parallel`
   - `12` CPUs
@@ -149,7 +149,7 @@ DRY_RUN=1 bash hpc/submit_paired_case1_altbase_varying_var_8parts.sh
   - `variance_bandwidth = 0.18`
   - `ridge = 1e-4`
 - 这套 `8` part 任务现已完成；本地合并结果目录为：
-  - `src/experiments/paired_case1_altbase_repetition/hpc_base56_allsigma/`
+  - `src/experiments/case1_2d_repetition/hpc_runs/a5a6_allsigma/`
 
 ### `submit_paired_case1_altbase_base56_allsigma_8parts.sh`
 
@@ -295,9 +295,9 @@ qstat -fx <job_id>
 Case 1 repetition 输出监控：
 
 ```bash
-wc -l ~/2026-tensor/src/experiments/paired_case1_altbase_repetition/<run_name>/results/raw_results.csv
-tail -n 5 ~/2026-tensor/src/experiments/paired_case1_altbase_repetition/<run_name>/results/raw_results.csv
-find ~/2026-tensor/src/experiments/paired_case1_altbase_repetition/<run_name> -maxdepth 2 -type f | sort
+wc -l ~/2026-tensor/src/experiments/case1_2d_repetition/<run_name>/results/raw_results.csv
+tail -n 5 ~/2026-tensor/src/experiments/case1_2d_repetition/<run_name>/results/raw_results.csv
+find ~/2026-tensor/src/experiments/case1_2d_repetition/<run_name> -maxdepth 2 -type f | sort
 ```
 
 运行状态解释：

@@ -1,0 +1,49 @@
+{
+  "script": "src/experiments/case1_2d_repetition.py",
+  "created_at": "2026-06-03T00:27:52",
+  "run_name": "part4",
+  "total_jobs": 256,
+  "n_subject_values": [
+    1000,
+    2000
+  ],
+  "coef_types": [
+    "base5",
+    "base6"
+  ],
+  "n_rep": 4,
+  "seed_base": 135,
+  "R": 4,
+  "S": 25,
+  "p0": 4,
+  "beta": "2.0,1.0,-1.0,0.5",
+  "sigma2": 1.0,
+  "sigma2_function": null,
+  "sigma2_functions": [
+    "constant",
+    "sin",
+    "sin2",
+    "mixed"
+  ],
+  "rho": 0.3,
+  "rho_values": [
+    0.0,
+    0.3,
+    0.6,
+    0.9
+  ],
+  "covariance_mode": "exchangeable_varying_sigma",
+  "signal_bandwidth": 0.18,
+  "signal_bandwidth_method": "stage1_kfold_cv",
+  "signal_bandwidth_grid": null,
+  "variance_bandwidth": 0.18,
+  "variance_bandwidth_method": "stage2_kfold_cv",
+  "variance_bandwidth_grid": null,
+  "ridge": 0.0001,
+  "n_jobs": 12,
+  "save_data": false,
+  "save_estimates": false,
+  "plot_functions": false,
+  "plot_a_indices": "all",
+  "plot_max_a_panels": 16
+}
