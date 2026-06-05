@@ -9,7 +9,7 @@
 - 系数函数：`base1, base2, base3, base4`
 - 相关系数：`\rho = 0.0, 0.3, 0.6, 0.9`
 - 重复次数：每个 `(n, coef, rho)` 组合 `30` 次
-- 降维配置：`R = 3`, `S = 27`, `p0 = 4`
+- 降维配置：`R = 6`, `S = 27`, `p0 = 4`
 - 真值参数：`\beta = (2.0, 1.0, -1.0, 0.5)`, `\sigma^2 = 1.0`
 - 协方差模式：`exchangeable_varying_sigma`
 - 带宽：`signal_bandwidth = 0.20`, `variance_bandwidth = 0.20`

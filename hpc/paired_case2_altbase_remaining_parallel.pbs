@@ -1,0 +1,74 @@
+#!/bin/bash
+#PBS -N paired_c2_rem
+#PBS -q parallel
+#PBS -l select=1:ncpus=12:mem=16gb
+#PBS -l walltime=72:00:00
+#PBS -j oe
+
+set -euo pipefail
+
+PROJECT_ROOT="${PROJECT_ROOT:-$HOME/2026-tensor}"
+CONDA_MODULE="${CONDA_MODULE:-miniconda/4.12}"
+CONDA_ENV_PATH="${CONDA_ENV_PATH:-$HOME/conda-envs/vctr-py310}"
+
+N_JOBS="${N_JOBS:-12}"
+PART_ID="${PART_ID:-1}"
+RUN_ROOT="${RUN_ROOT:-hpc_case2_remaining}"
+MANIFEST_PATH="${MANIFEST_PATH:?MANIFEST_PATH must be provided}"
+
+R="${R:-6}"
+S="${S:-27}"
+P0="${P0:-4}"
+BETA="${BETA:-2.0,1.0,-1.0,0.5}"
+SIGMA2="${SIGMA2:-1.0}"
+COVARIANCE_MODE="${COVARIANCE_MODE:-exchangeable_varying_sigma}"
+SIGNAL_BANDWIDTH="${SIGNAL_BANDWIDTH:-0.18}"
+VARIANCE_BANDWIDTH="${VARIANCE_BANDWIDTH:-0.18}"
+RIDGE="${RIDGE:-1e-4}"
+
+A_EVAL_MODE="${A_EVAL_MODE:-anchor_grid}"
+A_EVAL_NUM_POINTS="${A_EVAL_NUM_POINTS:-500}"
+A_EVAL_GRID="${A_EVAL_GRID:-quantile}"
+A_INTERP="${A_INTERP:-linear}"
+
+module purge
+module load "$CONDA_MODULE"
+source activate "$CONDA_ENV_PATH"
+
+cd "$PROJECT_ROOT"
+
+RUN_NAME="${RUN_ROOT}/part${PART_ID}"
+
+echo "[info] host=$(hostname)"
+echo "[info] started_at=$(date)"
+echo "[info] project_root=$PROJECT_ROOT"
+echo "[info] conda_module=$CONDA_MODULE"
+echo "[info] conda_env_path=$CONDA_ENV_PATH"
+echo "[info] python=$(command -v python)"
+python --version
+echo "[info] n_jobs=$N_JOBS part_id=$PART_ID"
+echo "[info] run_root=$RUN_ROOT run_name=$RUN_NAME manifest_path=$MANIFEST_PATH"
+echo "[info] R=$R S=$S p0=$P0 beta=$BETA sigma2=$SIGMA2 covariance_mode=$COVARIANCE_MODE"
+echo "[info] signal_bandwidth=$SIGNAL_BANDWIDTH variance_bandwidth=$VARIANCE_BANDWIDTH ridge=$RIDGE"
+echo "[info] a_eval_mode=$A_EVAL_MODE a_eval_num_points=$A_EVAL_NUM_POINTS a_eval_grid=$A_EVAL_GRID a_interp=$A_INTERP"
+
+python src/experiments/paired_case2_altbase_repetition/paired_case2_altbase_manifest_run.py \
+  --manifest "$MANIFEST_PATH" \
+  --run-name "$RUN_NAME" \
+  --R "$R" \
+  --S "$S" \
+  --p0 "$P0" \
+  --a-eval-mode "$A_EVAL_MODE" \
+  --a-eval-num-points "$A_EVAL_NUM_POINTS" \
+  --a-eval-grid "$A_EVAL_GRID" \
+  --a-interp "$A_INTERP" \
+  --beta "$BETA" \
+  --sigma2 "$SIGMA2" \
+  --covariance-mode "$COVARIANCE_MODE" \
+  --signal-bandwidth "$SIGNAL_BANDWIDTH" \
+  --variance-bandwidth "$VARIANCE_BANDWIDTH" \
+  --ridge "$RIDGE" \
+  --n-jobs "$N_JOBS" \
+  --run-root src/experiments/paired_case2_altbase_repetition
+
+echo "[info] finished_at=$(date)"

@@ -203,6 +203,53 @@ bash hpc/submit_paired_case1_altbase_base56_allsigma_8parts.sh
   - 每个 part `3` reps
   - `12` CPUs + `16gb` + `36h`
 
+### `paired_case2_altbase_remaining_parallel.pbs`
+
+- 当前用于 Case 2 剩余任务补齐的正式 PBS 模板
+- 配合：
+  - `hpc/submit_paired_case2_altbase_remaining_8parts.sh`
+  - `src/experiments/paired_case2_altbase_repetition/build_remaining_manifests.py`
+  - `src/experiments/paired_case2_altbase_repetition/paired_case2_altbase_manifest_run.py`
+- 当前目标是只补齐：
+  - A1-A4 的 `sin/sin2/mixed`
+  - A5-A6 的 `constant/sin/sin2/mixed`
+- 默认资源：
+  - `parallel`
+  - `12` CPUs
+  - `16gb` memory
+  - `72h` walltime
+- 默认实验配置：
+  - `n_subject = 2000 5000`
+  - `rho_values = 0.0 0.3 0.6 0.9`
+  - `R = 6`, `S = 27`, `p0 = 4`
+  - `beta = 2.0,1.0,-1.0,0.5`
+  - `sigma2 = 1.0`
+  - `covariance_mode = exchangeable_varying_sigma`
+  - `signal_bandwidth = 0.18`
+  - `variance_bandwidth = 0.18`
+  - `ridge = 1e-4`
+  - `a_eval_mode = anchor_grid`
+  - `a_eval_num_points = 500`
+  - `a_eval_grid = quantile`
+  - `a_interp = linear`
+- 运行方式：
+  - 每个 PBS job 通过 `MANIFEST_PATH` 读取一份精确任务清单
+  - 不再按 `n_rep` 自动展开整块笛卡尔积
+
+### `submit_paired_case2_altbase_remaining_8parts.sh`
+
+- 当前用于提交 Case 2 剩余任务的便捷脚本
+- 先本地生成 `8` 份 manifest，再提交 `8` 个 PBS jobs
+- `8` 个 part 是严格等工作量分配，不是近似平均：
+  - 每个 part `600` 个 fit 任务
+  - 每个 part 含 `75` 个 `(coef_type, sigma2_function, seed)` bundle
+  - 其中：
+    - `45` 个 bundle 来自 A1-A4 varying-var
+    - `30` 个 bundle 来自 A5-A6 all-sigma
+- 默认输出：
+  - manifest：`src/experiments/paired_case2_altbase_repetition/remaining_manifests_anchor500_h018_R6/`
+  - run root：`src/experiments/paired_case2_altbase_repetition/hpc_case2_remaining_anchor500_h018_R6/`
+
 ### `paired_case2_altbase_backfill_parallel.pbs`
 
 - `paired_case2_altbase` 精确补跑的 PBS 模板
