@@ -1,0 +1,47 @@
+{
+  "seed": 145,
+  "n_subject": 2000,
+  "R": 4,
+  "S": 25,
+  "p0": 4,
+  "coef_type": "base2",
+  "beta_true": [
+    2.0,
+    1.0,
+    -1.0,
+    0.5
+  ],
+  "sigma2": 1.0,
+  "sigma2_function": "sin2",
+  "covariance_mode": "exchangeable_varying_sigma",
+  "signal_bandwidth": 0.18,
+  "best_signal_bandwidth": 0.18,
+  "signal_bandwidth_method": "fixed",
+  "signal_bandwidth_grid": [
+    0.18
+  ],
+  "signal_bandwidth_cv_scores": [],
+  "variance_bandwidth": 0.18,
+  "best_variance_bandwidth": 0.18,
+  "variance_bandwidth_method": "fixed",
+  "variance_bandwidth_grid": [
+    0.18
+  ],
+  "variance_bandwidth_cv_scores": [],
+  "ridge": 0.0,
+  "miae_iid": 0.02850810228379092,
+  "miae_final": 0.019283944185511968,
+  "beta_rmse_iid": 0.015304861133907345,
+  "beta_rmse_final": 0.012282464619266718,
+  "sigma2_miae": 0.04461581530410946,
+  "sigma2_rmise": 0.05004401383635342,
+  "rho_error": -0.12099481914934407,
+  "rho_abs_error": 0.12099481914934407,
+  "rho_mae": 0.12099481914934407,
+  "rho_rmse": 0.12099481914934407,
+  "Sigma_fro_error": null,
+  "plot_paths": [
+    "src/experiments/case1_2d_repetition/diagnostics/fit_plots/sigma_rmise__n2000_base2_sin2_rho0p9_seed145_rep2/plots/seed_0145_A_functions.png",
+    "src/experiments/case1_2d_repetition/diagnostics/fit_plots/sigma_rmise__n2000_base2_sin2_rho0p9_seed145_rep2/plots/seed_0145_sigma2_function.png"
+  ]
+}

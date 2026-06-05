@@ -28,6 +28,12 @@ from src.utils.plotting import parse_a_indices, save_function_plots
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=None,
+        help="Optional output directory. Defaults to the script-matched folder beside this file.",
+    )
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--n-subject", type=int, default=1000)
     parser.add_argument("--R", type=int, default=4)
@@ -196,7 +202,7 @@ def maybe_save_plots(output_root: Path, seed: int, dataset, result, args: argpar
 
 def main() -> None:
     args = parse_args()
-    output_root = Path(__file__).with_suffix("")
+    output_root = args.output_root if args.output_root is not None else Path(__file__).with_suffix("")
     beta_true = parse_beta(args.beta, args.p0)
     signal_bandwidth_grid = parse_bandwidth_grid(args.signal_bandwidth_grid)
     variance_bandwidth_grid = parse_bandwidth_grid(args.variance_bandwidth_grid)

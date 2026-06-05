@@ -1,0 +1,4 @@
+label,selection_rule,n_subject,coef_type,sigma2_function,rho,seed,rep
+A,good fit by miae_final / rmise_final,2000,base4,sin2,0.9,148,1
+sigma_miae,good fit by sigma2_miae excluding constant,2000,base6,sin,0.9,127,0
+sigma_rmise,good fit by sigma2_rmise excluding constant,2000,base2,sin2,0.9,145,2
