@@ -56,11 +56,11 @@ src/
 - 当前主要包括：
   - `case1_2d_smoke.py`
   - `case1_2d_repetition.py`
-  - `paired_case2_altbase_smoke.py`
-  - `paired_case2_altbase_repetition.py`
+  - `case2_3d_smoke.py`
+  - `case2_3d_repetition.py`
 - 支持可选绘图输出，用于检查估计的 `A[r,s](t)` 与 `sigma^2(t)`
 - 历史 constant variance 脚本及结果已归档到：
-  - `archive_const_var/`
+  - `archive/archive_method_is_const_var/`
 - 具体实验参数和输出说明见 [src/experiments/README.md](/Users/lin/Desktop/Research/2026-tensor/src/experiments/README.md)
 
 ### `utils/`
@@ -78,9 +78,9 @@ src/
 - `case1_2d_repetition.py`
   - 当前批量重复模拟入口
   - 也是当前 HPC varying-sigma 实验主入口
-- `paired_case2_altbase_smoke.py`
+- `case2_3d_smoke.py`
   - 单次 smoke 运行，用于快速检查 3D-equivalent altbase paired Case 2 设计
-- `paired_case2_altbase_repetition.py`
+- `case2_3d_repetition.py`
   - Case 2 批量重复模拟入口
 - 当前 repetition 入口已支持可选的 anchor-grid acceleration 参数，并可在交互式大样本运行时询问是否启用
 
@@ -88,10 +88,10 @@ src/
 
 ### 归档实验
 
-- `archive_const_var/paired_case1_smoke.py`
-- `archive_const_var/paired_case1_repetition.py`
-- `archive_const_var/paired_case2_smoke.py`
-- `archive_const_var/paired_case2_repetition.py`
+- `experiments/archive/archive_method_is_const_var/paired_case1_smoke.py`
+- `experiments/archive/archive_method_is_const_var/paired_case1_repetition.py`
+- `experiments/archive/archive_method_is_const_var/paired_case2_smoke.py`
+- `experiments/archive/archive_method_is_const_var/paired_case2_repetition.py`
 
 这些脚本已经不再是当前主线，原因是：
 

@@ -10,24 +10,12 @@
 - `case1_2d_repetition.py`
   - 用于 alternative-base paired Case 1 设计的重复模拟主脚本。
   - 这是当前 2D-equivalent altbase varying-sigma 实验的主要入口脚本。
-- `paired_case2_altbase_smoke.py`
+- `case2_3d_smoke.py`
   - 用于 3D-equivalent alternative-base paired Case 2 设计的单次 smoke test。
   - 默认对应 reduced-feature `R = 3, S = 27`。
-- `paired_case2_altbase_repetition.py`
+- `case2_3d_repetition.py`
   - 用于 3D-equivalent alternative-base paired Case 2 设计的重复模拟主脚本。
-  - 核心单次拟合逻辑复用了 `paired_case2_altbase_smoke.py`。
-- `paired_case2_altbase_repetition/audit_case2_hpc_parts.py`
-  - 用于审计 HPC 上中断/超时的 Case 2 part 结果快照。
-  - 根据 `run_config.json` 与 `results/raw_results.csv` 恢复理论任务集，并输出精确缺失清单与 backfill 提交脚本。
-- `paired_case2_altbase_repetition/paired_case2_altbase_backfill.py`
-  - 用于按缺失任务 manifest 精确补跑 Case 2 重复模拟。
-  - 不再依赖 `n_rep` 自动展开任务，而是逐条消费 `part,n_subject,coef_type,rho_true,rep,seed` 清单。
-- `paired_case2_altbase_repetition/merge_case2_hpc_parts.py`
-  - 用于把本地旧的 `part1-8` 中断快照、HPC backfill 的 `part1-8` 完整结果，以及 HPC 上完整的 `part9-10` 合并成一套最终结果。
-  - 合并键固定为 `(n_subject, coef_type, rho_true, rep, seed)`，并优先保留旧快照中已成功的 `part1-8` 记录。
-- `run_case2_altbase_R6_S27_n5000_onefit_plot.sh`
-  - Case 2 风格的单次 fit 便捷脚本，固定 `n = 5000, R = 6, S = 27` 并打开函数绘图。
-  - 内部调用 `paired_case2_altbase_repetition.py --n-rep 1`，因此会生成独立 `run_name` 输出目录。
+  - 核心单次拟合逻辑复用了 `case2_3d_smoke.py`。
 
 这 4 个脚本都采用当前 paired-eye altbase DGP，并默认使用 `varying_sigma` 工作流。
 
@@ -64,14 +52,34 @@
 - 当 `a_eval_num_points >= n_subject` 时，实际行为会退化为 full-eval。
 - 对 repetition 脚本，如果当前是交互式 CLI，且本次 run 的 `max(n_subject_values) > large_n_threshold`，并且用户没有显式传 `--a-eval-mode`，脚本会询问是否启用 `anchor_grid`。
 
-## Case 1 当前进度
+## 当前结果目录
 
-Case 1 altbase 现在分成两个结果方向：
+当前主线的批量实验结果已经分别整理到两个 repetition 目录下：
 
-- A1-A4: `constant/sin/sin2/mixed` 四种 DGP variance 已跑完；结果现整理在 `case1_2d_repetition/hpc_runs/a1a4_constant/` 与 `case1_2d_repetition/hpc_runs/a1a4_varying_sigma/`。
-- A5-A6: `constant/sin/sin2/mixed` 四种 DGP variance 的 8-part HPC 补充实验已完成 merge，结果目录为 `case1_2d_repetition/hpc_runs/a5a6_allsigma/`。
+- `case1_2d_repetition/`
+  - `raw_results.csv` / `summary_results.csv`
+    - Case 1 根目录汇总结果
+  - `hpc_runs/`
+    - 已完成的 HPC 汇总结果
+    - 当前主要包括 `a1a4_constant/`、`a1a4_varying_sigma/`、`a5a6_allsigma/`
+  - `diagnostics/`
+    - 诊断绘图与函数拟合可视化
+  - `test/`
+    - 本地 smoke、局部验证和临时试跑目录
 
-LaTeX 表格生成和排版材料位于 `docs/0607-prorgress/`；HPC 提交模板和 seed 分段细节见 `hpc/README.md`。
+- `case2_3d_repetition/`
+  - `raw_results.csv` / `summary_results.csv`
+    - Case 2 根目录汇总结果
+  - `hpc_runs/`
+    - 已完成的 HPC 汇总结果
+    - 当前主要包括 `a1a4_constant/` 与 `a1a4_varsigma_a5a6_allsigma/`
+  - `test/`
+    - 本地 anchor-grid 对比、局部 smoke 和临时试跑目录
+
+如果需要查看每个 repetition 目录内部的结果覆盖范围与汇总说明，优先阅读：
+
+- `case1_2d_repetition/README.md`
+- `case2_3d_repetition/README.md`
 
 ## 可选函数绘图
 
@@ -120,7 +128,7 @@ COEF_TYPE=base4 SEED=456 PLOT_A_INDICES=0:0,3:0,5:26 PLOT_MAX_A_PANELS=3 \
 如果想显式启用 anchor-grid acceleration，可以在 repetition 脚本中传入例如：
 
 ```bash
-python src/experiments/paired_case2_altbase_repetition.py \
+python src/experiments/case2_3d_repetition.py \
   --n-subject-values 5000 \
   --coef-types base5 \
   --rho-values 0.6 \
@@ -139,17 +147,14 @@ python src/experiments/paired_case2_altbase_repetition.py \
 
 ## 归档脚本
 
-- `archive_const_var/paired_case1_smoke.py`
-- `archive_const_var/paired_case1_repetition.py`
-- `archive_const_var/paired_case2_smoke.py`
-- `archive_const_var/paired_case2_repetition.py`
+- `archive/archive_method_is_const_var/`
 
-以上 4 个脚本已经归档，不再作为当前主线实验入口，原因是：
+以上文件夹不再作为当前主线实验入口，原因是：
 
 - 采用了 He Jiaxin 原文同一套 reduced-feature DGP 设定
 - 没有引入估计量 σ̂(t)
 
-对应的旧结果目录也一并保存在 `archive_const_var/` 下，供回溯和历史对照使用。
+对应的旧结果目录也一并保存在 `archive/archive_method_is_const_var/` 下，供回溯和历史对照使用。
 
 ## 输出文件夹
 
@@ -157,10 +162,10 @@ python src/experiments/paired_case2_altbase_repetition.py \
 
 - `case1_2d_smoke.py` -> `case1_2d_smoke/`
 - `case1_2d_repetition.py` -> `case1_2d_repetition/`
-- `paired_case2_altbase_smoke.py` -> `paired_case2_altbase_smoke/`
-- `paired_case2_altbase_repetition.py` -> `paired_case2_altbase_repetition/`
+- `case2_3d_smoke.py` -> `case2_3d_smoke/`
+- `case2_3d_repetition.py` -> `case2_3d_repetition/`
 
-对于归档脚本，如果再次运行，则输出也会写到 `archive_const_var/` 目录体系下。
+对于归档脚本，如果再次运行，则输出也会写到 `archive/archive_method_is_const_var/` 目录体系下。
 
 常见输出包括：
 
@@ -176,33 +181,13 @@ python src/experiments/paired_case2_altbase_repetition.py \
 - `a_eval_mode`
 - `a_eval_selected_points`
 
-HPC 审计与补跑附加输出：
-
-- `paired_case2_altbase_repetition/hpc_snapshot_*/audit/part*_missing.csv`
-- `paired_case2_altbase_repetition/hpc_snapshot_*/audit/all_missing.csv`
-- `paired_case2_altbase_repetition/hpc_snapshot_*/audit/submit_backfill.sh`
-- `paired_case2_altbase_repetition/backfill_runs/<run_name>/results/raw_results.csv`
-
-Case 1 HPC 结果目录目前常见为：
-
-- `case1_2d_repetition/hpc_runs/a1a4_constant/`: A1-A4 的 `constant` 结果；`results/` 为已合并结果，`hpc_raw_parts/` 为原始分 part 输出。
-- `case1_2d_repetition/hpc_runs/a1a4_varying_sigma/`: A1-A4 的 `sin/sin2/mixed` 结果；`results/` 为已合并结果，`hpc_raw_parts/` 为原始分 part 输出。
-- `case1_2d_repetition/hpc_runs/a5a6_allsigma/`: A5-A6 的 `constant/sin/sin2/mixed` 结果；`results/` 为已合并结果，`hpc_raw_parts/` 为原始分 part 输出。
-
-Smoke 脚本还会保存：
-
-- `data/seed_XXXX_dataset.npz`
-- `estimates/seed_XXXX_estimate.npz`
-- `results/summary.json`
-- `results/metrics.json`
-
 Repetition 脚本默认只保存汇总 CSV；需要保存每次重复的 dataset 或 estimate 时，分别传入 `--save-data` 或 `--save-estimates`。
 
 ## 本地验证目录
 
 当前一个重要的本地算法验证目录是：
 
-- `paired_case2_altbase_repetition/anchor_check/`
+- `case2_3d_repetition/test/anchor_check/`
 
 它用于对 `full` 与 `anchor_grid` 做大样本本地验证，当前包含：
 
@@ -212,18 +197,3 @@ Repetition 脚本默认只保存汇总 CSV；需要保存每次重复的 dataset
 - `results/summary_results.csv`
 - `plots/`
 - `README.md`
-
-## 说明
-
-- `src/experiments` 是当前 active paired-eye 实验目录。
-- 当前主线实验入口是 altbase 版本：
-  - `case1_2d_smoke.py`
-  - `case1_2d_repetition.py`
-  - `paired_case2_altbase_smoke.py`
-  - `paired_case2_altbase_repetition.py`
-- 其中可按解释层区分为：
-  - Case 1 altbase: 2D-equivalent 设计，默认 `R = 4, S = 25`
-  - Case 2 altbase: 3D-equivalent 设计，默认 `R = 3, S = 27`
-- 这两条线在代码实现上都属于 reduced-feature paired DGP，不显式生成 raw tensor。
-- `archive_const_var/` 保存旧的 constant / non-`\hat{\sigma}(t)` 实验脚本与结果。
-- 旧的 iid reproduction 脚本仍然归档保存在 `archive/python_iid_vctr/src/experiments/` 下。

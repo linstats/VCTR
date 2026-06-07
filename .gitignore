@@ -21,13 +21,16 @@ src/experiments/paired_case1_altbase_smoke/data/
 src/experiments/paired_case1_altbase_smoke/estimates/
 src/experiments/paired_case1_altbase_smoke/results/
 src/experiments/paired_case1_altbase_smoke/plots/
-src/experiments/paired_case2_altbase_smoke/data/
-src/experiments/paired_case2_altbase_smoke/estimates/
-src/experiments/paired_case2_altbase_smoke/results/
-src/experiments/paired_case2_altbase_smoke/plots/
+src/experiments/case2_3d_smoke/data/
+src/experiments/case2_3d_smoke/estimates/
+src/experiments/case2_3d_smoke/results/
+src/experiments/case2_3d_smoke/plots/
 
 # Test workspace
 tests/
+src/experiments/case1_2d_repetition/test/
+src/experiments/case2_3d_repetition/test/
+src/experiments/archive/
 
 # Diagnostic full A-panel plot exports
 src/experiments/case1_2d_repetition/diagnostics/fit_plots/**/plots_all_A/
