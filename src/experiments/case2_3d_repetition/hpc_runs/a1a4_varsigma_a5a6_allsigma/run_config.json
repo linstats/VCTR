@@ -1,0 +1,218 @@
+{
+  "script": "src/experiments/case2_3d_repetition/hpc_runs/a1a4_varsigma_a5a6_allsigma/build_run_config_and_merge_results.py",
+  "created_at": "2026-06-07T10:54:51",
+  "source_parts_root": "src/experiments/case2_3d_repetition/hpc_runs/a1a4_varsigma_a5a6_allsigma/hpc_raw_parts",
+  "source_part_names": [
+    "part1",
+    "part2",
+    "part3",
+    "part4",
+    "part5",
+    "part6",
+    "part7",
+    "part8"
+  ],
+  "part_count": 8,
+  "task_count_per_part": [
+    600
+  ],
+  "total_task_count": 4800,
+  "total_completed_jobs": 4800,
+  "total_success": 4800,
+  "total_fail": 0,
+  "bundle_blocks": [
+    "a1a4_varying_var",
+    "a5a6_allsigma"
+  ],
+  "coverage_by_block": {
+    "a1a4_varying_var": {
+      "coef_types": [
+        "base1",
+        "base2",
+        "base3",
+        "base4"
+      ],
+      "sigma2_functions": [
+        "mixed",
+        "sin",
+        "sin2"
+      ],
+      "n_subject_values": [
+        2000,
+        5000
+      ],
+      "rho_values": [
+        0.0,
+        0.3,
+        0.6,
+        0.9
+      ],
+      "n_rep": 30,
+      "n_unique_configs": 96,
+      "task_count": 2880
+    },
+    "a5a6_allsigma": {
+      "coef_types": [
+        "base5",
+        "base6"
+      ],
+      "sigma2_functions": [
+        "constant",
+        "mixed",
+        "sin",
+        "sin2"
+      ],
+      "n_subject_values": [
+        2000,
+        5000
+      ],
+      "rho_values": [
+        0.0,
+        0.3,
+        0.6,
+        0.9
+      ],
+      "n_rep": 30,
+      "n_unique_configs": 64,
+      "task_count": 1920
+    }
+  },
+  "n_subject_values": [
+    2000,
+    5000
+  ],
+  "coef_types": [
+    "base1",
+    "base2",
+    "base3",
+    "base4",
+    "base5",
+    "base6"
+  ],
+  "sigma2_functions": [
+    "constant",
+    "mixed",
+    "sin",
+    "sin2"
+  ],
+  "rho_values": [
+    0.0,
+    0.3,
+    0.6,
+    0.9
+  ],
+  "rep_values": [
+    0,
+    29
+  ],
+  "seed_values": [
+    123,
+    152
+  ],
+  "n_unique_manifest_tasks": 4800,
+  "n_unique_summary_configs": 160,
+  "n_rep_per_summary_config": [
+    30
+  ],
+  "R": 6,
+  "S": 27,
+  "p0": 4,
+  "a_eval_mode": "anchor_grid",
+  "a_eval_num_points": 500,
+  "a_eval_grid": "quantile",
+  "a_interp": "linear",
+  "beta": "2.0,1.0,-1.0,0.5",
+  "sigma2": 1.0,
+  "covariance_mode": "exchangeable_varying_sigma",
+  "ridge": 0.0001,
+  "n_jobs_per_part": [
+    12
+  ],
+  "requested_signal_bandwidth": 0.18,
+  "requested_signal_bandwidth_method": "stage1_kfold_cv",
+  "requested_variance_bandwidth": 0.18,
+  "requested_variance_bandwidth_method": "stage2_kfold_cv",
+  "actual_signal_bandwidth_methods_in_results": [
+    "fixed"
+  ],
+  "actual_variance_bandwidth_methods_in_results": [
+    "fixed"
+  ],
+  "actual_best_signal_bandwidth_values": [
+    0.18
+  ],
+  "actual_best_variance_bandwidth_values": [
+    0.18
+  ],
+  "notes": [
+    "This directory contains the remaining Case 2 jobs after the earlier base1-base4 constant-variance run.",
+    "Coverage is base1-base4 with sigma2_function in {sin, sin2, mixed} plus base5-base6 with sigma2_function in {constant, sin, sin2, mixed}.",
+    "Part run_config.json files still record stage1_kfold_cv/stage2_kfold_cv as requested methods, but the realized raw results use fixed bandwidths with h = 0.18 and hbar = 0.18."
+  ],
+  "manifest_summary": [
+    {
+      "part": 1,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 2,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 3,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 4,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 5,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 6,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 7,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    },
+    {
+      "part": 8,
+      "task_count": 600,
+      "a1a4_bundle_count": 45,
+      "a5a6_bundle_count": 30,
+      "seed_min": 123,
+      "seed_max": 152
+    }
+  ]
+}
