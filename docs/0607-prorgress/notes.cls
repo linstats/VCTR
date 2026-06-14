@@ -13,6 +13,19 @@
                 wrapfig, multicol, url, tikz, enumitem, hyperref, pifont,
                 setspace, subcaption}
 
+% % Add Chinese support
+\usepackage{fontspec} % For font selection
+\usepackage{xeCJK}
+\IfFontExistsTF{Kaiti SC}{%
+  \setCJKmainfont{Kaiti SC}%
+  \setCJKmonofont{Kaiti SC}%
+  \newcommand{\customkaifont}{Kaiti SC}%
+}{%
+  \setCJKmainfont{FandolKai-Regular.otf}%
+  \setCJKmonofont{FandolKai-Regular.otf}%
+  \newcommand{\customkaifont}{FandolKai-Regular.otf}%
+}
+
 % Make subsection section
 \renewcommand{\thesubsection}{\arabic{subsection}}
 
@@ -37,7 +50,7 @@
 \fancypagestyle{firstpage}{ % Define a custom style for the first page
     \fancyhf{}
     \lhead{
-      \textsc{Project: Varying Coef Tensor Reg (VCTR)}
+      \textsc{ST6102 - Statistical Theorey II}
     }
     \rhead{
       \textsc{Student: \href{mailto:xuelin@u.nus.edu}{Zhu Xuelin}}
@@ -206,6 +219,126 @@
   }%
 }
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%% Math Environments %%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \definecolor{thm-red1}{rgb}{0.99609375, 0.8671875, 0.87109375} % Colors
+% \definecolor{thm-red2}{rgb}{0.98046875, 0, 0.0234375}
+% \definecolor{def-brown1}{rgb}{0.953125, 0.9453125, 0.8671875}
+% \definecolor{def-brown2}{rgb}{0.74609375, 0.2578125, 0.01171875}
+% \definecolor{thm-blue1}{rgb}{0.8828125, 0.98828125, 0.9921875}
+% \definecolor{thm-blue2}{rgb}{0, 0.515625, 0.7578125}
+% \definecolor{lemma-blue1}{rgb}{0.8828125, 0.98828125, 0.9921875}
+% \definecolor{lemma-blue2}{rgb}{0, 0.515625, 0.7578125}
+% \definecolor{cor-yellow1}{rgb}{0.99609375, 0.99609375, 0.87109375}
+% \definecolor{cor-yellow2}{rgb}{0.99609375, 0.99609375, 0.03515625}
+% \definecolor{prop-green1}{rgb}{0.875, 0.99609375, 0.87109375}
+% \definecolor{prop-green2}{rgb}{0.05859375, 0.4375, 0}
+% \definecolor{prob-brown}{rgb}{0.9921875, 0.953125, 0.87109375}
+
+% % Define the 'theorem' environment first with the box styling
+% \newtheorem{theorem}{Theorem} % Start with 'theorem' to define the counter
+% \tcolorboxenvironment{theorem}{%
+%   boxrule=0pt,
+%   boxsep=2pt,
+%   colback={thm-red1},
+%   enhanced jigsaw,
+%   borderline west={2pt}{0pt}{thm-red2},
+%   sharp corners,
+%   before skip=10pt,
+%   after skip=10pt,
+%   breakable,
+% }
+
+% % General macro for math environments (with shared indexing)
+% \newcommand{\createMathEnvironment}[4]{%
+%   \newtheorem{#1}[theorem]{#2} % Share the counter of the 'theorem' environment
+%   \tcolorboxenvironment{#1}{%
+%     boxrule=0pt,
+%     boxsep=2pt,
+%     colback=#3,
+%     enhanced jigsaw,
+%     borderline west={2pt}{0pt}{#4},
+%     sharp corners,
+%     before skip=10pt,
+%     after skip=10pt,
+%     breakable,
+%   }
+% }
+
+% % Use the macro to define the other environments, all sharing the same counter
+% \createMathEnvironment{proposition}{Proposition}{prop-green1}{prop-green2}
+% \createMathEnvironment{corollary}{Corollary}{prop-green1}{prop-green2}
+% \createMathEnvironment{lemma}{Lemma}{lemma-blue1}{lemma-blue2}
+
+% % Define the 'definition' environment first with the box styling without italic
+% \newcommand{\createNonItalicMathEnvironment}[4]{%
+%   \theoremstyle{definition} % Ensure non-italic style
+%   \newtheorem{#1}[theorem]{#2} % Share the counter with 'theorem'
+%   \tcolorboxenvironment{#1}{%
+%     boxrule=0pt,
+%     boxsep=2pt,
+%     colback=#3,
+%     enhanced jigsaw,
+%     borderline west={2pt}{0pt}{#4},
+%     sharp corners,
+%     before skip=10pt,
+%     after skip=10pt,
+%     breakable,
+%   }
+% }
+
+% % Create the non-italic environments with the box styling
+% \createNonItalicMathEnvironment{definition}{Definition}{def-brown1}{def-brown2}
+% \createNonItalicMathEnvironment{algorithm}{Algorithm}{lemma-blue1}{lemma-blue2}
+% \createNonItalicMathEnvironment{problem}{Problem}{prob-brown}{prob-brown}
+% \createNonItalicMathEnvironment{question}{Question}{prob-brown}{prob-brown}
+% \createNonItalicMathEnvironment{assumption}{Assumption}{cor-yellow1}{cor-yellow2}
+% \createNonItalicMathEnvironment{setup}{Problem Setup}{def-brown1}{def-brown2}
+% \createNonItalicMathEnvironment{example-c}{Example}{lemma-blue1}{lemma-blue2}
+
+% % Other environments
+% \newtheorem*{remark}{Remark}
+% \newtheorem{example}{Example}
+% \newtheorem*{solution}{Solution}
+
+% \newtheorem{innercustomque}{Question} % Self-index questions
+% \newenvironment{iquestion}[1]
+%   {\renewcommand\theinnercustomque{#1}\innercustomque}
+%   {\endinnercustomque}
+%  \tcolorboxenvironment{iquestion}{
+% 	boxrule=0pt,
+% 	boxsep=2pt,
+% 	colback={prob-brown},
+% 	enhanced jigsaw, 
+% 	borderline west={2pt}{0pt}{prob-brown},
+% 	sharp corners,
+% 	before skip=10pt,
+% 	after skip=10pt,
+% 	breakable,
+% 	}
+
+% % \newtheorem{innercustomque}{Example} % Self-index examples
+% % \newenvironment{iexample}[1]
+% %   {\renewcommand\theinnercustomque{#1}\innercustomque}
+% %   {\endinnercustomque}
+
+% \newtheorem*{continuancex}{Ctd. Question \continuanceref} % Continued questions
+% \newenvironment{continuance}[1]
+%   {\newcommand\continuanceref{\ref{#1}}\continuancex}
+%   {\endcontinuancex}
+% \tcolorboxenvironment{continuance}{
+% 	boxrule=0pt,
+% 	boxsep=2pt,
+% 	colback={prob-brown},
+% 	enhanced jigsaw, 
+% 	borderline west={2pt}{0pt}{prob-brown},
+% 	sharp corners,
+% 	before skip=10pt,
+% 	after skip=10pt,
+% 	breakable,
+% 	}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%% Math Environments %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -325,3 +458,36 @@
 	after skip=10pt,
 	breakable,
 	}
+
+% Create a macro for creating Chinese environments (theorem, corollary, lemma, proposition)
+\newcommand{\createChineseMathEnvironment}[3]{%
+  \newtheoremstyle{#1-zh}
+    {\topsep} % space above
+    {\topsep} % space below
+    {\fontspec{\customkaifont}\selectfont} % Prefer macOS fonts, fallback to TeX Live Fandol
+    {} % indent
+    {\bfseries} % header font
+    {.} % punctuation
+    {.5em} % space after header
+    {}
+  
+  \theoremstyle{#1-zh}
+  \newtheorem{#1-zh}[theorem]{#2} % Share the same counter as 'theorem'
+  \tcolorboxenvironment{#1-zh}{%
+    boxrule=0pt,
+    boxsep=2pt,
+    colback={#3},
+    enhanced jigsaw,
+    borderline west={2pt}{0pt}{#3},
+    sharp corners,
+    before skip=10pt,
+    after skip=10pt,
+    breakable,
+  }
+}
+
+% Create the Chinese versions of the theorem, corollary, lemma, and proposition using the macro
+\createChineseMathEnvironment{theorem}{Theorem}{thm-red1}
+\createChineseMathEnvironment{corollary}{Corollary}{cor-yellow1}
+\createChineseMathEnvironment{lemma}{Lemma}{lemma-blue1}
+\createChineseMathEnvironment{proposition}{Proposition}{prop-green1}
