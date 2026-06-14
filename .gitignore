@@ -30,7 +30,15 @@ src/experiments/case2_3d_smoke/plots/
 tests/
 src/experiments/case1_2d_repetition/test/
 src/experiments/case2_3d_repetition/test/
+!src/experiments/case2_3d_repetition/test/
+src/experiments/case2_3d_repetition/test/*
+!src/experiments/case2_3d_repetition/test/test_base5_small_h_pilot.py
+!src/experiments/case2_3d_repetition/test/test_base5_signal_bandwidth_grid.py
 src/experiments/archive/
+
+# Generated Case 2 complex-bandwidth HPC artifacts
+src/experiments/case2_3d_repetition/hpc_runs/a3a5a6_small_h_sensitivity/*
+!src/experiments/case2_3d_repetition/hpc_runs/a3a5a6_small_h_sensitivity/README.md
 
 # Diagnostic full A-panel plot exports
 src/experiments/case1_2d_repetition/diagnostics/fit_plots/**/plots_all_A/
