@@ -248,15 +248,6 @@ The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix
 
 \input{paired_case2_tables.tex}
 
-\clearpage
-\noindent
-{\color{red}
-两个发现：
-\begin{itemize}
-    \item 在配对算法$\mathbf{A}^*$与iid算法$\mathbf{A}^\dagger$的比较上：
-    $\mathbf{A}_1(t)$、$\mathbf{A}_2(t)$、$\mathbf{A}_4(t)$ 在 $\rho\geq 0.3$ 时，配对算法就已经超越iid算法；而 $\mathbf{A}_3(t)$、$\mathbf{A}_5(t)$、$\mathbf{A}_6(t)$ 通常需要更大的 $\rho$，其中 $\mathbf{A}_5(t)$ 的改善最弱。
-    \item 在$\sigma^2(t)$的估计上：$\mathbf{A}_3(t)$、$\mathbf{A}_5(t)$、$\mathbf{A}_6(t)$在$n=2000\to 5000$的过程中，方差的估计变得更差。
-\end{itemize}
-根本原因（猜测）是固定窗宽$h$的设置下，复杂函数$\mathbf{A}_3(t)$、$\mathbf{A}_5(t)$、$\mathbf{A}_6(t)$的iid估计本身就产生了较大误差，而这些误差被带进了$\sigma^2(t)$的估计，从而最终影响配对算法的估计。所以才导致$\sigma^2(t)$差，且增大样本量并没有任何改善。}
+
 
 \end{document}
