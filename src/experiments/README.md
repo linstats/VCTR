@@ -24,7 +24,7 @@
 常用数据生成参数：
 
 - `--n-subject` 或 `--n-subject-values`: subject 数量。
-- `--coef-type` 或 `--coef-types`: 系数函数类型，当前支持 `base1` 到 `base6`；脚本默认仍跑 `base1` 到 `base4`，A5/A6 需要显式传入 `base5 base6`。
+- `--coef-type` 或 `--coef-types`: 系数函数类型，当前支持 `base1` 到 `base6`。Case 1 repetition 默认运行 `base1` 到 `base4`；Case 2 repetition 默认覆盖 `base1` 到 `base6`。
 - `--R`, `--S`: reduced-feature 维度，其中 `A(t)` 与 `X^*` 的形状为 `R x S`。
 - `--p0`, `--beta`: 协变量维度与真实 `beta`。
 - `--sigma2`, `--rho` / `--rho-values`: paired-eye 误差方差与眼间相关。
@@ -69,12 +69,14 @@
 
 - `case2_3d_repetition/`
   - `raw_results.csv` / `summary_results.csv`
-    - Case 2 根目录汇总结果
+    - `raw_results.csv` 含 11,520 个 fit：原主实验 5,760 条，加 A3/A5/A6 小带宽敏感性实验 5,760 条
+    - `summary_results.csv` 含 192 个 setting：A1/A2/A4 保留原结果；A3/A5/A6 逐 setting 选择候选带宽中 `miae_final_mean` 更小者
   - `hpc_runs/`
     - 已完成的 HPC 汇总结果
-    - 当前主要包括 `a1a4_constant/` 与 `a1a4_varsigma_a5a6_allsigma/`
+    - 当前包括 `a1a4_constant/`、`a1a4_varsigma_a5a6_allsigma/` 与 `a3a5a6_small_h_sensitivity/`
+    - 小带宽实验的诊断过程、HPC 配置、完整性审计和 oracle 选择限制记录在 `a3a5a6_small_h_sensitivity/README.md`
   - `test/`
-    - 本地 anchor-grid 对比、局部 smoke 和临时试跑目录
+    - 本地 anchor-grid 对比、A5 小带宽 pilot/grid、局部 smoke 和临时试跑目录
 
 如果需要查看每个 repetition 目录内部的结果覆盖范围与汇总说明，优先阅读：
 
@@ -180,6 +182,8 @@ python src/experiments/case2_3d_repetition.py \
 
 - `a_eval_mode`
 - `a_eval_selected_points`
+
+Case 2 当前根 summary 还记录实际选定的 `best_signal_bandwidth_mean`。其中 A3/A5/A6 的值来自逐 `(coef_type,n_subject,rho,sigma2_function)` setting 的选择。
 
 Repetition 脚本默认只保存汇总 CSV；需要保存每次重复的 dataset 或 estimate 时，分别传入 `--save-data` 或 `--save-estimates`。
 

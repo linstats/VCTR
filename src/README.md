@@ -27,7 +27,8 @@ src/
 ### `dgps/`
 
 - paired 仿真数据生成机制
-- 当前包含 paired Case 1 / Case 2 reduced-feature DGP，以及 active 的 altbase Case 1 DGP
+- 当前包含 active 的 paired Case 1 / Case 2 altbase reduced-feature DGP
+- 两个 DGP 均支持 `base1` 到 `base6`，以及 `constant`、`sin`、`sin2`、`mixed` 四种 `sigma^2(t)` 函数
 
 ### `data/`
 
@@ -68,35 +69,6 @@ src/
 - 从旧主线整理出的通用数值工具
 - 当前主要保留 kernel、spline、penalty 与绘图相关工具
 - 具体工具职责见 [src/utils/README.md](/Users/lin/Desktop/Research/2026-tensor/src/utils/README.md)
-
-## 实验入口设计
-
-### 当前主线
-
-- `case1_2d_smoke.py`
-  - 单次 smoke 运行，用于快速检查 altbase paired Case 1 设计能否跑通
-- `case1_2d_repetition.py`
-  - 当前批量重复模拟入口
-  - 也是当前 HPC varying-sigma 实验主入口
-- `case2_3d_smoke.py`
-  - 单次 smoke 运行，用于快速检查 3D-equivalent altbase paired Case 2 设计
-- `case2_3d_repetition.py`
-  - Case 2 批量重复模拟入口
-- 当前 repetition 入口已支持可选的 anchor-grid acceleration 参数，并可在交互式大样本运行时询问是否启用
-
-所有当前主线实验脚本默认不画图；需要诊断函数估计时，通过 `--plot-functions` 显式打开。
-
-### 归档实验
-
-- `experiments/archive/archive_method_is_const_var/paired_case1_smoke.py`
-- `experiments/archive/archive_method_is_const_var/paired_case1_repetition.py`
-- `experiments/archive/archive_method_is_const_var/paired_case2_smoke.py`
-- `experiments/archive/archive_method_is_const_var/paired_case2_repetition.py`
-
-这些脚本已经不再是当前主线，原因是：
-
-- 使用了 He Jiaxin 原文同一套 reduced-feature DGP
-- 没有引入估计量 `\hat{\sigma}(t)`
 
 ## 阅读建议
 

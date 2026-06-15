@@ -2,12 +2,9 @@
 
 这个仓库服务于 Varying Coefficient Tensor Regression（VCTR）研究，目前需要明确区分三条代码线：
 
-- `code_and_data/`
-  - MATLAB `iid VCTR` 基线代码
-- `archive/python_iid_vctr/`
-  - 上述 `iid` 基线的 Python 归档移植
-- `src/`
-  - 当前 active 的 paired-eye VCTR Python 主开发线
+- `code_and_data/`  : MATLAB `iid VCTR` 基线代码
+- `archive/python_iid_vctr/`  : 上述 `iid` 基线的 Python 归档移植
+- `src/`  : 当前 active 的 paired-eye VCTR Python 主开发线
 
 当前 Python 主线已经不再承担 `iid` 复现任务，而是明确转向双眼 paired VCTR。
 
@@ -15,10 +12,8 @@
 
 仓库当前对应两份核心参考材料：
 
-- [VaryingCoefLM.pdf](/Users/lin/Desktop/Research/2026-tensor/VaryingCoefLM.pdf)
-  - `iid VCTR` 基线参考文章
-- [VaryingCoefPLM.pdf](/Users/lin/Desktop/Research/2026-tensor/VaryingCoefPLM.pdf)
-  - paired-eye VCTR 主目标参考文章
+- [VaryingCoefLM.pdf](/Users/lin/Desktop/Research/2026-tensor/VaryingCoefLM.pdf)  : `iid VCTR` 基线参考文章
+- [VaryingCoefPLM.pdf](/Users/lin/Desktop/Research/2026-tensor/VaryingCoefPLM.pdf)  : `paired-eye VCTR` 主目标参考文章
 
 当前 paired-eye VCTR 的目标模型可以写作
 
@@ -31,7 +26,7 @@ $$
 - `\mathcal{A}(t)` 是随 `t` 变化的张量系数函数；
 - 同一受试者双眼误差需要按受试者内相关结构建模；
 - 当前 Python 主线默认采用 `exchangeable_varying_sigma`，即 `\sigma^2(t)` 可随 `t` 变化，而 `\rho` 为共享常数；
-- 当前 Case 1 altbase DGP 支持 6 个系数函数 `base1` 到 `base6`，并支持 `sigma2_function = constant | sin | sin2 | mixed`；
+- 当前 Case 1 / Case 2 altbase DGP 支持 6 个系数函数 `base1` 到 `base6`，并支持 `sigma2_function = constant | sin | sin2 | mixed`；
 - `\boldsymbol{\beta}` 在当前实现中仍是全局常向量，不随 `t` 变化。
 
 当前 `src/` 中的实现遵循三阶段思路：
@@ -56,7 +51,8 @@ $$
 
 - 当前 paired-eye VCTR 的主开发线
 - 包含 paired 仿真、数据容器、模型、实验入口与通用工具
-- 当前实验主入口已切换到 altbase 版本，并以 `exchangeable_varying_sigma` 为默认正式方案；Case 1 altbase 现在同时覆盖 `base1` 到 `base6` 和 constant / time-varying DGP variance
+- 当前实验入口为 `case1_2d_smoke.py`、`case1_2d_repetition.py`、`case2_3d_smoke.py` 和 `case2_3d_repetition.py`
+- Case 1 / Case 2 当前均支持并采用 `exchangeable_varying_sigma` 为正式协方差工作流
 
 ### `hpc/`
 
@@ -78,4 +74,4 @@ $$
 - `archive/python_iid_vctr/` 保留旧的 Python `iid` 研究线
 - `src/` 默认面向 paired-eye VCTR
 - 当前 paired Python 主线已经实现 covariance-aware 的三阶段估计框架，并以 `exchangeable_varying_sigma` 为默认模式
-- 当前 paired 实验主入口为 `src/experiments/paired_case1_altbase_repetition.py`；该入口用于 Case 1 A1-A4 已完成的 varying-variance 汇总，也用于 A5-A6 的 all-sigma HPC 补跑
+- 当前 paired 重复模拟入口为 `src/experiments/case1_2d_repetition.py` 和 `src/experiments/case2_3d_repetition.py`
