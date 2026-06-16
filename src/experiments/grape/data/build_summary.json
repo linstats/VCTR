@@ -1,0 +1,26 @@
+{
+  "blind_spot_vf_columns": [
+    21,
+    32
+  ],
+  "n_cfp_files": 631,
+  "n_image_visits_missing_cfp_file": 0,
+  "n_image_visits_missing_roi_file": 0,
+  "n_paired_eye_visits": 552,
+  "n_paired_rows_same_interval": 276,
+  "n_pairs_excluded_by_old_iop_rule": 32,
+  "n_pairs_include_old_iop_rule": 244,
+  "n_physical_eyes": 263,
+  "n_physical_eyes_never_paired": 25,
+  "n_roi_files": 631,
+  "n_subjects": 144,
+  "n_unpaired_eye_visits": 79,
+  "n_unpaired_eye_visits_by_laterality": {
+    "OD": 40,
+    "OS": 39
+  },
+  "n_visits": 1115,
+  "n_visits_with_cfp": 631,
+  "raw_workbook": "raw/VF_and_clinical_information.xlsx",
+  "z_vf_mean_columns": 59
+}
