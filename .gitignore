@@ -42,3 +42,11 @@ src/experiments/case2_3d_repetition/hpc_runs/a3a5a6_small_h_sensitivity/*
 
 # Diagnostic full A-panel plot exports
 src/experiments/case1_2d_repetition/diagnostics/fit_plots/**/plots_all_A/
+
+# GRAPE empirical data and generated artifacts
+src/experiments/grape/data/raw/CFPs/
+src/experiments/grape/data/raw/ROIs/
+src/experiments/grape/data/images/
+src/experiments/grape/data/splits/
+src/experiments/grape/data/features/
+src/experiments/grape/runs/
