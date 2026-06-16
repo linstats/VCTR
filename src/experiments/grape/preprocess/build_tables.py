@@ -143,6 +143,10 @@ def _normalize_visit_table(followup: pd.DataFrame, baseline: pd.DataFrame) -> pd
     visits["iop_outlier_row"] = visits["has_cfp"] & (
         (visits["iop"] > iop_mean + 2 * iop_sd) | (visits["iop"] < iop_mean - 2 * iop_sd)
     )
+    visits["iop_gt35_visit"] = visits["has_cfp"] & (visits["iop"] > 35)
+    visits["iop_eq7_or_gt30_visit"] = visits["has_cfp"] & ((visits["iop"] == 7) | (visits["iop"] > 30))
+    visits["include_primary_iop35"] = ~visits["iop_gt35_visit"]
+    visits["include_sensitivity_iop30_low7"] = ~visits["iop_eq7_or_gt30_visit"]
     outlier_eyes = visits.loc[visits["iop_outlier_row"], ["subject_id", "laterality"]].drop_duplicates()
     outlier_eyes["eye_has_iop_outlier"] = True
     visits = visits.merge(outlier_eyes, on=["subject_id", "laterality"], how="left")
@@ -167,6 +171,10 @@ def _normalize_visit_table(followup: pd.DataFrame, baseline: pd.DataFrame) -> pd
         "cfp_exists",
         "roi_exists",
         "iop_outlier_row",
+        "iop_gt35_visit",
+        "iop_eq7_or_gt30_visit",
+        "include_primary_iop35",
+        "include_sensitivity_iop30_low7",
         "eye_has_iop_outlier",
         "acquisition_device",
         "resolution",
@@ -208,6 +216,16 @@ def _build_paired_table(visits: pd.DataFrame) -> pd.DataFrame:
     paired["is_female"] = paired["is_female_od"]
     paired["pair_has_iop_outlier"] = paired["eye_has_iop_outlier_od"] | paired["eye_has_iop_outlier_os"]
     paired["include_old_iop_rule"] = ~paired["pair_has_iop_outlier"]
+    paired["pair_has_iop_gt35_visit"] = paired["iop_gt35_visit_od"] | paired["iop_gt35_visit_os"]
+    paired["pair_has_iop_eq7_or_gt30_visit"] = (
+        paired["iop_eq7_or_gt30_visit_od"] | paired["iop_eq7_or_gt30_visit_os"]
+    )
+    paired["include_primary_iop35"] = (
+        paired["include_primary_iop35_od"] & paired["include_primary_iop35_os"]
+    )
+    paired["include_sensitivity_iop30_low7"] = (
+        paired["include_sensitivity_iop30_low7_od"] & paired["include_sensitivity_iop30_low7_os"]
+    )
 
     base_cols = [
         "pair_id",
@@ -234,10 +252,18 @@ def _build_paired_table(visits: pd.DataFrame) -> pd.DataFrame:
         "roi_exists_os",
         "iop_outlier_row_od",
         "iop_outlier_row_os",
+        "iop_gt35_visit_od",
+        "iop_gt35_visit_os",
+        "iop_eq7_or_gt30_visit_od",
+        "iop_eq7_or_gt30_visit_os",
         "eye_has_iop_outlier_od",
         "eye_has_iop_outlier_os",
         "pair_has_iop_outlier",
         "include_old_iop_rule",
+        "pair_has_iop_gt35_visit",
+        "include_primary_iop35",
+        "pair_has_iop_eq7_or_gt30_visit",
+        "include_sensitivity_iop30_low7",
     ]
 
     derived_cols: dict[str, pd.Series] = {}
@@ -292,6 +318,20 @@ def _build_summary(visits: pd.DataFrame, paired: pd.DataFrame) -> dict[str, obje
         "n_physical_eyes_never_paired": int(len(never_paired_physical_eyes)),
         "n_pairs_include_old_iop_rule": int(paired["include_old_iop_rule"].sum()),
         "n_pairs_excluded_by_old_iop_rule": int((~paired["include_old_iop_rule"]).sum()),
+        "n_image_visits_include_primary_iop35": int(image_visits["include_primary_iop35"].sum()),
+        "n_image_visits_excluded_by_primary_iop35": int((~image_visits["include_primary_iop35"]).sum()),
+        "n_pairs_include_primary_iop35": int(paired["include_primary_iop35"].sum()),
+        "n_pairs_excluded_by_primary_iop35": int((~paired["include_primary_iop35"]).sum()),
+        "n_image_visits_include_sensitivity_iop30_low7": int(
+            image_visits["include_sensitivity_iop30_low7"].sum()
+        ),
+        "n_image_visits_excluded_by_sensitivity_iop30_low7": int(
+            (~image_visits["include_sensitivity_iop30_low7"]).sum()
+        ),
+        "n_pairs_include_sensitivity_iop30_low7": int(paired["include_sensitivity_iop30_low7"].sum()),
+        "n_pairs_excluded_by_sensitivity_iop30_low7": int(
+            (~paired["include_sensitivity_iop30_low7"]).sum()
+        ),
         "blind_spot_vf_columns": sorted(BLIND_SPOT_VF),
         "z_vf_mean_columns": int(61 - len(BLIND_SPOT_VF)),
     }

@@ -31,9 +31,9 @@ src/experiments/grape/data/
 
 在 `interim_visits.csv` 的基础上，**若同一患者、同一随访时间点的 OD/OS 两只眼均有 visit 记录，且两只眼均有对应 CFP/ROI 图像**，则合并为 `processed_paired.csv` 中的一行配对样本。当前规模：
 
-| 带 CFP/ROI 图像的 visit | 进入配对的 visits | OD/OS 配对数 |
-| :---------------------- | ----------------- | :----------- |
-| 631                     | 552               | 276          |
+| 带 CFP/ROI 图像的 visit | 进入配对的 visits | OD/OS 配对数 | 去掉 IOP>35 极端 visit 再配对数 |
+| :---------------------- | ----------------- | :----------- | ------------------------------- |
+| 631                     | 552               | 276          | 273                             |
 
 - 剩余79 条 visits 有图像但未能配对。
 
@@ -59,3 +59,11 @@ src/experiments/grape/data/
 - `include_old_iop_rule`
 
 如果套用旧规则，276 对中有 244 对会被保留、32 对会被排除。
+
+当前 paired-eye 主分析不沿用旧论文的整只眼删除规则，而采用 visit-level 的极端 response 标记：
+
+- `include_primary_iop35`：主分析口径，仅排除任一眼 `IOP > 35` 的配对 visit；276 对中保留 273 对。
+- `include_sensitivity_iop30_low7`：敏感性分析口径，排除任一眼 `IOP = 7` 或 `IOP > 30` 的配对 visit；276 对中保留 270 对。
+- `include_old_iop_rule`：旧 iid 论文口径，只用于复现/对照；276 对中保留 244 对。
+
+构建脚本不会物理删除这些配对行；建模脚本应按相应的 `include_*` 列过滤。
