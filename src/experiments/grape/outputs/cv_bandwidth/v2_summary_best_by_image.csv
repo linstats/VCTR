@@ -1,0 +1,3 @@
+image_type,task_id,S,R,best_signal_h,best_variance_h,signal_cv_score,variance_cv_score,elapsed_seconds,feature_dir,output_dir
+cfp,1,2x2x1,1,1.0,0.4,1.2166990781231575,0.84989251743461,1.8473959589900915,src/experiments/grape/data/features/cfp_192_iop_le35/S2x2x1_R1,src/experiments/grape/runs/cv_bandwidth/v2_wide_h_top_candidates/task_0001
+roi,7,2x2x1,1,0.8,0.4,1.2078341661291714,0.8441257141699682,1.5724182919948362,src/experiments/grape/data/features/roi_192_iop_le35/S2x2x1_R1,src/experiments/grape/runs/cv_bandwidth/v2_wide_h_top_candidates/task_0007
