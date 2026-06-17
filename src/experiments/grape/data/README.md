@@ -1,69 +1,72 @@
-# GRAPE 派生数据
+# GRAPE 数据目录
 
-下载后的原始数据放在 `raw/`，其原始文件结构和 raw data counts 见 `raw/README.md`，
-
-经 `src/experiments/grape/preprocess/build_tables.py` 预处理后得到当前目录：
+本目录按照 Plan A 将 GRAPE 实证数据分为四层：原始数据、审计表、标准图像张量和模型特征。
 
 ```text
 src/experiments/grape/data/
 ├── raw/
-├── interim_visits.csv
-├── processed_paired.csv
-└── build_summary.json
+├── audit/
+├── tensors/
+└── features/
 ```
 
----
+## `raw/`
 
-#### 问诊审计表 `interim_visits.csv`
+原始下载数据。该目录保持源数据不变，包括：
 
-该表是把 GRAPE 原始 Excel 与 CFP/ROI 图像索引整理成**「一行、一只眼、一次 visit」的问诊审计表**。它不配对、不做任何预处理。数据规模：
+- `CFPs/`
+- `ROIs/`
+- `VF_and_clinical_information.xlsx`
+- `README.md`
 
-| visit 记录次数 | 受试者 | 生理眼 | 带 CFP/ROI 图像的 visit |
-| :------------- | ------ | :----- | :---------------------- |
-| 1115           | 144    | 263    | 631                     |
+## `audit/`
 
-- **同一位受试者的每只眼可能有多次 visit，且 OD/OS 的 visit 次数不一定相同。**
-- **并非每次 visit 都有对应图像；只有带 CFP/ROI 图像的 visit 才能进入 image-based 分析。**
+从 raw Excel 和图像索引构建出的可审计表格。这里定义样本、配对关系和 QC 标记，但不存放模型数组：
 
----
+- `interim_visits.csv`
+- `processed_paired.csv`
+- `build_summary.json`
+- `README.md`
 
-#### 配对数据表 `processed_paired.csv`
+## `tensors/`
 
-在 `interim_visits.csv` 的基础上，**若同一患者、同一随访时间点的 OD/OS 两只眼均有 visit 记录，且两只眼均有对应 CFP/ROI 图像**，则合并为 `processed_paired.csv` 中的一行配对样本。当前规模：
+Level 2 标准图像张量。该层只对 raw CFP/ROI 图像做：
 
-| 带 CFP/ROI 图像的 visit | 进入配对的 visits | OD/OS 配对数 | 去掉 IOP>35 极端 visit 再配对数 |
-| :---------------------- | ----------------- | :----------- | ------------------------------- |
-| 631                     | 552               | 276          | 273                             |
+```text
+raw image -> OS 水平翻转 -> resize 到 192 x 192 x 3
+```
 
-- 剩余79 条 visits 有图像但未能配对。
+该层不做图像切块，不做 CP 分解，也不保存 `y/Z/t`。
 
- `processed_paired.csv` 主要字段包括：
+## `features/`
 
-- response：`iop_od`, `iop_os`；
-- 图像路径：`cfp_path_od`, `cfp_path_os`, `roi_path_od`, `roi_path_os`；
-- 配对样本共享的标量协变量，例如年龄和性别；
-- 原始眼别特异 VF 列，后缀为 `_od` 和 `_os`；
-- 非盲点 VF 协变量的左右眼均值，列名为 `z_vf_*_mean`。
+Level 3 模型特征包。这里的输出由 `tensors/` 和指定的 `(S, R)` 生成，并包含：
 
-当前 paired-eye 模型暂不使用眼别特异的 `Z_{ij}`，因此 `processed_paired.csv` 中的 VF 协变量采用左右眼均值。盲点位置 `VF 21` 和 `VF 32` 不进入 `z_vf_*_mean` 协变量。
+- `X_star.npy`
+- `y.npy`
+- `Z.npy`
+- `t.npy`
+- 特征 manifest / 元数据
 
----
+这是第一层可以被视为完整模型输入包的数据。
 
-####  `build_summary.json`
+当前已经生成第一轮本地特征 grid：
 
-机器可读的构建摘要，用于快速 QC。它记录 raw 图像数量、visit 数量、paired/unpaired 数量、被排除的盲点 VF 位置，以及旧 iid 论文 IOP 排除规则下的计数。
+```text
+features/
+├── cfp_192_iop_le35/S{2x2x1,3x3x1,4x4x1,6x6x1,8x8x1}_R{1,2,3,4}/
+└── roi_192_iop_le35/S{2x2x1,3x3x1,4x4x1,6x6x1,8x8x1}_R{1,2,3,4}/
+```
 
-`processed_paired.csv` 保留原论文的 outlier 规则标记 (response > avg ± 2std)，而不是直接删除行：
+每个目录包含：
 
-- `pair_has_iop_outlier`
-- `include_old_iop_rule`
+- `X_star.npy`：`273 x 2 x R x S`，即 `n_pair x eye x R x S`
+- `y.npy`：`273 x 2`，在 OD/OS 展平后做 z-score
+- `Z.npy`：`273 x 60`，包含未变换的 `is_female` 和逐列 z-score 后的 59 个非盲点 VF 均值
+- `t.npy`：`273`，由 `age_at_visit` min-max 归一化到 `[0, 1]`
+- `cp_components.npz`：每个 block 的 CP 分解组件
+- `manifest.csv` 和 `meta.json`：样本索引、生成参数和变换记录
 
-如果套用旧规则，276 对中有 244 对会被保留、32 对会被排除。
+批量构建记录保存在：
 
-当前 paired-eye 主分析不沿用旧论文的整只眼删除规则，而采用 visit-level 的极端 response 标记：
-
-- `include_primary_iop35`：主分析口径，仅排除任一眼 `IOP > 35` 的配对 visit；276 对中保留 273 对。
-- `include_sensitivity_iop30_low7`：敏感性分析口径，排除任一眼 `IOP = 7` 或 `IOP > 30` 的配对 visit；276 对中保留 270 对。
-- `include_old_iop_rule`：旧 iid 论文口径，只用于复现/对照；276 对中保留 244 对。
-
-构建脚本不会物理删除这些配对行；建模脚本应按相应的 `include_*` 列过滤。
+- `features/build_feature_grid_summary.json`

@@ -2,9 +2,9 @@
 
 This script keeps the raw Excel and images unchanged. It creates:
 
-- src/experiments/grape/data/interim_visits.csv: one row per eye visit.
-- src/experiments/grape/data/processed_paired.csv: one row per paired OD/OS visit.
-- src/experiments/grape/data/build_summary.json: compact audit counts.
+- src/experiments/grape/data/audit/interim_visits.csv: one row per eye visit.
+- src/experiments/grape/data/audit/processed_paired.csv: one row per paired OD/OS visit.
+- src/experiments/grape/data/audit/build_summary.json: compact audit counts.
 """
 
 from __future__ import annotations
@@ -18,13 +18,14 @@ import pandas as pd
 
 GRAPE_ROOT = Path(__file__).resolve().parents[1] / "data"
 RAW_DIR = GRAPE_ROOT / "raw"
+AUDIT_DIR = GRAPE_ROOT / "audit"
 WORKBOOK = RAW_DIR / "VF_and_clinical_information.xlsx"
 CFP_DIR = RAW_DIR / "CFPs"
 ROI_DIR = RAW_DIR / "ROIs"
 
-INTERIM_CSV = GRAPE_ROOT / "interim_visits.csv"
-PROCESSED_CSV = GRAPE_ROOT / "processed_paired.csv"
-SUMMARY_JSON = GRAPE_ROOT / "build_summary.json"
+INTERIM_CSV = AUDIT_DIR / "interim_visits.csv"
+PROCESSED_CSV = AUDIT_DIR / "processed_paired.csv"
+SUMMARY_JSON = AUDIT_DIR / "build_summary.json"
 
 BLIND_SPOT_VF = {21, 32}
 
@@ -338,6 +339,8 @@ def _build_summary(visits: pd.DataFrame, paired: pd.DataFrame) -> dict[str, obje
 
 
 def main() -> None:
+    AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+
     baseline = _read_grape_sheet("Baseline")
     followup = _read_grape_sheet("Follow-up")
     visits = _normalize_visit_table(followup=followup, baseline=baseline)
