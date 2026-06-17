@@ -1,0 +1,1259 @@
+{
+  "R_grid": [
+    1,
+    2,
+    3
+  ],
+  "S_grid": [
+    "2x3x1",
+    "3x2x1",
+    "2x4x1",
+    "4x2x1",
+    "3x4x1",
+    "4x3x1",
+    "2x6x1",
+    "6x2x1",
+    "3x6x1",
+    "6x3x1",
+    "4x6x1",
+    "6x4x1"
+  ],
+  "created_at_utc": "2026-06-17T11:04:17.819595+00:00",
+  "image_types": [
+    "cfp",
+    "roi"
+  ],
+  "max_iter": 50,
+  "n_built": 72,
+  "n_records": 72,
+  "n_skipped_existing": 0,
+  "random_state": 20260617,
+  "records": [
+    {
+      "R": 1,
+      "S": "2x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        6
+      ],
+      "elapsed_seconds": 1.3572287499846425,
+      "image_type": "cfp",
+      "max_block_iterations": 8,
+      "max_block_relative_change": 9.898175391218372e-06,
+      "n_blocks": 6,
+      "output_dir": "features/cfp_192_iop_le35/S2x3x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "2x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        6
+      ],
+      "elapsed_seconds": 13.985861624998506,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.014284645535098131,
+      "n_blocks": 6,
+      "output_dir": "features/cfp_192_iop_le35/S2x3x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "2x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        6
+      ],
+      "elapsed_seconds": 14.833208791009383,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.006748893566520134,
+      "n_blocks": 6,
+      "output_dir": "features/cfp_192_iop_le35/S2x3x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "3x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        6
+      ],
+      "elapsed_seconds": 2.486989958008053,
+      "image_type": "cfp",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 1.7299411339220335e-06,
+      "n_blocks": 6,
+      "output_dir": "features/cfp_192_iop_le35/S3x2x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "3x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        6
+      ],
+      "elapsed_seconds": 22.363503665983444,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01574876859816362,
+      "n_blocks": 6,
+      "output_dir": "features/cfp_192_iop_le35/S3x2x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "3x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        6
+      ],
+      "elapsed_seconds": 22.656029500009026,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.009649440740669705,
+      "n_blocks": 6,
+      "output_dir": "features/cfp_192_iop_le35/S3x2x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "2x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        8
+      ],
+      "elapsed_seconds": 1.2770951249985956,
+      "image_type": "cfp",
+      "max_block_iterations": 7,
+      "max_block_relative_change": 4.005059525510163e-06,
+      "n_blocks": 8,
+      "output_dir": "features/cfp_192_iop_le35/S2x4x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "2x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        8
+      ],
+      "elapsed_seconds": 11.607877041999018,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.00893409152667825,
+      "n_blocks": 8,
+      "output_dir": "features/cfp_192_iop_le35/S2x4x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "2x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        8
+      ],
+      "elapsed_seconds": 11.191332667018287,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.014288662666276031,
+      "n_blocks": 8,
+      "output_dir": "features/cfp_192_iop_le35/S2x4x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "4x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        8
+      ],
+      "elapsed_seconds": 2.0060865419800393,
+      "image_type": "cfp",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 5.808556924350434e-06,
+      "n_blocks": 8,
+      "output_dir": "features/cfp_192_iop_le35/S4x2x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "4x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        8
+      ],
+      "elapsed_seconds": 25.47616870800266,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.016963322309889672,
+      "n_blocks": 8,
+      "output_dir": "features/cfp_192_iop_le35/S4x2x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "4x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        8
+      ],
+      "elapsed_seconds": 20.271969916997477,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.025877687195738408,
+      "n_blocks": 8,
+      "output_dir": "features/cfp_192_iop_le35/S4x2x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "3x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.3528978749818634,
+      "image_type": "cfp",
+      "max_block_iterations": 7,
+      "max_block_relative_change": 7.416725198957677e-06,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S3x4x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "3x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 15.979760665999493,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.011200572793006083,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S3x4x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "3x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 11.746304166998016,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01422275909190679,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S3x4x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "4x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.8545767920149956,
+      "image_type": "cfp",
+      "max_block_iterations": 7,
+      "max_block_relative_change": 9.405809431292274e-06,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S4x3x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "4x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 18.34055295799044,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.009291266821697251,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S4x3x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "4x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 20.387427333014784,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.008867958092885743,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S4x3x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "2x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.1808306669990998,
+      "image_type": "cfp",
+      "max_block_iterations": 7,
+      "max_block_relative_change": 9.916617072987952e-06,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S2x6x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "2x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 14.56123474999913,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.009961343876902983,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S2x6x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "2x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 13.183052833017427,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.010599252467990955,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S2x6x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "6x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.771003458998166,
+      "image_type": "cfp",
+      "max_block_iterations": 8,
+      "max_block_relative_change": 5.3863051430169205e-06,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S6x2x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "6x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 20.68034016698948,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.023246449628799674,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S6x2x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "6x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 28.522836375021143,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.009678315283937425,
+      "n_blocks": 12,
+      "output_dir": "features/cfp_192_iop_le35/S6x2x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "3x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        18
+      ],
+      "elapsed_seconds": 1.4604528750060126,
+      "image_type": "cfp",
+      "max_block_iterations": 9,
+      "max_block_relative_change": 8.736177618283114e-06,
+      "n_blocks": 18,
+      "output_dir": "features/cfp_192_iop_le35/S3x6x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "3x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        18
+      ],
+      "elapsed_seconds": 16.62906545799342,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01590785346346946,
+      "n_blocks": 18,
+      "output_dir": "features/cfp_192_iop_le35/S3x6x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "3x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        18
+      ],
+      "elapsed_seconds": 14.879485792014748,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.016717593426048904,
+      "n_blocks": 18,
+      "output_dir": "features/cfp_192_iop_le35/S3x6x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "6x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        18
+      ],
+      "elapsed_seconds": 1.7559893330035266,
+      "image_type": "cfp",
+      "max_block_iterations": 7,
+      "max_block_relative_change": 4.875727437082082e-06,
+      "n_blocks": 18,
+      "output_dir": "features/cfp_192_iop_le35/S6x3x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "6x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        18
+      ],
+      "elapsed_seconds": 19.847468708991073,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.010481909116317734,
+      "n_blocks": 18,
+      "output_dir": "features/cfp_192_iop_le35/S6x3x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "6x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        18
+      ],
+      "elapsed_seconds": 18.594774500001222,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.022230016506495268,
+      "n_blocks": 18,
+      "output_dir": "features/cfp_192_iop_le35/S6x3x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "4x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        24
+      ],
+      "elapsed_seconds": 0.8767969579785131,
+      "image_type": "cfp",
+      "max_block_iterations": 8,
+      "max_block_relative_change": 8.368266563287667e-06,
+      "n_blocks": 24,
+      "output_dir": "features/cfp_192_iop_le35/S4x6x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "4x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        24
+      ],
+      "elapsed_seconds": 11.033195042022271,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01233118970797605,
+      "n_blocks": 24,
+      "output_dir": "features/cfp_192_iop_le35/S4x6x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "4x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        24
+      ],
+      "elapsed_seconds": 10.243038209009683,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01374244147727976,
+      "n_blocks": 24,
+      "output_dir": "features/cfp_192_iop_le35/S4x6x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "6x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        24
+      ],
+      "elapsed_seconds": 1.5458112499909475,
+      "image_type": "cfp",
+      "max_block_iterations": 7,
+      "max_block_relative_change": 9.83456282611287e-06,
+      "n_blocks": 24,
+      "output_dir": "features/cfp_192_iop_le35/S6x4x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "6x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        24
+      ],
+      "elapsed_seconds": 19.4329287080036,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01131053670217229,
+      "n_blocks": 24,
+      "output_dir": "features/cfp_192_iop_le35/S6x4x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "6x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        24
+      ],
+      "elapsed_seconds": 15.991905208007665,
+      "image_type": "cfp",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.011249455371647218,
+      "n_blocks": 24,
+      "output_dir": "features/cfp_192_iop_le35/S6x4x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "2x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        6
+      ],
+      "elapsed_seconds": 1.2613029580097646,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 8.625352597899523e-06,
+      "n_blocks": 6,
+      "output_dir": "features/roi_192_iop_le35/S2x3x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "2x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        6
+      ],
+      "elapsed_seconds": 13.566097915987484,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.006134214850029445,
+      "n_blocks": 6,
+      "output_dir": "features/roi_192_iop_le35/S2x3x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "2x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        6
+      ],
+      "elapsed_seconds": 13.434994625014951,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.004782410703759139,
+      "n_blocks": 6,
+      "output_dir": "features/roi_192_iop_le35/S2x3x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "3x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        6
+      ],
+      "elapsed_seconds": 1.8482819579949137,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 2.132022193930003e-06,
+      "n_blocks": 6,
+      "output_dir": "features/roi_192_iop_le35/S3x2x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "3x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        6
+      ],
+      "elapsed_seconds": 20.11447562498506,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.005950918118919713,
+      "n_blocks": 6,
+      "output_dir": "features/roi_192_iop_le35/S3x2x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "3x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        6
+      ],
+      "elapsed_seconds": 20.216552208003122,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.009669478053344071,
+      "n_blocks": 6,
+      "output_dir": "features/roi_192_iop_le35/S3x2x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "2x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        8
+      ],
+      "elapsed_seconds": 1.037589957995806,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 2.2640392484987185e-06,
+      "n_blocks": 8,
+      "output_dir": "features/roi_192_iop_le35/S2x4x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "2x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        8
+      ],
+      "elapsed_seconds": 10.579056457994739,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.020029407794303067,
+      "n_blocks": 8,
+      "output_dir": "features/roi_192_iop_le35/S2x4x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "2x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        8
+      ],
+      "elapsed_seconds": 10.064230916002998,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01091131155881865,
+      "n_blocks": 8,
+      "output_dir": "features/roi_192_iop_le35/S2x4x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "4x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        8
+      ],
+      "elapsed_seconds": 1.6371270419913344,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 5.616493589763011e-06,
+      "n_blocks": 8,
+      "output_dir": "features/roi_192_iop_le35/S4x2x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "4x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        8
+      ],
+      "elapsed_seconds": 16.46397758301464,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.004164204352264144,
+      "n_blocks": 8,
+      "output_dir": "features/roi_192_iop_le35/S4x2x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "4x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        8
+      ],
+      "elapsed_seconds": 17.195145749981748,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.011302887710751643,
+      "n_blocks": 8,
+      "output_dir": "features/roi_192_iop_le35/S4x2x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "3x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 0.9230791250010952,
+      "image_type": "roi",
+      "max_block_iterations": 5,
+      "max_block_relative_change": 7.59478126185863e-06,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S3x4x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "3x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 11.964255500002764,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.006913047880187999,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S3x4x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "3x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 11.613211792020593,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.014796778517650853,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S3x4x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "4x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.5406709170201793,
+      "image_type": "roi",
+      "max_block_iterations": 5,
+      "max_block_relative_change": 9.22427179912699e-06,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S4x3x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "4x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 17.346063125005458,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.01222799473316565,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S4x3x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "4x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 18.188999874982983,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.015658755086042083,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S4x3x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "2x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.081168250006158,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 3.7475367765223852e-06,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S2x6x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "2x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 12.152419499994721,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.005494194413076034,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S2x6x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "2x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 12.104045167012373,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.014770719055817064,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S2x6x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "6x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        12
+      ],
+      "elapsed_seconds": 1.4526361669995822,
+      "image_type": "roi",
+      "max_block_iterations": 5,
+      "max_block_relative_change": 8.991134282828613e-06,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S6x2x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "6x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        12
+      ],
+      "elapsed_seconds": 16.47937087502214,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.010063301592755512,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S6x2x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "6x2x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        12
+      ],
+      "elapsed_seconds": 16.668179833999602,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.008234188754255257,
+      "n_blocks": 12,
+      "output_dir": "features/roi_192_iop_le35/S6x2x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "3x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        18
+      ],
+      "elapsed_seconds": 1.031687124981545,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 8.942608208334304e-06,
+      "n_blocks": 18,
+      "output_dir": "features/roi_192_iop_le35/S3x6x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "3x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        18
+      ],
+      "elapsed_seconds": 11.987378334015375,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.009926861720436659,
+      "n_blocks": 18,
+      "output_dir": "features/roi_192_iop_le35/S3x6x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "3x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        18
+      ],
+      "elapsed_seconds": 12.062451957986923,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.008024960094930528,
+      "n_blocks": 18,
+      "output_dir": "features/roi_192_iop_le35/S3x6x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "6x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        18
+      ],
+      "elapsed_seconds": 1.4715456669800915,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 7.68313451824819e-06,
+      "n_blocks": 18,
+      "output_dir": "features/roi_192_iop_le35/S6x3x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "6x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        18
+      ],
+      "elapsed_seconds": 16.049217124993447,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.005493672230615699,
+      "n_blocks": 18,
+      "output_dir": "features/roi_192_iop_le35/S6x3x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "6x3x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        18
+      ],
+      "elapsed_seconds": 16.399418709013844,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.006389328448829905,
+      "n_blocks": 18,
+      "output_dir": "features/roi_192_iop_le35/S6x3x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "4x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        24
+      ],
+      "elapsed_seconds": 0.7926696659997106,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 6.165101991585914e-06,
+      "n_blocks": 24,
+      "output_dir": "features/roi_192_iop_le35/S4x6x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "4x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        24
+      ],
+      "elapsed_seconds": 8.6153606660082,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.007892314250735936,
+      "n_blocks": 24,
+      "output_dir": "features/roi_192_iop_le35/S4x6x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "4x6x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        24
+      ],
+      "elapsed_seconds": 9.59294466697611,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.010265052172628141,
+      "n_blocks": 24,
+      "output_dir": "features/roi_192_iop_le35/S4x6x1_R3",
+      "status": "built"
+    },
+    {
+      "R": 1,
+      "S": "6x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        1,
+        24
+      ],
+      "elapsed_seconds": 1.3631646659923717,
+      "image_type": "roi",
+      "max_block_iterations": 6,
+      "max_block_relative_change": 6.336153711682948e-06,
+      "n_blocks": 24,
+      "output_dir": "features/roi_192_iop_le35/S6x4x1_R1",
+      "status": "built"
+    },
+    {
+      "R": 2,
+      "S": "6x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        2,
+        24
+      ],
+      "elapsed_seconds": 14.667857541993726,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.008377658738877358,
+      "n_blocks": 24,
+      "output_dir": "features/roi_192_iop_le35/S6x4x1_R2",
+      "status": "built"
+    },
+    {
+      "R": 3,
+      "S": "6x4x1",
+      "X_star_shape": [
+        273,
+        2,
+        3,
+        24
+      ],
+      "elapsed_seconds": 14.070042375009507,
+      "image_type": "roi",
+      "max_block_iterations": 50,
+      "max_block_relative_change": 0.0311032453237539,
+      "n_blocks": 24,
+      "output_dir": "features/roi_192_iop_le35/S6x4x1_R3",
+      "status": "built"
+    }
+  ],
+  "started_at_utc": "2026-06-17T10:51:09.410865+00:00",
+  "tol": 1e-05
+}
