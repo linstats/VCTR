@@ -1,0 +1,18 @@
+{
+  "name": "v1_adaptive_support",
+  "description": "First-round GRAPE bandwidth grid with support-based filtering for signal bandwidths.",
+  "signal_h_candidates": [0.18, 0.22, 0.26, 0.30, 0.35, 0.40, 0.45, 0.50, 0.60, 0.70],
+  "variance_h_candidates": [0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "The signal bandwidth grid is filtered per (S,R) before CV.",
+    "Eligibility uses 5-fold training support at held-out t values: q05_support_obs >= support_safety_factor * (p0 + 2*R*S_total).",
+    "Variance bandwidth candidates are not filtered by parameter count because the variance smoother is scalar."
+  ]
+}

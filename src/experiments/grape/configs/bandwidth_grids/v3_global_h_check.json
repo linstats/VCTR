@@ -1,0 +1,18 @@
+{
+  "name": "v3_global_h_check",
+  "description": "Third-round GRAPE bandwidth grid for checking whether the best low-complexity models prefer near-global smoothing.",
+  "signal_h_candidates": [0.70, 0.80, 0.90, 1.00, 1.20, 1.50, 2.00],
+  "variance_h_candidates": [0.30, 0.40, 0.50, 0.70, 0.90, 1.20],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "This grid only checks CFP/ROI S2x2x1 R1, the best low-complexity v2 models.",
+    "Signal h values above 1.0 approximate global smoothing on normalized age t in [0,1].",
+    "Eligibility uses the same support rule as v1/v2."
+  ]
+}

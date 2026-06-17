@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -N grape_cv_bw_v1
+#PBS -J 1-40
+#PBS -l select=1:ncpus=1:mem=16gb
+#PBS -l walltime=08:00:00
+#PBS -o /home/svu/e0829076/2026-tensor/src/experiments/grape/hpc/logs/
+#PBS -e /home/svu/e0829076/2026-tensor/src/experiments/grape/hpc/logs/
+
+set -euo pipefail
+
+REPO="/home/svu/e0829076/2026-tensor"
+PY="$HOME/conda-envs/vctr-py310/bin/python"
+TASKS="src/experiments/grape/hpc/cv_bandwidth_tasks_v1.csv"
+
+cd "$REPO"
+mkdir -p src/experiments/grape/hpc/logs
+
+"$PY" src/experiments/grape/modeling/cv_bandwidth.py \
+  --task-csv "$TASKS" \
+  --task-index "$PBS_ARRAY_INDEX" \
+  --a-eval-mode anchor_grid \
+  --a-eval-num-points 80

@@ -1,0 +1,12 @@
+task_id,image_type,S,R,bandwidth_config,run_name
+1,cfp,2x2x1,1,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+2,cfp,2x2x1,2,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+3,cfp,4x4x1,1,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+4,cfp,2x2x1,3,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+5,cfp,3x3x1,1,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+6,roi,3x3x1,1,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+7,roi,2x2x1,1,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+8,roi,2x2x1,2,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+9,roi,2x2x1,4,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+10,roi,2x2x1,3,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates
+11,roi,4x4x1,1,configs/bandwidth_grids/v2_wide_h_top_candidates.json,v2_wide_h_top_candidates

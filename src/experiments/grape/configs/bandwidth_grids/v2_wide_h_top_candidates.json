@@ -1,0 +1,18 @@
+{
+  "name": "v2_wide_h_top_candidates",
+  "description": "Second-round GRAPE bandwidth grid for v1 top candidate (image_type,S,R) combinations, extending signal bandwidth above the v1 upper bound.",
+  "signal_h_candidates": [0.45, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00],
+  "variance_h_candidates": [0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "This grid is only for v1 top candidates, not the full S/R grid.",
+    "The main purpose is to check whether v1 selections at h=0.6/0.7 were constrained by the v1 upper bound.",
+    "Eligibility uses the same support rule as v1."
+  ]
+}
