@@ -52,3 +52,17 @@ src/experiments/grape/data/features/
 src/experiments/grape/runs/
 src/experiments/grape/hpc/logs/*.out
 src/experiments/grape/hpc/logs/*.err
+
+# Tracked GRAPE historical experiment archive. Keep run artifacts ignored.
+!src/experiments/grape/archive/
+!src/experiments/grape/archive/stagewise_bandwidth_cv/
+!src/experiments/grape/archive/stagewise_bandwidth_cv/README.md
+!src/experiments/grape/archive/stagewise_bandwidth_cv/configs/
+!src/experiments/grape/archive/stagewise_bandwidth_cv/configs/**
+!src/experiments/grape/archive/stagewise_bandwidth_cv/hpc/
+!src/experiments/grape/archive/stagewise_bandwidth_cv/hpc/**
+!src/experiments/grape/archive/stagewise_bandwidth_cv/modeling/
+!src/experiments/grape/archive/stagewise_bandwidth_cv/modeling/**
+!src/experiments/grape/archive/stagewise_bandwidth_cv/outputs/
+!src/experiments/grape/archive/stagewise_bandwidth_cv/outputs/**
+src/experiments/grape/archive/stagewise_bandwidth_cv/runs/
