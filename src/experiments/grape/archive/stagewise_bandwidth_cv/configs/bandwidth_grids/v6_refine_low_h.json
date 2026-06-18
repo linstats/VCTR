@@ -1,0 +1,19 @@
+{
+  "name": "v6_refine_low_h",
+  "description": "Local low-h refinement grid for X-only top candidates with patient-level grouped CV.",
+  "z_mode": "none",
+  "split_group": "subject_id",
+  "signal_h_candidates": [0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.70],
+  "variance_h_candidates": [0.90, 1.20, 1.50, 2.00, 2.50, 3.00, 4.00],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "Used for top candidates whose stage-1 best h was around 0.45 to 0.50.",
+    "Variance hbar extends above 2.0 because v5 selected hbar=2.0 for several top candidates."
+  ]
+}

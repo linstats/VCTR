@@ -1,0 +1,11 @@
+task_id,image_type,S,R,bandwidth_config,run_name
+1,cfp,3x2x1,1,configs/bandwidth_grids/v6_refine_boundary_h.json,v6_x_only_top_refinement
+2,cfp,3x3x1,1,configs/bandwidth_grids/v6_refine_high_h.json,v6_x_only_top_refinement
+3,cfp,2x2x1,1,configs/bandwidth_grids/v6_refine_low_h.json,v6_x_only_top_refinement
+4,cfp,2x3x1,1,configs/bandwidth_grids/v6_refine_low_h.json,v6_x_only_top_refinement
+5,cfp,3x2x1,2,configs/bandwidth_grids/v6_refine_boundary_h.json,v6_x_only_top_refinement
+6,roi,6x2x1,1,configs/bandwidth_grids/v6_refine_mid_h.json,v6_x_only_top_refinement
+7,roi,4x2x1,1,configs/bandwidth_grids/v6_refine_mid_h.json,v6_x_only_top_refinement
+8,roi,2x2x1,2,configs/bandwidth_grids/v6_refine_mid_h.json,v6_x_only_top_refinement
+9,roi,3x2x1,1,configs/bandwidth_grids/v6_refine_mid_h.json,v6_x_only_top_refinement
+10,roi,2x2x1,1,configs/bandwidth_grids/v6_refine_low_h.json,v6_x_only_top_refinement

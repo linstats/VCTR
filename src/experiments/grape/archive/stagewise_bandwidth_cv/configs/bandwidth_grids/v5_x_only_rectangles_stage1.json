@@ -1,0 +1,21 @@
+{
+  "name": "v5_x_only_rectangles_stage1",
+  "description": "Stage-1 coarse X-only bandwidth grid for newly added rectangular CFP/ROI partitions with patient-level grouped CV.",
+  "z_mode": "none",
+  "split_group": "subject_id",
+  "signal_h_candidates": [0.30, 0.45, 0.50, 0.60, 0.80, 0.90, 1.00, 1.20, 1.50, 2.00, 2.50, 3.00, 4.00],
+  "variance_h_candidates": [0.40, 0.70, 0.90, 1.20, 1.50, 2.00],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "This stage searches only newly added rectangular S values; square S values are already covered by v4_x_only_patient_grouped.",
+    "R is limited to 1, 2, and 3 for rectangular partitions.",
+    "The signal bandwidth grid is coarse but extends beyond 2.0 because v4 selected h=2.0 for the best CFP square candidate.",
+    "Top candidates from this run should be merged with v4 results, then only the top 3-5 per image should receive local h refinement."
+  ]
+}

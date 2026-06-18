@@ -1,0 +1,19 @@
+{
+  "name": "v6_refine_boundary_h",
+  "description": "Boundary refinement grid for X-only top candidates selected at h=4.0 with patient-level grouped CV.",
+  "z_mode": "none",
+  "split_group": "subject_id",
+  "signal_h_candidates": [2.00, 3.00, 4.00, 5.00, 6.00, 8.00],
+  "variance_h_candidates": [0.90, 1.20, 1.50, 2.00, 2.50, 3.00, 4.00],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "Used for candidates whose stage-1 best h was the v5 upper bound h=4.0.",
+    "Checks whether the apparent optimum keeps moving toward global smoothing."
+  ]
+}

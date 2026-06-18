@@ -69,14 +69,19 @@ def best_by_image(summary: pd.DataFrame) -> pd.DataFrame:
         "task_id",
         "S",
         "R",
+        "z_mode",
+        "split_group",
+        "n_split_groups",
         "best_signal_h",
         "best_variance_h",
         "signal_cv_score",
         "variance_cv_score",
+        "runner_grouped_cv",
         "elapsed_seconds",
         "feature_dir",
         "output_dir",
     ]
+    cols = [col for col in cols if col in success.columns]
     return success.groupby("image_type", as_index=False).head(1)[cols]
 
 

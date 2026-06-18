@@ -142,6 +142,12 @@ def load_config(path: Path) -> dict[str, Any]:
     float(eligibility["support_quantile"])
     float(eligibility["support_safety_factor"])
     float(eligibility["edge_warning_factor"])
+    z_mode = str(config.get("z_mode", "full"))
+    if z_mode not in {"full", "none"}:
+        raise ValueError("config.z_mode must be either 'full' or 'none'.")
+    split_group = str(config.get("split_group", "pair_id"))
+    if split_group not in {"pair_id", "subject_id"}:
+        raise ValueError("config.split_group must be either 'pair_id' or 'subject_id'.")
     return config
 
 
@@ -185,15 +191,41 @@ def load_dataset(package_dir: Path) -> tuple[PairedEyeDataset, pd.DataFrame, dic
     return dataset, manifest, feature_meta
 
 
-def subject_kfold_indices(n_subject: int, seed: int, folds: int) -> list[np.ndarray]:
-    if n_subject < 2:
-        raise ValueError("At least two subjects are required for CV.")
+def apply_z_mode(dataset: PairedEyeDataset, z_mode: str) -> PairedEyeDataset:
+    if z_mode == "full":
+        return dataset
+    if z_mode != "none":
+        raise ValueError(f"Unknown z_mode={z_mode!r}.")
+    return PairedEyeDataset(
+        subject_ids=np.asarray(dataset.subject_ids).copy(),
+        eye_ids=np.asarray(dataset.eye_ids).copy(),
+        t=np.asarray(dataset.t).copy(),
+        X=np.asarray(dataset.X).copy(),
+        Z=np.empty((dataset.n_subject, 0), dtype=float),
+        y=np.asarray(dataset.y).copy(),
+        A_true=None if dataset.A_true is None else np.asarray(dataset.A_true).copy(),
+        beta_true=None,
+        Sigma_true=None if dataset.Sigma_true is None else np.asarray(dataset.Sigma_true).copy(),
+        meta={**dict(dataset.meta), "z_mode": "none"},
+    )
+
+
+def grouped_kfold_indices(groups: np.ndarray, seed: int, folds: int) -> list[np.ndarray]:
+    groups = np.asarray(groups)
+    unique_groups = pd.unique(groups)
+    if unique_groups.shape[0] < 2:
+        raise ValueError("At least two groups are required for CV.")
     if folds < 2:
         raise ValueError("folds must be at least 2.")
-    n_folds = min(int(folds), int(n_subject))
+    n_folds = min(int(folds), int(unique_groups.shape[0]))
     rng = np.random.default_rng(seed)
-    shuffled = rng.permutation(n_subject)
-    return [np.asarray(fold, dtype=int) for fold in np.array_split(shuffled, n_folds) if len(fold) > 0]
+    shuffled_groups = rng.permutation(unique_groups)
+    fold_group_sets = np.array_split(shuffled_groups, n_folds)
+    return [
+        np.flatnonzero(np.isin(groups, fold_groups)).astype(int)
+        for fold_groups in fold_group_sets
+        if len(fold_groups) > 0
+    ]
 
 
 def support_stats_for_h(t: np.ndarray, h: float, fold_indices: list[np.ndarray]) -> dict[str, float]:
@@ -226,8 +258,7 @@ def evaluate_signal_bandwidth_eligibility(
     *,
     t: np.ndarray,
     candidates: tuple[float, ...],
-    folds: int,
-    seed: int,
+    fold_indices: list[np.ndarray],
     p0: int,
     rank: int,
     blocks_per_mode: tuple[int, ...],
@@ -238,7 +269,6 @@ def evaluate_signal_bandwidth_eligibility(
     n_blocks = int(np.prod(blocks_per_mode))
     n_features = int(rank * n_blocks)
     local_parameter_count = int(p0 + 2 * n_features)
-    fold_indices = subject_kfold_indices(len(t), seed, folds)
     rows: list[dict[str, Any]] = []
     eligible: list[float] = []
 
@@ -292,7 +322,7 @@ def to_jsonable(value: Any) -> Any:
 
 def write_score_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if rows:
-        fieldnames = list(rows[0].keys())
+        fieldnames = sorted({key for row in rows for key in row.keys()})
     else:
         fieldnames = ["bandwidth", "cv_score"]
     with path.open("w", newline="", encoding="utf-8") as fh:
@@ -316,6 +346,109 @@ def selected_score(rows: list[dict[str, Any]], selected: float | None) -> float 
         if abs(float(row["bandwidth"]) - float(selected)) < 1e-12:
             return float(row["cv_score"])
     return None
+
+
+def finite_score_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    finite: list[dict[str, Any]] = []
+    for row in rows:
+        score = row.get("cv_score")
+        if score is None:
+            continue
+        score_float = float(score)
+        if np.isfinite(score_float):
+            finite.append(row)
+    return finite
+
+
+def select_best_bandwidth(rows: list[dict[str, Any]]) -> float:
+    finite = finite_score_rows(rows)
+    if not finite:
+        raise np.linalg.LinAlgError("All candidate bandwidths failed during grouped CV.")
+    return float(min(finite, key=lambda row: (float(row["cv_score"]), float(row["bandwidth"])))["bandwidth"])
+
+
+def signal_kfold_cv_scores(
+    model: PairedEyeVCTRModel,
+    dataset: PairedEyeDataset,
+    candidates: tuple[float, ...],
+    fold_indices: list[np.ndarray],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for bandwidth in candidates:
+        try:
+            fold_scores = [
+                model._subject_fold_mse(dataset, float(bandwidth), holdout_indices)  # noqa: SLF001
+                for holdout_indices in fold_indices
+            ]
+            rows.append(
+                {
+                    "bandwidth": float(bandwidth),
+                    "cv_score": float(np.mean(fold_scores)),
+                    "fold_scores": [float(value) for value in fold_scores],
+                    "status": "success",
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - persist candidate-level failure.
+            rows.append(
+                {
+                    "bandwidth": float(bandwidth),
+                    "cv_score": None,
+                    "fold_scores": [],
+                    "status": "failed",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+            )
+    return rows
+
+
+def variance_kfold_cv_scores(
+    model: PairedEyeVCTRModel,
+    t: np.ndarray,
+    residual_pairs: np.ndarray,
+    candidates: tuple[float, ...],
+    fold_indices: list[np.ndarray],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    squared_pairs = np.square(residual_pairs)
+    for bandwidth in candidates:
+        try:
+            fold_scores: list[float] = []
+            for holdout_indices in fold_indices:
+                train_mask = np.ones(len(t), dtype=bool)
+                train_mask[holdout_indices] = False
+                train_t = t[train_mask]
+                train_sq = squared_pairs[train_mask]
+                holdout_t = t[holdout_indices]
+                holdout_sq = squared_pairs[holdout_indices]
+                sigma_hat = model._smooth_variance_curve(  # noqa: SLF001
+                    train_t,
+                    train_sq,
+                    holdout_t,
+                    float(bandwidth),
+                )
+                holdout_target = np.mean(holdout_sq, axis=1)
+                fold_scores.append(float(np.mean(np.square(holdout_target - sigma_hat))))
+            rows.append(
+                {
+                    "bandwidth": float(bandwidth),
+                    "cv_score": float(np.mean(fold_scores)),
+                    "fold_scores": [float(value) for value in fold_scores],
+                    "status": "success",
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - persist candidate-level failure.
+            rows.append(
+                {
+                    "bandwidth": float(bandwidth),
+                    "cv_score": None,
+                    "fold_scores": [],
+                    "status": "failed",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+            )
+    return rows
 
 
 def ensure_run_config(run_dir: Path, config_path: Path, config: dict[str, Any]) -> None:
@@ -422,11 +555,15 @@ def run_task(args: argparse.Namespace) -> tuple[dict[str, Any], Path, Path, Path
         started_at=started_at,
     )
 
-    dataset, manifest, feature_meta = load_dataset(package_dir)
+    dataset_full, manifest, feature_meta = load_dataset(package_dir)
     signal_candidates = parse_float_list(config["signal_h_candidates"], "signal_h_candidates")
     variance_candidates = parse_float_list(config["variance_h_candidates"], "variance_h_candidates")
     folds = int(config["folds"])
     seed = int(config["seed"])
+    z_mode = str(config.get("z_mode", "full"))
+    split_group = str(config.get("split_group", "pair_id"))
+    dataset = apply_z_mode(dataset_full, z_mode)
+    fold_indices = grouped_kfold_indices(manifest[split_group].to_numpy(), seed, folds)
     eligibility = config["eligibility"]
     support_quantile = float(eligibility["support_quantile"])
     if abs(support_quantile - 0.05) > 1e-12:
@@ -435,8 +572,7 @@ def run_task(args: argparse.Namespace) -> tuple[dict[str, Any], Path, Path, Path
     eligibility_rows, eligible_signal_h = evaluate_signal_bandwidth_eligibility(
         t=dataset.t,
         candidates=signal_candidates,
-        folds=folds,
-        seed=seed,
+        fold_indices=fold_indices,
         p0=dataset.Z.shape[1],
         rank=int(args.R),
         blocks_per_mode=args.S,
@@ -467,6 +603,8 @@ def run_task(args: argparse.Namespace) -> tuple[dict[str, Any], Path, Path, Path
             "elapsed_seconds": time.perf_counter() - t0,
             "n_pairs": int(dataset.n_subject),
             "p0": int(dataset.Z.shape[1]),
+            "z_mode": z_mode,
+            "split_group": split_group,
             "X_shape": list(dataset.X.shape),
             "y_shape": list(dataset.y.shape),
             "Z_shape": list(dataset.Z.shape),
@@ -491,28 +629,88 @@ def run_task(args: argparse.Namespace) -> tuple[dict[str, Any], Path, Path, Path
         covariance_mode="exchangeable_varying_sigma",
         a_eval_mode=args.a_eval_mode,
         a_eval_num_points=int(args.a_eval_num_points),
-        signal_bandwidth=None,
-        signal_bandwidth_method="stage1_kfold_cv",
-        signal_bandwidth_grid=tuple(eligible_signal_h),
-        signal_bandwidth_cv_folds=folds,
-        signal_bandwidth_cv_seed=seed,
-        variance_bandwidth=None,
-        variance_bandwidth_method="stage2_kfold_cv",
-        variance_bandwidth_grid=tuple(variance_candidates),
-        variance_bandwidth_cv_folds=folds,
-        variance_bandwidth_cv_seed=seed,
         ridge=float(args.ridge),
     )
-    fit_result = model.fit(dataset)
-    signal_scores = fit_result.initial.meta.get("signal_bandwidth_cv_scores", [])
-    variance_scores = fit_result.covariance.meta.get("variance_bandwidth_cv_scores", [])
+
+    use_grouped_runner_cv = z_mode != "full" or split_group != "pair_id"
+    if use_grouped_runner_cv:
+        signal_scores = signal_kfold_cv_scores(model, dataset, tuple(eligible_signal_h), fold_indices)
+        best_signal_h = select_best_bandwidth(signal_scores)
+        initial_for_variance = model._fit_initial_iid_with_bandwidth(dataset, best_signal_h)  # noqa: SLF001
+        residual_pairs = initial_for_variance.residuals.reshape(dataset.n_subject, 2)
+        variance_scores = variance_kfold_cv_scores(
+            model,
+            dataset.t,
+            residual_pairs,
+            variance_candidates,
+            fold_indices,
+        )
+        best_variance_h = select_best_bandwidth(variance_scores)
+        final_model = PairedEyeVCTRModel(
+            covariance_mode="exchangeable_varying_sigma",
+            a_eval_mode=args.a_eval_mode,
+            a_eval_num_points=int(args.a_eval_num_points),
+            signal_bandwidth=best_signal_h,
+            variance_bandwidth=best_variance_h,
+            ridge=float(args.ridge),
+        )
+        fit_result = final_model.fit(dataset)
+        fit_result.initial.meta.update(
+            {
+                "signal_bandwidth_selected": best_signal_h,
+                "signal_bandwidth_method": "runner_grouped_kfold_cv",
+                "signal_bandwidth_grid": list(eligible_signal_h),
+                "signal_bandwidth_cv_scores": signal_scores,
+                "signal_bandwidth_cv_metric": f"{split_group}_grouped_kfold_mse",
+                "signal_bandwidth_cv_folds": len(fold_indices),
+                "signal_bandwidth_cv_seed": seed,
+            }
+        )
+        fit_result.covariance.meta.update(
+            {
+                "variance_bandwidth_selected": best_variance_h,
+                "variance_bandwidth_method": "runner_grouped_kfold_cv",
+                "variance_bandwidth_grid": list(variance_candidates),
+                "variance_bandwidth_cv_scores": variance_scores,
+                "variance_bandwidth_cv_metric": f"{split_group}_grouped_kfold_squared_residual_mse",
+                "variance_bandwidth_cv_folds": len(fold_indices),
+                "variance_bandwidth_cv_seed": seed,
+            }
+        )
+        fit_result.meta.update(
+            {
+                "signal_bandwidth_selected": best_signal_h,
+                "signal_bandwidth_method": "runner_grouped_kfold_cv",
+                "signal_bandwidth_cv_scores": signal_scores,
+                "signal_bandwidth_cv_metric": f"{split_group}_grouped_kfold_mse",
+                "variance_bandwidth_selected": best_variance_h,
+                "variance_bandwidth_method": "runner_grouped_kfold_cv",
+                "variance_bandwidth_cv_scores": variance_scores,
+                "variance_bandwidth_cv_metric": f"{split_group}_grouped_kfold_squared_residual_mse",
+            }
+        )
+    else:
+        model.signal_bandwidth = None
+        model.signal_bandwidth_method = "stage1_kfold_cv"
+        model.signal_bandwidth_grid = tuple(eligible_signal_h)
+        model.signal_bandwidth_cv_folds = folds
+        model.signal_bandwidth_cv_seed = seed
+        model.variance_bandwidth = None
+        model.variance_bandwidth_method = "stage2_kfold_cv"
+        model.variance_bandwidth_grid = tuple(variance_candidates)
+        model.variance_bandwidth_cv_folds = folds
+        model.variance_bandwidth_cv_seed = seed
+        fit_result = model.fit(dataset)
+        signal_scores = fit_result.initial.meta.get("signal_bandwidth_cv_scores", [])
+        variance_scores = fit_result.covariance.meta.get("variance_bandwidth_cv_scores", [])
+        best_signal_h = float(fit_result.initial.meta["signal_bandwidth_selected"])
+        best_variance_h = fit_result.covariance.meta.get("variance_bandwidth_selected")
+        best_variance_h = None if best_variance_h is None else float(best_variance_h)
+
     write_score_csv(task_dir / "signal_cv_scores.csv", signal_scores)
     write_score_csv(task_dir / "variance_cv_scores.csv", variance_scores)
     np.save(task_dir / "beta_hat.npy", fit_result.beta_hat)
 
-    best_signal_h = float(fit_result.initial.meta["signal_bandwidth_selected"])
-    best_variance_h = fit_result.covariance.meta.get("variance_bandwidth_selected")
-    best_variance_h = None if best_variance_h is None else float(best_variance_h)
     finished_at = datetime.now(timezone.utc)
     result = {
         **result_base,
@@ -521,6 +719,9 @@ def run_task(args: argparse.Namespace) -> tuple[dict[str, Any], Path, Path, Path
         "elapsed_seconds": time.perf_counter() - t0,
         "n_pairs": int(dataset.n_subject),
         "p0": int(dataset.Z.shape[1]),
+        "z_mode": z_mode,
+        "split_group": split_group,
+        "n_split_groups": int(pd.Series(manifest[split_group]).nunique()),
         "X_shape": list(dataset.X.shape),
         "y_shape": list(dataset.y.shape),
         "Z_shape": list(dataset.Z.shape),
@@ -534,6 +735,7 @@ def run_task(args: argparse.Namespace) -> tuple[dict[str, Any], Path, Path, Path
         "rho_hat": float(fit_result.covariance.rho_hat),
         "sigma2_hat_mean": float(np.mean(fit_result.covariance.sigma2_hat_t)),
         "beta_hat_shape": list(np.asarray(fit_result.beta_hat).shape),
+        "runner_grouped_cv": bool(use_grouped_runner_cv),
     }
     write_json(task_dir / "result.json", result)
     write_json(

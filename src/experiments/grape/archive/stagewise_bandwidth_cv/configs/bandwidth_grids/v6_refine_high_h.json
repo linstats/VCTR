@@ -1,0 +1,19 @@
+{
+  "name": "v6_refine_high_h",
+  "description": "Local high-h refinement grid for X-only top candidates with patient-level grouped CV.",
+  "z_mode": "none",
+  "split_group": "subject_id",
+  "signal_h_candidates": [1.20, 1.50, 1.80, 2.00, 2.20, 2.50, 3.00, 4.00],
+  "variance_h_candidates": [0.90, 1.20, 1.50, 2.00, 2.50, 3.00, 4.00],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "Used for top candidates whose stage-1 best h was around 2.0.",
+    "Includes both below and above 2.0 to check whether the coarse-grid boundary was active."
+  ]
+}

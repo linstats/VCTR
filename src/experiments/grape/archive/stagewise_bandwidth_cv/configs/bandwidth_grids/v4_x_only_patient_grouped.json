@@ -1,0 +1,21 @@
+{
+  "name": "v4_x_only_patient_grouped",
+  "description": "X-only GRAPE bandwidth grid with patient-level grouped CV over the full CFP/ROI S/R feature grid.",
+  "z_mode": "none",
+  "split_group": "subject_id",
+  "signal_h_candidates": [0.18, 0.22, 0.26, 0.30, 0.35, 0.40, 0.45, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.20, 1.50, 2.00],
+  "variance_h_candidates": [0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.20],
+  "folds": 5,
+  "seed": 20260617,
+  "eligibility": {
+    "support_quantile": 0.05,
+    "support_safety_factor": 1.5,
+    "edge_warning_factor": 1.0
+  },
+  "notes": [
+    "This grid retunes S, R, signal h, and variance hbar specifically for X-only VCTR.",
+    "All visits from the same subject_id are kept in the same fold.",
+    "Z is removed before support eligibility, signal bandwidth CV, variance bandwidth CV, and final fitting.",
+    "The signal bandwidth grid combines the original v1 small-h grid with the v3 near-global check."
+  ]
+}
