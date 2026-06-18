@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -N grape_hyperpar_xonly_v1
+#PBS -J 1-5
+#PBS -l select=1:ncpus=12:mem=16gb
+#PBS -l walltime=10:00:00
+#PBS -o /home/svu/e0829076/2026-tensor/src/experiments/grape/hpc/logs/
+#PBS -e /home/svu/e0829076/2026-tensor/src/experiments/grape/hpc/logs/
+
+set -euo pipefail
+
+REPO="/home/svu/e0829076/2026-tensor"
+PY="$HOME/conda-envs/vctr-py310/bin/python"
+CONFIG="src/experiments/grape/configs/hyperpar_cv/x_only_grid_v1.json"
+
+cd "$REPO"
+mkdir -p src/experiments/grape/hpc/logs
+
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+
+"$PY" src/experiments/grape/evaluation/hyperpar_cv.py \
+  --config "$CONFIG" \
+  --task-index "$PBS_ARRAY_INDEX" \
+  --num-tasks 5 \
+  --max-workers 12

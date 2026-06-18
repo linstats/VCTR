@@ -1,0 +1,39 @@
+{
+  "name": "v2_patient_grouped",
+  "description": "Final GRAPE model comparison using v3-selected low-complexity CFP/ROI configurations with patient-level grouped CV.",
+  "folds": 5,
+  "seed": 20260617,
+  "split_group": "subject_id",
+  "a_eval_mode": "anchor_grid",
+  "a_eval_num_points": 80,
+  "ridge": 0.0,
+  "image_configs": [
+    {
+      "image_type": "cfp",
+      "S": "2x2x1",
+      "R": 1,
+      "signal_h": 1.0,
+      "variance_hbar": 1.2
+    },
+    {
+      "image_type": "roi",
+      "S": "2x2x1",
+      "R": 1,
+      "signal_h": 0.8,
+      "variance_hbar": 0.4
+    }
+  ],
+  "models": [
+    "z_only_linear",
+    "xz_linear",
+    "x_only_vctr",
+    "xz_iid_vctr",
+    "xz_paired_vctr"
+  ],
+  "notes": [
+    "All metrics are held-out patient-level grouped 5-fold CV metrics.",
+    "All visits from the same subject_id are kept in the same fold.",
+    "Linear baselines use no explicit intercept to match the current VCTR design convention.",
+    "X uses Level-3 CP reduced features X_star, not raw image tensors."
+  ]
+}
