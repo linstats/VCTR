@@ -1,0 +1,50 @@
+{
+  "run_name": "x_only_grid_v1",
+  "summary_rows": 53760,
+  "fold_rows": 268800,
+  "summary_rows_by_image": {
+    "cfp": 26880,
+    "roi": 26880
+  },
+  "expected_summary_rows": 53760,
+  "expected_fold_rows": 268800,
+  "duplicate_candidate_rows": 0,
+  "fold_count_min": 5,
+  "fold_count_max": 5,
+  "finite_summary_metrics": true,
+  "finite_fold_metrics": true,
+  "best_by_image": [
+    {
+      "image_type": "cfp",
+      "S": "3x4x1",
+      "R": 1,
+      "signal_h": 1.8,
+      "variance_hbar": 0.25,
+      "split_group": "subject_id",
+      "z_mode": "none",
+      "n_pairs": 273,
+      "n_split_groups": 119,
+      "ridge": 1e-06,
+      "rmse_std": 0.9889564084921734,
+      "mape_std_pct": 442.1948419354055,
+      "rmse_iop": 4.132781178909459,
+      "mape_iop_pct": 21.41990866464618
+    },
+    {
+      "image_type": "roi",
+      "S": "6x2x1",
+      "R": 1,
+      "signal_h": 0.85,
+      "variance_hbar": 0.3,
+      "split_group": "subject_id",
+      "z_mode": "none",
+      "n_pairs": 273,
+      "n_split_groups": 119,
+      "ridge": 1e-06,
+      "rmse_std": 0.9620235652079732,
+      "mape_std_pct": 548.1782048587769,
+      "rmse_iop": 4.020230669237181,
+      "mape_iop_pct": 20.521405827550904
+    }
+  ]
+}
