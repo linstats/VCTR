@@ -71,7 +71,15 @@ $$
 ## 当前状态
 
 - `code_and_data/` 仍是 `iid VCTR` 的 MATLAB 基线
+
 - `archive/python_iid_vctr/` 保留旧的 Python `iid` 研究线
+
 - `src/` 默认面向 paired-eye VCTR
+
 - 当前 paired Python 主线已经实现 covariance-aware 的三阶段估计框架，并以 `exchangeable_varying_sigma` 为默认模式
+
 - 当前 paired 重复模拟入口为 `src/experiments/case1_2d_repetition.py` 和 `src/experiments/case2_3d_repetition.py`
+
+- GRAPE paired-eye 实证分析位于 `src/experiments/grape/`，当前流程已整理为三步：数据预处理、full three-stage 超参数选择、最终消融实验
+
+  

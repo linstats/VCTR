@@ -16,6 +16,8 @@
 - `case2_3d_repetition.py`
   - 用于 3D-equivalent alternative-base paired Case 2 设计的重复模拟主脚本。
   - 核心单次拟合逻辑复用了 `case2_3d_smoke.py`。
+- [`grape/`](grape/)
+  - GRAPE paired-eye real-data empirical workflow；详见 [`grape/README.md`](grape/README.md)。
 
 这 4 个脚本都采用当前 paired-eye altbase DGP，并默认使用 `varying_sigma` 工作流。
 

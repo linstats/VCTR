@@ -42,36 +42,49 @@ python src/experiments/grape/evaluation/hyperpar_cv.py \
 src/experiments/grape/runs/hyperpar_cv/x_only_grid_v1/
 ```
 
-## Model Comparison
+## Final Ablation
 
-固定最终超参数后，模型比较入口是：
+固定 full-CV 选出的最终超参数后，当前最终消融入口是：
 
 ```bash
-python src/experiments/grape/evaluation/compare_models.py \
-  --config src/experiments/grape/configs/model_comparison/v2_patient_grouped.json
+python src/experiments/grape/evaluation/final_ablation.py \
+  --config src/experiments/grape/configs/final_ablation/v1_full_cv_selected.json
 ```
 
-`compare_models.py` 在同一 held-out split 下比较：
+`final_ablation.py` 在同一 `subject_id` grouped held-out split 下比较：
 
 - `z_only_linear`: only vector covariates `Z`
+- `x_only_linear`: reduced image features `X_star` only
 - `xz_linear`: reduced image features `X_star` plus `Z`
-- `x_only_vctr`: paired VCTR using `X_star` only
+- `x_only_iid_vctr`: `X_star` VCTR using iid stage-1 prediction
+- `x_only_paired_vctr`: full paired-eye VCTR using `X_star` only
 - `xz_iid_vctr`: `X_star + Z` VCTR using iid stage-1 prediction
 - `xz_paired_vctr`: full paired-eye VCTR using `X_star + Z`
 
-当前已有的 `v2_patient_grouped` 结果显示 CFP 和 ROI 都由 `x_only_vctr` 最优，加入 `Z` 没有改善 held-out prediction。该结果基于旧 bandwidth CV 固定候选；正式模型比较应在 `hyperpar_cv.py` 完成后，用新的最佳 `(S, R, h, hbar)` 重跑。
+当前固定配置来自 `hyperpar_cv.py` 的 full three-stage held-out prediction CV：
+
+| image_type | S | R | h | hbar |
+| :-- | :-- | --: | --: | --: |
+| CFP | `3x4x1` | 1 | 1.80 | 0.25 |
+| ROI | `6x2x1` | 1 | 0.85 | 0.30 |
 
 输出默认保存到：
 
 ```text
-src/experiments/grape/runs/model_comparison/
+src/experiments/grape/runs/final_ablation/v1_full_cv_selected/
 ```
 
 精简汇总结果同步保存到：
 
 ```text
-src/experiments/grape/outputs/model_comparison/
+src/experiments/grape/outputs/final_ablation/
 ```
+
+当前结果显示 CFP 和 ROI 的最佳 held-out RMSE 都来自 `x_only_paired_vctr`。加入 `Z` 会明显恶化 prediction；paired covariance-aware refit 对 X-only CFP 有小幅收益，对 X-only ROI 的收益很小。
+
+## Historical Model Comparison
+
+`compare_models.py` 和 `configs/model_comparison/` 保留为早期开发对比入口。已有 `v2_patient_grouped` 结果基于旧 bandwidth CV 固定候选，不再作为最终 empirical ablation table。
 
 ## Archive Boundary
 

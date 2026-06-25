@@ -16,9 +16,11 @@ src/experiments/grape/
 └── archive/       # 历史实验线
 ```
 
-## 当前数据入口
+## 数据预处理
 
-当前审计表入口是：
+当前流程第一步是从 raw data 构建 paired-eye analysis inputs。
+
+审计表入口：
 
 ```bash
 python src/experiments/grape/preprocess/build_tables.py
@@ -30,7 +32,7 @@ python src/experiments/grape/preprocess/build_tables.py
 - `data/audit/processed_paired.csv`
 - `data/audit/build_summary.json`
 
-Level-2 图像张量入口是：
+Level-2 图像张量入口：
 
 ```bash
 python src/experiments/grape/preprocess/build_tensors.py
@@ -38,7 +40,7 @@ python src/experiments/grape/preprocess/build_tensors.py
 
 它读取 `data/audit/processed_paired.csv`，按主分析口径生成 `data/tensors/cfp_192_iop_le35/` 和 `data/tensors/roi_192_iop_le35/`。`tensors/` 只保存 resize/flip 后的图像张量和图像 manifest，不保存 `y/Z/t`。
 
-Level-3 CP 特征入口是：
+Level-3 CP 特征入口：
 
 ```bash
 python src/experiments/grape/features/build_features.py --S 3x3x1 --R 2
@@ -46,23 +48,28 @@ python src/experiments/grape/features/build_features.py --S 3x3x1 --R 2
 
 它读取 `data/tensors/` 和 `data/audit/processed_paired.csv`，生成 `data/features/*/S3x3x1_R2/`。`features/` 是第一层完整模型输入包，包含 `X_star + y/Z/t`。
 
-批量生成第一轮本地特征 grid：
+批量生成当前本地 feature grid：
 
 ```bash
 python src/experiments/grape/features/build_feature_grid.py
 ```
 
-当前默认 grid 为：
+当前已生成的 feature packages 为 CFP/ROI 各 56 个：
 
 - 图像类型：`cfp`, `roi`
-- 分区：`S = 2x2x1, 3x3x1, 4x4x1, 6x6x1, 8x8x1`
+- 分区：`S = 2x2x1, 2x3x1, 2x4x1, 2x6x1, 3x2x1, 3x3x1, 3x4x1, 3x6x1, 4x2x1, 4x3x1, 4x4x1, 4x6x1, 6x2x1, 6x3x1, 6x4x1, 6x6x1, 8x8x1`
 - CP rank：`R = 1, 2, 3, 4`
 
-该命令会跳过已经完整存在的 feature package，并在 `data/features/build_feature_grid_summary.json` 记录构建结果。
+该命令会跳过已经完整存在的 feature package，并在 `data/features/build_feature_grid_summary.json` 记录构建结果。当前 full-CV 选出的最佳配置为：
 
-## 当前主线
+| image_type | S | R | h | hbar |
+| :-- | :-- | --: | --: | --: |
+| CFP | `3x4x1` | 1 | 1.80 | 0.25 |
+| ROI | `6x2x1` | 1 | 0.85 | 0.30 |
 
-当前最终超参数选择入口是 full three-stage held-out prediction CV：
+## 超参数选择
+
+当前流程第二步是 full three-stage held-out prediction CV，用于选择 `X-only VCTR` 的 `(S, R, h, hbar)`：
 
 ```bash
 python src/experiments/grape/evaluation/hyperpar_cv.py \
@@ -88,34 +95,41 @@ python src/experiments/grape/evaluation/hyperpar_cv.py \
   --aggregate
 ```
 
-输出目录：
+完整 run 输出目录：
 
 ```text
 src/experiments/grape/runs/hyperpar_cv/x_only_grid_v1/
 ```
 
-## 模型对比入口
+## 消融实验
 
-固定最终超参数后，模型对比入口是：
+当前流程第三步是固定 full-CV 选出的最终超参数，运行本地最终消融实验：
 
 ```bash
-python src/experiments/grape/evaluation/compare_models.py \
-  --config src/experiments/grape/configs/model_comparison/v2_patient_grouped.json
+python src/experiments/grape/evaluation/final_ablation.py \
+  --config src/experiments/grape/configs/final_ablation/v1_full_cv_selected.json
 ```
 
-完整运行产物默认写入：
+完整 run 输出目录：
 
 ```text
-src/experiments/grape/runs/model_comparison/
+src/experiments/grape/runs/final_ablation/v1_full_cv_selected/
 ```
 
 `runs/` 默认不进 git；可进入 repo 的精简汇总位于：
 
 ```text
-src/experiments/grape/outputs/model_comparison/
+src/experiments/grape/outputs/final_ablation/
 ```
 
-当前更可靠的既有模型对比结果是 `v2_patient_grouped`：在 true patient-level grouped 5-fold held-out CV 下，CFP 和 ROI 的最佳 RMSE 都来自 `X-only VCTR`。加入 `Z` 后的 `X+Z paired VCTR` 没有改善 held-out prediction，paired GLS 相比 iid stage-1 prediction 的 RMSE 差异也很小。该结论仍基于旧 bandwidth CV 固定的候选；正式版本应等待 `hyperpar_cv.py` 的 full three-stage 结果后重跑。
+当前最终消融结果是 `v1_full_cv_selected`：在 true patient-level grouped 5-fold held-out CV 下，CFP 和 ROI 的最佳 RMSE 都来自 `x_only_paired_vctr`。加入 `Z` 后的 linear / VCTR 模型均明显变差；paired covariance-aware refit 对 X-only CFP 有小幅收益，对 X-only ROI 的收益很小。
+
+固定配置来自 full three-stage hyperparameter CV：
+
+| image_type | S | R | h | hbar |
+| :-- | :-- | --: | --: | --: |
+| CFP | `3x4x1` | 1 | 1.80 | 0.25 |
+| ROI | `6x2x1` | 1 | 0.85 | 0.30 |
 
 ## 已归档实验线
 
@@ -131,16 +145,15 @@ src/experiments/grape/archive/stagewise_bandwidth_cv/
 - 多数 run 使用 `anchor_grid` 加速，而当前最终选择要求 `a_eval_mode=full`。
 - 旧目标函数主要是 stagewise `signal_cv_score` / variance CV，不是最终 three-stage held-out prediction RMSE。
 
-## 计划中的实证流程
+## 当前流程
 
-1. 从 GRAPE 原始文件构建 visit-level 表和 paired-eye 表，输出到 `data/audit/`。
-2. 在 notebooks 或 scratch scripts 中探索 raw/interim 数据；这类代码不视为正式实验。
-3. 生成 Level-2 标准图像张量：raw image -> OS 水平翻转 -> resize 到 `192 x 192 x 3`，输出到 `data/tensors/`。
-4. 针对候选 `(S, R)` 从 `tensors/` 生成 Level-3 CP reduced features，输出到 `data/features/`；这里才保存 `X_star + y/Z/t`。
-5. 用 `evaluation/hyperpar_cv.py` 选择 `X-only VCTR` 的 `(S, R, h, hbar)`。
-6. 在 HPC 上运行大规模调参和模型拟合，运行结果放在 `runs/`。
-7. 只把论文最终使用的小型表格和图像整理到 `outputs/`。
-8. 对 full-CV 选出的最终配置运行 true patient-level grouped 模型对比、残差诊断、paired-eye 协方差诊断和系数解释，确保 empirical pipeline 能回应 paired-eye dependence 的审稿意见。
+目前 GRAPE empirical pipeline 分为三步：
+
+1. **数据预处理**：raw files -> audit tables -> resized/flipped tensors -> CP reduced feature packages。
+2. **超参数选择**：用 `evaluation/hyperpar_cv.py` 做 `subject_id` grouped full three-stage CV，选择 `X-only VCTR` 的 `(S, R, h, hbar)`。
+3. **消融实验**：用 `evaluation/final_ablation.py` 固定最终配置，比较 linear / VCTR、X-only / X+Z、iid / paired refit。
+
+完整运行结果放在 `runs/`，默认不进 git；论文使用的小型表格整理到 `outputs/`。后续还需继续做 residual diagnostics、paired-eye covariance diagnostics 和 coefficient interpretation，以回应 paired-eye dependence 的审稿意见。
 
 ## 数据说明
 

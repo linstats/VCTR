@@ -59,6 +59,7 @@ src/
   - `case1_2d_repetition.py`
   - `case2_3d_smoke.py`
   - `case2_3d_repetition.py`
+- GRAPE paired-eye 实证分析位于：`experiments/grape/`
 - 支持可选绘图输出，用于检查估计的 `A[r,s](t)` 与 `sigma^2(t)`
 - 历史 constant variance 脚本及结果已归档到：
   - `archive/archive_method_is_const_var/`

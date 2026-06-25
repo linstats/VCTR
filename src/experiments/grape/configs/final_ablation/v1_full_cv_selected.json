@@ -1,0 +1,43 @@
+{
+  "name": "v1_full_cv_selected",
+  "description": "Final local GRAPE ablation using full three-stage hyperparameter CV selected X-only configurations.",
+  "folds": 5,
+  "seed": 20260617,
+  "split_group": "subject_id",
+  "a_eval_mode": "full",
+  "a_eval_num_points": 80,
+  "ridge": 1e-6,
+  "mape_eps_std": 1e-6,
+  "mape_eps_iop": 1e-6,
+  "image_configs": [
+    {
+      "image_type": "cfp",
+      "S": "3x4x1",
+      "R": 1,
+      "signal_h": 1.8,
+      "variance_hbar": 0.25
+    },
+    {
+      "image_type": "roi",
+      "S": "6x2x1",
+      "R": 1,
+      "signal_h": 0.85,
+      "variance_hbar": 0.3
+    }
+  ],
+  "models": [
+    "z_only_linear",
+    "x_only_linear",
+    "xz_linear",
+    "x_only_iid_vctr",
+    "x_only_paired_vctr",
+    "xz_iid_vctr",
+    "xz_paired_vctr"
+  ],
+  "notes": [
+    "All metrics are subject_id grouped 5-fold held-out CV metrics.",
+    "The CFP/ROI image configs come from x_only_grid_v1 full three-stage hyperparameter CV.",
+    "ridge=1e-6 is a numerical stabilization choice.",
+    "Linear baselines use no explicit intercept to match the current VCTR design convention."
+  ]
+}
