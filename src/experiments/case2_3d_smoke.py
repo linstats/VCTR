@@ -58,6 +58,12 @@ class Case23DSmokeConfig:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=None,
+        help="Optional output directory. Defaults to the script-matched folder beside this file.",
+    )
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--n-subject", type=int, default=1000)
     parser.add_argument("--R", type=int, default=3)
@@ -339,7 +345,7 @@ def maybe_save_plots(output_root: Path, seed: int, dataset, result, config: Case
 
 def main() -> None:
     args = parse_args()
-    output_root = Path(__file__).with_suffix("")
+    output_root = args.output_root if args.output_root is not None else Path(__file__).with_suffix("")
     config = build_config(args)
     dataset, result, metrics = run_case23d_once(config)
     plot_paths = maybe_save_plots(output_root, config.seed, dataset, result, config)

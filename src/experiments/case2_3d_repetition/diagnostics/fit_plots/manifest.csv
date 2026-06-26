@@ -1,0 +1,7 @@
+label,selection_rule,n_subject,coef_type,sigma2_function,rho,seed,rep,signal_bandwidth,variance_bandwidth,a_eval_mode,a_eval_num_points,ridge,miae_final,sigma2_miae
+A_base1,best final A MIAE within current summary bandwidth,5000,base1,sin2,0.9,147,24,0.18,0.18,anchor_grid,500,1e-4,0.0149983542455053,0.026829398003669
+A_base2,best final A MIAE within current summary bandwidth,5000,base2,sin2,0.9,124,1,0.18,0.18,anchor_grid,500,1e-4,0.013898673209341,0.0329122976684548
+A_base3,best final A MIAE within current summary bandwidth,5000,base3,sin2,0.9,139,16,0.08,0.18,anchor_grid,500,1e-4,0.0142068170799646,0.1302062203242548
+A_base4,best final A MIAE within current summary bandwidth,5000,base4,sin2,0.9,136,13,0.18,0.18,anchor_grid,500,1e-4,0.0086279558466757,0.0435866140807828
+A_base5,best final A MIAE within current summary bandwidth,5000,base5,sin2,0.9,124,1,0.08,0.18,anchor_grid,500,1e-4,0.0193222021831745,0.0882299369199596
+A_base6,best final A MIAE within current summary bandwidth,5000,base6,sin2,0.9,124,1,0.08,0.18,anchor_grid,500,1e-4,0.0138079087355805,0.125329813623843
