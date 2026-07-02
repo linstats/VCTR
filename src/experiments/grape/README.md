@@ -8,6 +8,7 @@ src/experiments/grape/
 ├── preprocess/    # 表格构建、图像预处理
 ├── features/      # CP reduced feature package 构建
 ├── evaluation/    # 当前调参、模型比较和后续评估入口
+├── figures/       # 可复现的论文描述性作图与代表样本筛选
 ├── configs/       # 当前实验配置
 ├── hpc/           # 当前 PBS 模板
 ├── diagnostics/   # 残差、协方差和系数解释诊断
@@ -152,6 +153,18 @@ src/experiments/grape/archive/stagewise_bandwidth_cv/
 1. **数据预处理**：raw files -> audit tables -> resized/flipped tensors -> CP reduced feature packages。
 2. **超参数选择**：用 `evaluation/hyperpar_cv.py` 做 `subject_id` grouped full three-stage CV，选择 `X-only VCTR` 的 `(S, R, h, hbar)`。
 3. **消融实验**：用 `evaluation/final_ablation.py` 固定最终配置，比较 linear / VCTR、X-only / X+Z、iid / paired refit。
+
+## 论文图像
+
+代表性 paired visit 的筛选和 CFP/ROI 分割示意图由 `figures/` 统一生成。当前图像直接读取 Level-2 tensors，因此与模型使用的 resize 和 OS 水平翻转保持一致：
+
+```bash
+python src/experiments/grape/figures/select_representative_pair.py
+python src/experiments/grape/figures/plot_image_partitions.py \
+  --config src/experiments/grape/configs/figures/paired_image_partitions_v1.json
+```
+
+当前示例使用 pair `24_1.53214774282`；CFP 画 `3x4x1` 分割，ROI 画 `6x2x1` 分割。候选样本审计表保存在 `runs/figures/`，论文用 PDF/PNG 和独立 panels 保存在 `outputs/figures/`。
 
 完整运行结果放在 `runs/`，默认不进 git；论文使用的小型表格整理到 `outputs/`。后续还需继续做 residual diagnostics、paired-eye covariance diagnostics 和 coefficient interpretation，以回应 paired-eye dependence 的审稿意见。
 

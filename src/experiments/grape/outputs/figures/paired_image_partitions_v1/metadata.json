@@ -1,0 +1,158 @@
+{
+  "config": "src/experiments/grape/configs/figures/paired_image_partitions_v1.json",
+  "created_at_utc": "2026-07-02T09:35:02.423826+00:00",
+  "notes": [
+    "Images are read from the exact Level-2 uint8 tensors used by the paired-eye analysis.",
+    "OS panels are already horizontally flipped in the Level-2 tensors.",
+    "Partition boundaries are derived from the configured block counts and the tensor dimensions.",
+    "Panel labels and manuscript subcaptions should be added in LaTeX rather than baked into individual panels."
+  ],
+  "outputs": {
+    "composite": [
+      "src/experiments/grape/outputs/figures/paired_image_partitions_v1/grape_paired_partitions.png",
+      "src/experiments/grape/outputs/figures/paired_image_partitions_v1/grape_paired_partitions.pdf"
+    ],
+    "panels": [
+      "src/experiments/grape/outputs/figures/paired_image_partitions_v1/panels/cfp_od_partition.png",
+      "src/experiments/grape/outputs/figures/paired_image_partitions_v1/panels/cfp_os_partition.png",
+      "src/experiments/grape/outputs/figures/paired_image_partitions_v1/panels/roi_od_partition.png",
+      "src/experiments/grape/outputs/figures/paired_image_partitions_v1/panels/roi_os_partition.png"
+    ]
+  },
+  "partitions": {
+    "cfp": [
+      3,
+      4,
+      1
+    ],
+    "roi": [
+      6,
+      2,
+      1
+    ]
+  },
+  "selected_pair": {
+    "age_at_visit": 34.532147742818054,
+    "include_primary_iop35": true,
+    "interval_years": 1.5321477428180574,
+    "iop_od": 17.0,
+    "iop_os": 17.0,
+    "pair_id": "24_1.53214774282",
+    "subject_id": 24,
+    "visit_number_od": 4,
+    "visit_number_os": 4
+  },
+  "selection": {
+    "criterion": "robust distance to median age and mean IOP, plus 0.25 times the robust paired-eye IOP difference",
+    "filter_column": "include_primary_iop35",
+    "visual_qc": "Selected from the highest-ranked candidates after checking that both CFP and ROI pairs are complete and legible."
+  },
+  "source": {
+    "cfp": {
+      "array_index": 14,
+      "image_path_od": "raw/CFPs/24_OD_4.jpg",
+      "image_path_os": "raw/CFPs/24_OS_4.jpg",
+      "manifest": "src/experiments/grape/data/tensors/cfp_192_iop_le35/manifest.csv",
+      "tensor": "src/experiments/grape/data/tensors/cfp_192_iop_le35/X_image_uint8.npy",
+      "tensor_meta": {
+        "X_image_uint8_dtype": "uint8",
+        "X_image_uint8_shape": [
+          273,
+          2,
+          192,
+          192,
+          3
+        ],
+        "created_at_utc": "2026-06-17T02:48:11.007717+00:00",
+        "eye_order": [
+          "OD",
+          "OS"
+        ],
+        "image_size": [
+          192,
+          192,
+          3
+        ],
+        "image_type": "cfp",
+        "image_values": {
+          "dtype": "uint8",
+          "normalization": "none",
+          "range": [
+            0,
+            255
+          ]
+        },
+        "n_pairs": 273,
+        "notes": [
+          "No cropping, masking, color enhancement, partitioning, or CP projection is applied.",
+          "OD images are stored unchanged; OS images are horizontally flipped for orientation consistency.",
+          "Response, vector covariates, and index variable remain in data/audit/processed_paired.csv and are not written at the tensor level."
+        ],
+        "os_flip_before_resize": true,
+        "os_horizontal_flip": true,
+        "output_dir": "tensors/cfp_192_iop_le35",
+        "resize": {
+          "library": "PIL",
+          "method": "Image.resize",
+          "resample": "BILINEAR"
+        },
+        "source_filter_column": "include_primary_iop35",
+        "source_filter_rule": "include rows where include_primary_iop35 is true",
+        "source_paired_csv": "audit/processed_paired.csv"
+      }
+    },
+    "roi": {
+      "array_index": 14,
+      "image_path_od": "raw/ROIs/24_OD_4.jpg",
+      "image_path_os": "raw/ROIs/24_OS_4.jpg",
+      "manifest": "src/experiments/grape/data/tensors/roi_192_iop_le35/manifest.csv",
+      "tensor": "src/experiments/grape/data/tensors/roi_192_iop_le35/X_image_uint8.npy",
+      "tensor_meta": {
+        "X_image_uint8_dtype": "uint8",
+        "X_image_uint8_shape": [
+          273,
+          2,
+          192,
+          192,
+          3
+        ],
+        "created_at_utc": "2026-06-17T02:48:12.396068+00:00",
+        "eye_order": [
+          "OD",
+          "OS"
+        ],
+        "image_size": [
+          192,
+          192,
+          3
+        ],
+        "image_type": "roi",
+        "image_values": {
+          "dtype": "uint8",
+          "normalization": "none",
+          "range": [
+            0,
+            255
+          ]
+        },
+        "n_pairs": 273,
+        "notes": [
+          "No cropping, masking, color enhancement, partitioning, or CP projection is applied.",
+          "OD images are stored unchanged; OS images are horizontally flipped for orientation consistency.",
+          "Response, vector covariates, and index variable remain in data/audit/processed_paired.csv and are not written at the tensor level."
+        ],
+        "os_flip_before_resize": true,
+        "os_horizontal_flip": true,
+        "output_dir": "tensors/roi_192_iop_le35",
+        "resize": {
+          "library": "PIL",
+          "method": "Image.resize",
+          "resample": "BILINEAR"
+        },
+        "source_filter_column": "include_primary_iop35",
+        "source_filter_rule": "include rows where include_primary_iop35 is true",
+        "source_paired_csv": "audit/processed_paired.csv"
+      }
+    }
+  }
+}

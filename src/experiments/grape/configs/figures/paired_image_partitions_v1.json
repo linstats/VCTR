@@ -1,0 +1,21 @@
+{
+  "name": "paired_image_partitions_v1",
+  "description": "Representative paired-eye CFP/ROI images with the full-CV-selected tensor partitions.",
+  "pair_id": "24_1.53214774282",
+  "partitions": {
+    "cfp": [3, 4, 1],
+    "roi": [6, 2, 1]
+  },
+  "selection": {
+    "filter_column": "include_primary_iop35",
+    "criterion": "robust distance to median age and mean IOP, plus 0.25 times the robust paired-eye IOP difference",
+    "visual_qc": "Selected from the highest-ranked candidates after checking that both CFP and ROI pairs are complete and legible."
+  },
+  "style": {
+    "grid_color": "#FFFFFF",
+    "grid_linewidth": 1.5,
+    "grid_linestyle": [0, [7, 5]],
+    "figure_dpi": 600,
+    "panel_dpi": 600
+  }
+}
