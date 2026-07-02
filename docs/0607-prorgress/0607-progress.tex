@@ -198,36 +198,36 @@ The tensor size is set to be $D=3$, $p_1=p_2=p_3=48$, and split by $p_1'=p_2'=p_
     \qwhereq
     x_{ijrs}^*\iid \normal(0,1).
 \end{align*}
-and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and obtained from the QR decomposition of a random matrix. The coefficient function is set to be $\mathcal{A}^{(s)}(t)=\sum_{r=1}^{R} \alpha_{rs}(t)\mathbf{x}_r^{(s1)}\circ \mathbf{x}_r^{(s2)}\circ\mathbf{x}_{r}^{(s3)}$ where $\alpha_{rs}(t)$ has 4 choices:
-\begin{align*}
-    % \label{eq-sim-coef1}
-    &\alpha_{1rs}(t)=
-    5\sqrt{\frac{rs}{RS}}(t-0.2)^2,\quad
-    \alpha_{2rs}(t)=
-    \sqrt{\frac{rs}{RS}}
-    \left(e^{-(3t-1)^2}-0.75\right),\quad
-    \alpha_{3rs}(t)=
-    \sqrt{\frac{rs}{RS}}\sin\bigl(2\pi(t-0.5)\bigr),\\
-    &\alpha_{4rs}(t)=
-    \sqrt{\frac{rs}{RS}}
-    \Bigl[
-    0.45\cdot 5(t-0.2)^2
-    +0.35\bigl(e^{-(3t-1)^2}-0.75\bigr)
-    +0.20\sin\bigl(2\pi(t-0.5)\bigr)
-    \Bigr],\\
-    &\alpha_{5rs}(t)=
-    \sqrt{\frac{rs}{RS}}
-    \Biggl[
-    1.10\exp\!\left\{-\frac{(t-0.30)^2}{2(0.08)^2}\right\}
-    -0.95\exp\!\left\{-\frac{(t-0.72)^2}{2(0.11)^2}\right\}
-    \Biggr],\\
-    &\alpha_{6rs}(t)=
-    \sqrt{\frac{rs}{RS}}
-    \Bigl[
-    18(t-0.2)(t-0.55)(t-0.85)-0.05
-    \Bigr]
-    % \label{eq-sim-coef2}
-\end{align*}
+and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and obtained from the QR decomposition of a random matrix. The coefficient function is set to be $\mathcal{A}^{(s)}(t)=\sum_{r=1}^{R} \alpha_{rs}(t)\mathbf{x}_r^{(s1)}\circ \mathbf{x}_r^{(s2)}\circ\mathbf{x}_{r}^{(s3)}$ where $\alpha_{rs}(t)$ has the same 4 choices as in Case 1. And everything else is the same.
+% \begin{align*}
+%     % \label{eq-sim-coef1}
+%     &\alpha_{1rs}(t)=
+%     5\sqrt{\frac{rs}{RS}}(t-0.2)^2,\quad
+%     \alpha_{2rs}(t)=
+%     \sqrt{\frac{rs}{RS}}
+%     \left(e^{-(3t-1)^2}-0.75\right),\quad
+%     \alpha_{3rs}(t)=
+%     \sqrt{\frac{rs}{RS}}\sin\bigl(2\pi(t-0.5)\bigr),\\
+%     &\alpha_{4rs}(t)=
+%     \sqrt{\frac{rs}{RS}}
+%     \Bigl[
+%     0.45\cdot 5(t-0.2)^2
+%     +0.35\bigl(e^{-(3t-1)^2}-0.75\bigr)
+%     +0.20\sin\bigl(2\pi(t-0.5)\bigr)
+%     \Bigr],\\
+%     &\alpha_{5rs}(t)=
+%     \sqrt{\frac{rs}{RS}}
+%     \Biggl[
+%     1.10\exp\!\left\{-\frac{(t-0.30)^2}{2(0.08)^2}\right\}
+%     -0.95\exp\!\left\{-\frac{(t-0.72)^2}{2(0.11)^2}\right\}
+%     \Biggr],\\
+%     &\alpha_{6rs}(t)=
+%     \sqrt{\frac{rs}{RS}}
+%     \Bigl[
+%     18(t-0.2)(t-0.55)(t-0.85)-0.05
+%     \Bigr]
+%     % \label{eq-sim-coef2}
+% \end{align*}
 % \begin{figure}[htbp]
 %     \centering
 %     \includegraphics[width=0.9\textwidth]{figs/fig_case2_At_plot.png}
@@ -235,18 +235,16 @@ and any $\mathbf{x}_{r}^{(sd)}$ and $\mathbf{x}_{r'}^{(sd)}$ are orthonormal and
 %     \label{fig:case2-At}
 % \end{figure}
 
-The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix (iid entries) and $\bb=(2.0,1.0,-1.0,0.5)^\top$. We will vary $\sigma^2(t)$ to 4 subcases as Case 1(a)-(d).
-\begin{align}
-    \sigma^2_0(t)\equiv 1,\quad
-    \sigma^2_1(t)=1+0.3\sin(2\pi t),\quad
-    \sigma^2_2(t)=1+0.25\cos(2\pi t)+0.1 \sin(4\pi t),\qandq
-    \sigma^2_3(t)=0.5+0.5\sin^2(\pi t).
-\end{align}
+% The one-way vector $\mathbf{Z}\in\bbR^{n\times p_0}$ is Gaussian ensemble matrix (iid entries) and $\bb=(2.0,1.0,-1.0,0.5)^\top$. We will vary $\sigma^2(t)$ to 4 subcases as Case 1(a)-(d).
+% \begin{align}
+%     \sigma^2_0(t)\equiv 1,\quad
+%     \sigma^2_1(t)=1+0.3\sin(2\pi t),\quad
+%     \sigma^2_2(t)=1+0.25\cos(2\pi t)+0.1 \sin(4\pi t),\qandq
+%     \sigma^2_3(t)=0.5+0.5\sin^2(\pi t).
+% \end{align}
 
 
-\paragraph{Simulation Results.} We vary $n=2000/5000$, coefficients $\alpha_{1rs}(t),\dots,\alpha_{6rs}(t)$, and correlation $\rho=0/0.3/0.6/0.9$. Tables~\ref{tab:paired-case2-a}--\ref{tab:paired-case2-d} summarize the Case 2 results under the four variance settings. 
-
-Figure~\ref{fig:paired-case2-coefficients} presents representative fitted-versus-true coefficient-function curves under $\mathbf{A}_5(t)$ and $\mathbf{A}_3(t)$, and Figure~\ref{fig:paired-case2-variance} presents two representative fitted-versus-true variance-function curves.
+\paragraph{Simulation Results.} We vary $n=2000/5000$, coefficients $\alpha_{1rs}(t),\dots,\alpha_{6rs}(t)$, and correlation $\rho=0/0.3/0.6/0.9$. Tables~\ref{tab:paired-case2-a}--\ref{tab:paired-case2-d} summarize the Case 2 results under the four variance settings. Figure~\ref{fig:paired-case2-coefficients} presents representative fitted-versus-true coefficient-function curves under $\mathbf{A}_5(t)$ and $\mathbf{A}_3(t)$, and Figure~\ref{fig:paired-case2-variance} presents two representative fitted-versus-true variance-function curves.
 
 \begin{figure}[!htbp]
     \centering
@@ -282,18 +280,52 @@ Figure~\ref{fig:paired-case2-coefficients} presents representative fitted-versus
     \label{fig:paired-case2-variance}
 \end{figure}
 
-
 \input{paired_case2_tables.tex}
-\vspace*{3em}
+
+\clearpage
+\thispagestyle{firstpage}
 \begin{center}
     \large\textsc{Empirical Experiments}
 \end{center}
 
 \paragraph{Dataset Information.}
-The glaucoma real-world appraisal progression ensemble (GRAPE) is a longitudinal multimodal dataset collected for glaucoma management. It contains fundus images together with clinical information collected during follow-up. For each image visit, two image types data are collected: a color fundus photograph (CFP), an optic-disc-centered region-of-interest (ROI) image, and intraocular pressure (IOP), age, gender, and visual-field (VF) measurements. Since elevated IOP is an important biomarker and modifiable risk factor for glaucoma progression, our objective is to quantify how the association between fundus images and IOP varies with age and to evaluate the predictive value of the image and clinical covariates.
+The glaucoma real-world appraisal progression ensemble (GRAPE) is a longitudinal multimodal dataset collected for glaucoma management. It contains fundus images together with clinical information collected during follow-up. For each image visit, two image types data are collected: a color fundus photograph (CFP), an optic-disc-centered region-of-interest (ROI) image. An example is given in Figure \ref{fig:grape-representative-original-images}.
+
+\begin{figure}[!htbp]
+    \centering
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/grape_sample24_cfp_od_original.jpg}
+        \caption{CFP, OD.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/grape_sample24_cfp_os_original.jpg}
+        \caption{CFP, OS.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/grape_sample24_roi_od_original.jpg}
+        \caption{ROI, OD.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/grape_sample24_roi_os_original.jpg}
+        \caption{ROI, OS.}
+    \end{subfigure}
+    \caption{Original CFP and ROI images from an representative paired visit.}
+    \label{fig:grape-representative-original-images}
+\end{figure}
+
+\noindent 
+The intraocular pressure (IOP), age, gender, and visual-field (VF) measurements are also included in the dataset. Since elevated IOP is an important biomarker and modifiable risk factor for glaucoma progression, our objective is to quantify how the association between fundus images and IOP varies with age and to evaluate the predictive value of the image and clinical covariates.
+
 
 \paragraph{Preprocessing.}
-The distributed image subset contains 631 eye-level visits with matched CFP and ROI images. We paired oculus dexter (OD) and oculus sinister (OS) records from the same subject at the same follow-up time, obtaining 276 paired visits. After excluding a paired visit whenever the IOP of either eye exceeded 35 mmHg, the primary analysis retained 273 paired visits from 119 subjects, corresponding to 546 eye-level observations for each image representation. All images were resized to $192\times192\times3$, and OS images were horizontally flipped to align their orientation with OD images.
+The distributed image subset contains 631 eye-level visits with matched CFP and ROI images. We paired oculus dexter (OD) and oculus sinister (OS) records from the same subject at the same follow-up time, obtaining 276 paired visits. After excluding a paired visit whenever the IOP of either eye exceeded 35 mmHg, the primary analysis retained 273 paired visits, corresponding to 546 eye-level observations for each image representation. All images were resized to $192\times192\times3$, and OS images were horizontally flipped to align with the OD images.
 
 Let $i=1,\ldots,273$ index paired visits and $j\in\{1,2\}$ index the OD and OS eyes, respectively. For either the CFP or ROI analysis, let $\mathcal{X}_{ij}\in\bbR^{192\times192\times3}$ denote the image tensor and let $y_{ij}$ denote the corresponding IOP. The index variable $t_i$ is age, min-max normalized to $[0,1]$. The pair-level covariate vector $\mathbf{z}_i\in\bbR^{60}$ contains gender and the paired-eye averages of 59 non-blind-spot VF measurements; the continuous VF covariates and IOP outcomes are standardized before model fitting. We then apply the paired-eye VCTR model
 \begin{align*}
@@ -321,21 +353,20 @@ and $\mathcal{A}(t)$ captures the age-dependent image effect and $\boldsymbol{\b
 \paragraph{Choosing Hyperparameter.}
 We select four hyperparameters separately for CFP and ROI: the partition grid $S^{(1)}\times S^{(2)}\times S^{(3)}$, the blockwise CP rank $R$, the bandwidth $h$ for estimating the varying image effect, and the bandwidth $\bar h$ for estimating the variance function. The candidate feature set contains 17 partition grids and 56 available $(S,R)$ combinations. For each feature configuration, we consider 32 values of $h$ ranging from $0.18$ to $8.00$ and 15 values of $\bar h$ ranging from $0.20$ to $4.00$. This gives $56\times32\times15=26{,}880$ candidates for each image type and 53,760 candidates in total. Hyperparameters are selected using 5-fold cross-validation. 
 
-Table~\ref{tab:grape-hyperparameter-cv} reports, for each $(S,R)$ configuration, the smallest cross-validated RMSE over all 480 combinations of $(h,\bar h)$. The selected configurations are $S^{(1)}\times S^{(2)}\times S^{(3)}=3\times4\times1$, $R=1$, $h=1.80$, and $\bar h=0.25$ for CFP, and $6\times2\times1$, $R=1$, $h=0.85$, and $\bar h=0.30$ for ROI. Their standardized-scale RMSE values are $0.9890$ and $0.9620$, respectively.
+Table~\ref{tab:grape-hyperparameter-cv} reports, for each $(S,R)$ configuration, the smallest cross-validated RMSE over all 480 combinations of $(h,\bar h)$. The selected configurations are $S^{(1)}\times S^{(2)}\times S^{(3)}=3\times4\times1$, $R=1$, $h=1.80$, and $\bar h=0.25$ for CFP, and $6\times2\times1$, $R=1$, $h=0.85$, and $\bar h=0.30$ for ROI. Their standardized-scale RMSE values are $0.9890$ and $0.9620$.
 
 \begin{table}[!htbp]
     \centering
-    \scriptsize
+    \caption{Minimum RMSE by tensor partition and CP rank.}
+    \label{tab:grape-hyperparameter-cv}
+    % \scriptsize
     \setlength{\tabcolsep}{4pt}
     \renewcommand{\arraystretch}{1.08}
-    \caption{Fundus image analysis: minimum standardized-scale RMSE for each tensor partition and CP rank. Each entry is minimized over the 32 values of $h$ and 15 values of $\bar h$ using 5-fold CV.}
-    \label{tab:grape-hyperparameter-cv}
-    \resizebox{\textwidth}{!}{%
     \begin{tabular}{c|cccc|cccc}
         \hline
         \multirow{2}{*}{$S^{(1)}\times S^{(2)}\times S^{(3)}$}
-        & \multicolumn{4}{c|}{Color fundus photograph (CFP)}
-        & \multicolumn{4}{c}{Region of interest (ROI)} \\
+        & \multicolumn{4}{c|}{CFP}
+        & \multicolumn{4}{c}{ROI} \\
         \cline{2-9}
         & $R=1$ & $R=2$ & $R=3$ & $R=4$
         & $R=1$ & $R=2$ & $R=3$ & $R=4$ \\
@@ -359,8 +390,43 @@ Table~\ref{tab:grape-hyperparameter-cv} reports, for each $(S,R)$ configuration,
         $8\times8\times1$ & 1.1220 & 1.7289 & 3.4191 & 5.0691 & 1.1446 & 1.4350 & 3.5168 & 4.7495 \\
         \hline
     \end{tabular}%
-    }
 \end{table}
+
+\noindent
+Figure \ref{fig:grape-selected-partitions} shows an image example under our chosen hyperparameter.
+
+\begin{figure}[!htbp]
+    \centering
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/cfp_od_partition.png}
+        \caption{CFP, OD.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/roi_od_partition.png}
+        \caption{ROI, OD.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/cfp_os_partition.png}
+        \caption{CFP, OS.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/roi_os_partition.png}
+        \caption{ROI, OS.}
+    \end{subfigure}
+    \caption{Representative paired-eye GRAPE images with partition $3\times4\times1$ for CFP and $6\times2\times1$ for ROI.}
+    \label{fig:grape-selected-partitions}
+\end{figure}
+
+\paragraph{Model Interpretation}
+\textcolor{red}{估计的At也可以画出来；最后再做一个bootstrap来得到显著的z's！图像可以参考VaryingCoefLM.pdf.}
+
 
 \paragraph{Paired vs iid VCTR Models}
 Using the selected hyperparameters, we can compare the iid VCTR and paired VCTR models under the same 5-fold splits. Table~\ref{tab:grape-final-ablation} reports the mean and standard deviation of the RMSE across the five held-out folds. The paired VCTR achieves a lower mean RMSE than the iid VCTR for both image types. The improvement is more evident for CFP, where the mean RMSE decreases from $1.0163$ to $0.9845$. For ROI, the mean RMSE decreases slightly from $0.9610$ to $0.9595$. 
@@ -384,7 +450,6 @@ Using the selected hyperparameters, we can compare the iid VCTR and paired VCTR 
     \end{tabular}
 \end{table}
 
-\textcolor{red}{TBD: Dataset Info那个部分需要引入原数据插图；超参数选择之后，再次插图带分割的图像；最后再做一个bootstrap来得到显著的z's！还有一些图像可以参考VaryingCoefLM.pdf}
 
 
 \end{document}

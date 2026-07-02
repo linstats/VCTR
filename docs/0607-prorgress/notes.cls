@@ -50,7 +50,7 @@
 \fancypagestyle{firstpage}{ % Define a custom style for the first page
     \fancyhf{}
     \lhead{
-      \textsc{ST6102 - Statistical Theorey II}
+      \textsc{Project: Varying Coef Tensor Reg (VCTR)}
     }
     \rhead{
       \textsc{Student: \href{mailto:xuelin@u.nus.edu}{Zhu Xuelin}}
