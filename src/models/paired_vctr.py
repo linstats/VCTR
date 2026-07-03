@@ -147,29 +147,13 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
         selected_bandwidth = self._selected_signal_bandwidth_from_initial(initial_result)
         t_eval, a_eval_meta = self._resolve_a_eval_targets(dataset.t)
 
-        A_hat_anchor = np.zeros((t_eval.shape[0], n_features), dtype=float)
-        beta_local_anchor = np.zeros((t_eval.shape[0], p0), dtype=float)
-
-        for i, t0 in enumerate(t_eval):
-            lhs = np.zeros((p0 + 2 * n_features, p0 + 2 * n_features), dtype=float)
-            rhs = np.zeros(p0 + 2 * n_features, dtype=float)
-            for subj in range(n_subject):
-                kh = self._kernel_scalar_weight(dataset.t[subj], t0, selected_bandwidth)
-                if kh <= 0:
-                    continue
-                sst = (dataset.t[subj] - t0) / selected_bandwidth
-                Vi = np.zeros((2, p0 + 2 * n_features), dtype=float)
-                Vi[:, :p0] = dataset.Z[subj]
-                Vi[:, p0 : p0 + n_features] = x_mat[subj]
-                Vi[:, p0 + n_features :] = x_mat[subj] * sst
-                Wi = kh * Sigma_inv_blocks[subj]
-                yi = dataset.y[subj]
-                lhs += Vi.T @ Wi @ Vi
-                rhs += Vi.T @ Wi @ yi
-
-            para_hat = np.linalg.solve(lhs + self.ridge * np.eye(lhs.shape[0]), rhs)
-            beta_local_anchor[i] = para_hat[:p0]
-            A_hat_anchor[i] = para_hat[p0 : p0 + n_features]
+        A_hat_anchor_tensor, beta_local_anchor = self.estimate_stage3_A_at(
+            dataset,
+            covariance,
+            initial_result,
+            t_eval,
+        )
+        A_hat_anchor = A_hat_anchor_tensor.reshape(t_eval.shape[0], n_features)
 
         A_hat_flat = self._interpolate_eval_matrix(t_eval, A_hat_anchor, dataset.t)
         beta_local = self._interpolate_eval_matrix(t_eval, beta_local_anchor, dataset.t)
@@ -207,6 +191,67 @@ class PairedEyeVCTRModel(BasePairedVCTRModel):
                 **a_eval_meta,
             },
         )
+
+    def estimate_stage3_A_at(
+        self,
+        dataset: PairedEyeDataset,
+        covariance: CovarianceEstimate,
+        initial_result: InitialIidResult,
+        t_eval: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Estimate the covariance-aware coefficient function at fixed targets.
+
+        This is the stage-3 local-linear GLS calculation used by
+        :meth:`refit_with_covariance`, exposed separately so inference workflows
+        can evaluate every fit on the same deterministic ``t`` grid.
+
+        Returns
+        -------
+        A_hat:
+            Array with shape ``(n_eval, *dataset.X.shape[2:])``.
+        beta_local:
+            Local nuisance-coefficient estimates with shape ``(n_eval, p0)``.
+        """
+
+        t_eval = np.asarray(t_eval, dtype=float).reshape(-1)
+        if t_eval.size == 0:
+            raise ValueError("t_eval must not be empty.")
+        if not np.all(np.isfinite(t_eval)):
+            raise ValueError("t_eval must contain only finite values.")
+        if covariance.Sigma_hat_blocks.shape[0] != dataset.n_subject:
+            raise ValueError("covariance and dataset must have the same subject count.")
+
+        n_subject = dataset.n_subject
+        x_mat = dataset.X.reshape(n_subject, 2, -1)
+        n_features = x_mat.shape[2]
+        p0 = dataset.Z.shape[1]
+        Sigma_inv_blocks = invert_blocks(covariance.Sigma_hat_blocks)
+        selected_bandwidth = self._selected_signal_bandwidth_from_initial(initial_result)
+        A_hat_flat = np.zeros((t_eval.shape[0], n_features), dtype=float)
+        beta_local = np.zeros((t_eval.shape[0], p0), dtype=float)
+
+        for i, t0 in enumerate(t_eval):
+            lhs = np.zeros((p0 + 2 * n_features, p0 + 2 * n_features), dtype=float)
+            rhs = np.zeros(p0 + 2 * n_features, dtype=float)
+            for subj in range(n_subject):
+                kh = self._kernel_scalar_weight(dataset.t[subj], float(t0), selected_bandwidth)
+                if kh <= 0:
+                    continue
+                sst = (dataset.t[subj] - float(t0)) / selected_bandwidth
+                Vi = np.zeros((2, p0 + 2 * n_features), dtype=float)
+                if p0:
+                    Vi[:, :p0] = dataset.Z[subj]
+                Vi[:, p0 : p0 + n_features] = x_mat[subj]
+                Vi[:, p0 + n_features :] = x_mat[subj] * sst
+                Wi = kh * Sigma_inv_blocks[subj]
+                lhs += Vi.T @ Wi @ Vi
+                rhs += Vi.T @ Wi @ dataset.y[subj]
+
+            para_hat = np.linalg.solve(lhs + self.ridge * np.eye(lhs.shape[0]), rhs)
+            beta_local[i] = para_hat[:p0]
+            A_hat_flat[i] = para_hat[p0 : p0 + n_features]
+
+        return A_hat_flat.reshape((t_eval.shape[0],) + dataset.X.shape[2:]), beta_local
 
     def fit(self, dataset: PairedEyeDataset) -> PairedVCTRResult:
         """Run the default three-stage paired-eye workflow."""

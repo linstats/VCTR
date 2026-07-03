@@ -154,6 +154,8 @@ src/experiments/grape/archive/stagewise_bandwidth_cv/
 2. **超参数选择**：用 `evaluation/hyperpar_cv.py` 做 `subject_id` grouped full three-stage CV，选择 `X-only VCTR` 的 `(S, R, h, hbar)`。
 3. **消融实验**：用 `evaluation/final_ablation.py` 固定最终配置，比较 linear / VCTR、X-only / X+Z、iid / paired refit。
 
+固定最终超参数后的系数函数 bootstrap 入口位于 `diagnostics/`。当前 ROI X-only `B=100` patient-cluster pilot 使用 `S=6x2x1, R=1, h=0.85, hbar=0.30`，完整结果保存于 `runs/coefficient_bootstrap/`；该 pilot 用于验证流程和稳定性，不属于论文最终置信区间。
+
 ## 论文图像
 
 代表性 paired visit 的筛选和 CFP/ROI 分割示意图由 `figures/` 统一生成。当前图像直接读取 Level-2 tensors，因此与模型使用的 resize 和 OS 水平翻转保持一致：

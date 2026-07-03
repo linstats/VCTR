@@ -1,0 +1,32 @@
+{
+  "name": "roi_x_only_at_pilot_b100",
+  "description": "Pilot patient-cluster bootstrap for ROI X-only paired VCTR coefficient functions.",
+  "image_type": "roi",
+  "S": "6x2x1",
+  "R": 1,
+  "signal_h": 0.85,
+  "variance_hbar": 0.3,
+  "z_mode": "none",
+  "covariance_mode": "exchangeable_varying_sigma",
+  "ridge": 1e-6,
+  "bootstrap_replicates": 100,
+  "bootstrap_seed": 20260703,
+  "resample_unit": "subject_id",
+  "keep_cp_features_fixed": true,
+  "keep_transforms_fixed": true,
+  "t_grid": {
+    "method": "linear",
+    "min": 0.0,
+    "max": 1.0,
+    "num_points": 101
+  },
+  "confidence_level": 0.95,
+  "ci_method": "percentile",
+  "max_workers": 1,
+  "checkpoint_each_replicate": true,
+  "notes": [
+    "B=100 is a workflow and numerical-stability pilot, not the final manuscript bootstrap.",
+    "Patients are sampled by manifest subject_id; all visits and both eyes are retained.",
+    "CP features, response transformation, and selected hyperparameters remain fixed."
+  ]
+}
