@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
 import json
 import os
@@ -11,6 +12,13 @@ import shutil
 import sys
 import time
 from typing import Any
+
+# Each process performs dense linear algebra. Prevent BLAS oversubscription
+# when bootstrap replicates are distributed across process workers.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
 
 import numpy as np
 import pandas as pd
@@ -41,7 +49,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-name", default=None)
     parser.add_argument("--feature-root", type=Path, default=FEATURE_ROOT)
     parser.add_argument("--run-root", type=Path, default=RUN_ROOT)
+    parser.add_argument("--max-workers", type=int, default=None, help="Override config max_workers.")
     parser.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--original-only",
+        action="store_true",
+        help="Fit and save only the full-sample A(t) curve; do not run bootstrap replicates.",
+    )
     return parser.parse_args()
 
 
@@ -78,8 +92,8 @@ def load_config(path: Path) -> dict[str, Any]:
     missing = [key for key in required if key not in config]
     if missing:
         raise ValueError(f"Missing required config keys: {missing}")
-    if str(config["z_mode"]) != "none":
-        raise ValueError("This pilot implementation currently requires z_mode='none'.")
+    if str(config["z_mode"]) not in {"none", "full"}:
+        raise ValueError("z_mode must be 'none' or 'full'.")
     if str(config["resample_unit"]) != "subject_id":
         raise ValueError("Patient-cluster bootstrap requires resample_unit='subject_id'.")
     if not bool(config.get("keep_cp_features_fixed", False)):
@@ -92,6 +106,8 @@ def load_config(path: Path) -> dict[str, Any]:
         raise ValueError("R must be positive.")
     if float(config["signal_h"]) <= 0 or float(config["variance_hbar"]) <= 0:
         raise ValueError("signal_h and variance_hbar must be positive.")
+    if int(config.get("max_workers", 1)) <= 0:
+        raise ValueError("max_workers must be positive.")
     return config
 
 
@@ -119,16 +135,21 @@ def build_model(config: dict[str, Any]) -> PairedEyeVCTRModel:
     )
 
 
-def fit_A_on_grid(
+def fit_coefficients_on_grid(
     dataset: PairedEyeDataset,
     config: dict[str, Any],
     t_grid: np.ndarray,
-) -> tuple[np.ndarray, dict[str, Any]]:
-    """Fit stages 1-2 and evaluate the covariance-aware stage-3 A on a fixed grid."""
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    """Fit the paired model and return final A(t), beta, and diagnostics."""
 
     model = build_model(config)
     initial = model.initial_fit_iid(dataset)
     covariance = model.estimate_covariance(dataset, initial)
+    if str(config["z_mode"]) == "full":
+        final = model.refit_with_covariance(dataset, covariance, initial)
+        beta_hat = np.asarray(final.beta_hat, dtype=float)
+    else:
+        beta_hat = np.empty(0, dtype=float)
     A_hat, beta_local = model.estimate_stage3_A_at(dataset, covariance, initial, t_grid)
     sigma_min_eigenvalue = float(
         np.min(np.linalg.eigvalsh(np.asarray(covariance.Sigma_hat_blocks, dtype=float)))
@@ -140,7 +161,21 @@ def fit_A_on_grid(
         "sigma2_hat_max": float(np.max(covariance.sigma2_hat_t)),
         "sigma_min_eigenvalue": sigma_min_eigenvalue,
         "beta_local_max_abs": float(np.max(np.abs(beta_local))) if beta_local.size else 0.0,
+        "beta_hat_max_abs": float(np.max(np.abs(beta_hat))) if beta_hat.size else 0.0,
     }
+    return A_hat, beta_hat, diagnostics
+
+
+def fit_A_on_grid(
+    dataset: PairedEyeDataset,
+    config: dict[str, Any],
+    t_grid: np.ndarray,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Backward-compatible X-only coefficient-grid helper."""
+
+    A_hat, beta_hat, diagnostics = fit_coefficients_on_grid(dataset, config, t_grid)
+    if beta_hat.size:
+        raise ValueError("fit_A_on_grid is only valid when z_mode='none'.")
     return A_hat, diagnostics
 
 
@@ -150,6 +185,7 @@ def patient_cluster_resample(
     rng: np.random.Generator,
     *,
     replicate: int,
+    z_mode: str = "none",
 ) -> tuple[PairedEyeDataset, np.ndarray, int]:
     """Resample patients and retain every visit and both eyes for each draw."""
 
@@ -178,7 +214,7 @@ def patient_cluster_resample(
         )
 
     indices = np.concatenate(index_chunks)
-    bootstrap_dataset = subset_dataset(dataset, indices, z_mode="none")
+    bootstrap_dataset = subset_dataset(dataset, indices, z_mode=z_mode)
     bootstrap_dataset.subject_ids = np.concatenate(pair_id_chunks)
     bootstrap_dataset.meta.update(
         {
@@ -215,7 +251,7 @@ def original_fit(
     if output.exists():
         return
     start = time.perf_counter()
-    A_hat, diagnostics = fit_A_on_grid(dataset, config, t_grid)
+    A_hat, beta_hat, diagnostics = fit_coefficients_on_grid(dataset, config, t_grid)
     age_meta = meta["transforms"]["t"]
     age_grid = float(age_meta["age_min"]) + t_grid * (
         float(age_meta["age_max"]) - float(age_meta["age_min"])
@@ -225,6 +261,9 @@ def original_fit(
         t_grid=t_grid,
         age_grid=age_grid,
         A_hat=A_hat,
+        beta_hat=beta_hat,
+        Z_names=np.asarray(meta["transforms"]["Z"]["columns"], dtype=str),
+        y_sd=np.array(float(meta["transforms"]["y"]["sd"])),
         elapsed_seconds=np.array(time.perf_counter() - start),
         **{key: np.array(value) for key, value in diagnostics.items()},
     )
@@ -247,14 +286,16 @@ def run_replicate(
         manifest,
         rng,
         replicate=replicate,
+        z_mode=str(config["z_mode"]),
     )
     try:
-        A_hat, diagnostics = fit_A_on_grid(bootstrap_dataset, config, t_grid)
+        A_hat, beta_hat, diagnostics = fit_coefficients_on_grid(bootstrap_dataset, config, t_grid)
         elapsed = time.perf_counter() - start
         atomic_savez(
             output,
             replicate=np.array(replicate),
             A_hat=A_hat,
+            beta_hat=beta_hat,
             sampled_original_subject_ids=np.asarray(sampled_ids, dtype=str),
             n_unique_original_subjects=np.array(n_unique),
             n_bootstrap_rows=np.array(bootstrap_dataset.n_subject),
@@ -341,6 +382,7 @@ def write_readme(run_dir: Path, config: dict[str, Any], total: int) -> None:
         "- `failures/`: persisted exception details",
         "- `replicate_status.csv`: replicate-level numerical diagnostics",
         "- `bootstrap_draws.npz` and `coefficient_summary.csv`: generated by aggregation",
+        "- `beta_summary_all.csv`: full regression-coefficient audit table when `z_mode=full`",
         "- `figures/`: generated from the aggregated results",
         "",
         (
@@ -359,6 +401,9 @@ def main() -> None:
     total = int(args.replicates if args.replicates is not None else config["bootstrap_replicates"])
     if total <= 0:
         raise ValueError("replicates must be positive.")
+    max_workers = int(args.max_workers if args.max_workers is not None else config.get("max_workers", 1))
+    if max_workers <= 0:
+        raise ValueError("max_workers must be positive.")
 
     feature_root = resolve_path(args.feature_root)
     run_root = resolve_path(args.run_root)
@@ -384,7 +429,11 @@ def main() -> None:
         int(config["R"]),
     )
     dataset_full, manifest, meta = load_feature_dataset(package_dir)
-    dataset = subset_dataset(dataset_full, np.arange(dataset_full.n_subject), z_mode="none")
+    dataset = subset_dataset(
+        dataset_full,
+        np.arange(dataset_full.n_subject),
+        z_mode=str(config["z_mode"]),
+    )
     t_grid = build_t_grid(config)
     original_fit(dataset, config, t_grid, meta, run_dir / "original_fit.npz")
     write_readme(run_dir, config, total)
@@ -396,33 +445,74 @@ def main() -> None:
             "feature_package": rel_to_repo(package_dir),
             "run_dir": rel_to_repo(run_dir),
             "requested_replicates_this_invocation": total,
+            "max_workers": max_workers,
             "n_pairs": dataset.n_subject,
             "n_patients": int(manifest["subject_id"].nunique()),
             "A_shape_per_fit": [int(t_grid.size), int(config["R"]), int(np.prod([int(x) for x in str(config["S"]).split("x")]))],
+            "beta_shape_per_fit": [int(dataset.Z.shape[1])],
+            "Z_names": list(meta["transforms"]["Z"]["columns"]) if str(config["z_mode"]) == "full" else [],
         },
     )
 
+    if args.original_only:
+        print(
+            json.dumps(
+                {
+                    "run_dir": rel_to_repo(run_dir),
+                    "original_fit": rel_to_repo(run_dir / "original_fit.npz"),
+                    "bootstrap_started": False,
+                },
+                indent=2,
+            )
+        )
+        return
+
+    pending: list[int] = []
     for replicate in range(total):
         output = replicate_dir / f"bootstrap_{replicate:04d}.npz"
-        failure = failure_dir / f"bootstrap_{replicate:04d}.json"
         if output.exists() and args.resume:
             print(f"[{replicate + 1}/{total}] skip completed replicate={replicate}", flush=True)
-            continue
-        row = run_replicate(
-            replicate,
-            dataset=dataset,
-            manifest=manifest,
-            config=config,
-            t_grid=t_grid,
-            output=output,
-            failure_output=failure,
-        )
+        else:
+            pending.append(replicate)
+
+    def print_row(row: dict[str, Any], completed: int) -> None:
         print(
-            f"[{replicate + 1}/{total}] {row['status']} replicate={replicate} "
+            f"[{completed}/{total}] {row['status']} replicate={row['replicate']} "
             f"rows={row['n_bootstrap_rows']} unique_patients={row['n_unique_original_subjects']} "
             f"elapsed={row['elapsed_seconds']:.2f}s",
             flush=True,
         )
+
+    already_complete = total - len(pending)
+    if max_workers == 1:
+        for completed_offset, replicate in enumerate(pending, start=1):
+            row = run_replicate(
+                replicate,
+                dataset=dataset,
+                manifest=manifest,
+                config=config,
+                t_grid=t_grid,
+                output=replicate_dir / f"bootstrap_{replicate:04d}.npz",
+                failure_output=failure_dir / f"bootstrap_{replicate:04d}.json",
+            )
+            print_row(row, already_complete + completed_offset)
+    elif pending:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(
+                    run_replicate,
+                    replicate,
+                    dataset=dataset,
+                    manifest=manifest,
+                    config=config,
+                    t_grid=t_grid,
+                    output=replicate_dir / f"bootstrap_{replicate:04d}.npz",
+                    failure_output=failure_dir / f"bootstrap_{replicate:04d}.json",
+                ): replicate
+                for replicate in pending
+            }
+            for completed_offset, future in enumerate(as_completed(futures), start=1):
+                print_row(future.result(), already_complete + completed_offset)
 
     status = scan_status(replicate_dir, failure_dir, total)
     status.to_csv(run_dir / "replicate_status.csv", index=False)

@@ -1,0 +1,33 @@
+{
+  "name": "roi_x_only_at_h055_sensitivity_b2000",
+  "description": "Near-optimal prediction sensitivity analysis for ROI X-only paired VCTR coefficient functions.",
+  "image_type": "roi",
+  "S": "6x2x1",
+  "R": 1,
+  "signal_h": 0.55,
+  "variance_hbar": 0.3,
+  "z_mode": "none",
+  "covariance_mode": "exchangeable_varying_sigma",
+  "ridge": 1e-6,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20260713,
+  "resample_unit": "subject_id",
+  "keep_cp_features_fixed": true,
+  "keep_transforms_fixed": true,
+  "t_grid": {
+    "method": "linear",
+    "min": 0.0,
+    "max": 1.0,
+    "num_points": 101
+  },
+  "confidence_level": 0.95,
+  "ci_method": "percentile",
+  "max_workers": 1,
+  "checkpoint_each_replicate": true,
+  "notes": [
+    "Sensitivity bandwidth h=0.55 is the smallest candidate within 1% of the selected-configuration best prediction RMSE.",
+    "ROI RMSE_std at h=0.55 is approximately 0.742% above the h=0.85 optimum for S=6x2x1, R=1.",
+    "Patients are sampled by manifest subject_id; all visits and both eyes are retained.",
+    "CP features, response transformation, and structural hyperparameters remain fixed."
+  ]
+}

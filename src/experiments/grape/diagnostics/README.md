@@ -37,3 +37,11 @@ src/experiments/grape/runs/coefficient_bootstrap/roi_x_only_at_pilot_b100/
 `B=100` 只用于流程和数值稳定性检查，不应复制到 `outputs/` 或作为最终论文置信区间。最终 pointwise CI 至少应使用 `B=1000`；若需要 simultaneous confidence bands，应单独实现并使用更大的 `B`。
 
 最终 pointwise percentile CI 配置为 `roi_x_only_at_final_b2000.json` 和 `cfp_x_only_at_final_b2000.json`，两者均使用 `B=2000`。当前研究流程不要求 simultaneous confidence bands。
+
+## X+Z coefficient bootstrap
+
+`cfp_xz_inherit_xonly_tuning_b2000.json` 和 `roi_xz_inherit_xonly_tuning_b2000.json` 使用各 image type 的 X-only-selected `(S,R,h,hbar)` 拟合 X+Z paired VCTR。每个 checkpoint 同时保存公共年龄网格上的 `A_hat` 和 60 维最终 `beta_hat`；聚合后生成 `coefficient_summary.csv` 与完整审计表 `beta_summary_all.csv`。
+
+两套 image run 完成后，`compare_xz_beta_bootstrap.py` 合并 CFP/ROI beta summary，并生成只保留“任一 image 的 nominal 95% percentile CI 不含 0”的展示表。该筛选没有进行 multiple-testing adjustment，因此必须描述为 nominally significant。
+
+正式配置默认使用 4 个 process workers，并将每个 worker 的 BLAS 线程限制为 1。建议 CFP 与 ROI 顺序运行，避免两个多进程任务同时争用 CPU。所有 run 均支持 checkpoint/resume。

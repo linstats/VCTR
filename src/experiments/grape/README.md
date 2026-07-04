@@ -156,6 +156,8 @@ src/experiments/grape/archive/stagewise_bandwidth_cv/
 
 固定最终超参数后的系数函数 bootstrap 入口位于 `diagnostics/`。当前 ROI X-only `B=100` patient-cluster pilot 使用 `S=6x2x1, R=1, h=0.85, hbar=0.30`，完整结果保存于 `runs/coefficient_bootstrap/`；该 pilot 用于验证流程和稳定性，不属于论文最终置信区间。
 
+X+Z coefficient bootstrap 同样位于 `diagnostics/`：它继承 CFP/ROI 各自的 X-only-selected tuning，同时输出 12 条 `A(t)` 的 pointwise bootstrap CI 和完整 60-variable beta audit table。跨 image 展示表只保留 CFP 或 ROI nominal 95% percentile CI 不含 0 的变量；完整结果仍保存在各 run directory。
+
 ## 论文图像
 
 代表性 paired visit 的筛选和 CFP/ROI 分割示意图由 `figures/` 统一生成。当前图像直接读取 Level-2 tensors，因此与模型使用的 resize 和 OS 水平翻转保持一致：
