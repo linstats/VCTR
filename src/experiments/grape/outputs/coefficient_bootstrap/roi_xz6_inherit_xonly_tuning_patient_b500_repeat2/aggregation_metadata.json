@@ -1,0 +1,32 @@
+{
+  "beta_bootstrap_draw_shape": [
+    500,
+    6
+  ],
+  "beta_shape": [
+    6
+  ],
+  "bootstrap_draw_shape": [
+    500,
+    101,
+    1,
+    12
+  ],
+  "ci_method": "percentile",
+  "coefficient_shape": [
+    101,
+    1,
+    12
+  ],
+  "confidence_level": 0.95,
+  "run_dir": "src/experiments/grape/runs/coefficient_bootstrap/roi_xz6_inherit_xonly_tuning_patient_b500_repeat2",
+  "run_status": "final_pointwise_percentile",
+  "sigma2_bootstrap_draw_shape": [
+    500,
+    101
+  ],
+  "sigma2_shape": [
+    101
+  ],
+  "successful_replicates": 500
+}

@@ -1,0 +1,11 @@
+{
+  "cfp_run": "src/experiments/grape/runs/coefficient_bootstrap/cfp_xz6_inherit_xonly_tuning_patient_b500",
+  "created_at_utc": "2026-07-06T07:34:39.832911+00:00",
+  "interpretation_warning": "Filtered variables are nominally significant; 12 image-by-variable comparisons are not multiplicity-adjusted.",
+  "multiple_testing_adjustment": "none",
+  "n_variables_significant_either_image": 0,
+  "n_variables_total": 6,
+  "roi_run": "src/experiments/grape/runs/coefficient_bootstrap/roi_xz6_inherit_xonly_tuning_patient_b500",
+  "run_dir": "src/experiments/grape/runs/coefficient_bootstrap/xz6_inherit_xonly_tuning_patient_b500",
+  "selection_rule": "CFP or ROI nominal 95% percentile bootstrap CI excludes zero"
+}

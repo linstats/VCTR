@@ -1,0 +1,32 @@
+{
+  "beta_bootstrap_draw_shape": [
+    500,
+    3
+  ],
+  "beta_shape": [
+    3
+  ],
+  "bootstrap_draw_shape": [
+    500,
+    101,
+    1,
+    12
+  ],
+  "ci_method": "percentile",
+  "coefficient_shape": [
+    101,
+    1,
+    12
+  ],
+  "confidence_level": 0.95,
+  "run_dir": "src/experiments/grape/runs/coefficient_bootstrap/roi_xz3_postselect60_inherit_xonly_tuning_row_pilot_b500",
+  "run_status": "pilot_not_for_manuscript",
+  "sigma2_bootstrap_draw_shape": [
+    500,
+    101
+  ],
+  "sigma2_shape": [
+    101
+  ],
+  "successful_replicates": 500
+}
