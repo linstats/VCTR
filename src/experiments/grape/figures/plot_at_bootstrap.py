@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import textwrap
 
 GRAPE_ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(GRAPE_ROOT / "runs" / ".matplotlib"))
@@ -170,24 +171,33 @@ def main() -> None:
     image_label = str(config["image_type"]).upper()
     model_label = str(config.get("model_label", "X-only paired VCTR"))
     if args.original_only:
-        title = (
-            f"{image_label} {model_label}: full-sample coefficient functions\n"
+        title_main = f"{image_label} {model_label}: full-sample coefficient functions"
+        title_detail = (
             f"Sensitivity fit; fixed S={config['S']}, R={config['R']}, "
             f"h={config['signal_h']}, hbar={config['variance_hbar']}"
         )
         stem = f"{str(config['image_type']).lower()}_at_full_sample"
     else:
         n_success = int(summary["n_success"].iloc[0])
-        run_label = "Pilot" if "pilot" in str(config["name"]).lower() else "Final"
-        title = (
+        run_text = " ".join(
+            str(config.get(field, "")) for field in ("name", "model_label", "description")
+        ).lower()
+        run_label = "Pilot" if "pilot" in run_text else "Final"
+        title_main = (
             f"{image_label} {model_label}: coefficient functions with "
-            f"{int(100 * float(config['confidence_level']))}% pointwise bootstrap intervals\n"
+            f"{int(100 * float(config['confidence_level']))}% pointwise bootstrap intervals"
+        )
+        title_detail = (
             f"{run_label} B={n_success}; fixed S={config['S']}, R={config['R']}, "
             f"h={config['signal_h']}, hbar={config['variance_hbar']}"
         )
         stem = f"{str(config['image_type']).lower()}_at_pointwise_ci"
+    title_width = max(58, 30 * n_cols)
+    title = f"{textwrap.fill(title_main, width=title_width)}\n{title_detail}"
+    title_line_count = title.count("\n") + 1
     figure.suptitle(title, fontsize=12, y=0.995)
-    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.965), h_pad=1.0, w_pad=0.8)
+    top = 0.935 if title_line_count > 2 else 0.965
+    figure.tight_layout(rect=(0.0, 0.0, 1.0, top), h_pad=1.0, w_pad=0.8)
     figure_dir = run_dir / "figures"
     figure_dir.mkdir(parents=True, exist_ok=True)
     figure.savefig(figure_dir / f"{stem}.png", dpi=220)

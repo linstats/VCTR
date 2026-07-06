@@ -13,4 +13,4 @@ This directory is the immutable machine-output store. Start from `../EXPERIMENT_
 | `model_comparison/v1_best_models` | historical pair-level split |
 | `model_comparison/v2_patient_grouped` | supporting patient-grouped result |
 
-All 12 coefficient-bootstrap fit directories currently report complete runs with zero persisted failures. Per-replicate checkpoints are intentionally retained.
+All 16 coefficient-bootstrap fit directories currently report complete runs with zero persisted failures. Per-replicate checkpoints are intentionally retained.

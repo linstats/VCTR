@@ -20,6 +20,10 @@ Use `experiment_registry.csv` as the machine-readable source of truth. Raw compu
 - `*_xz6_pilot_b100`: six-covariate paired-row bootstrap pilot.
 - `*_xz6_h013_pilot_b500`: small-bandwidth six-covariate paired-row pilot. It is exploratory and unstable in older ages.
 - `xz6_h013_pilot_b500`: joint beta summary for that pilot.
+- `*_xz6_inherit_xonly_tuning_patient_b500`: six-covariate patient-cluster bootstrap using the X-only-selected tuning, run at `B=500` for the weekly report.
+- `xz6_inherit_xonly_tuning_patient_b500`: joint beta table and CFP/ROI `A(t)` and `sigma(t)` figures for that pilot.
+- `roi_xz6_inherit_xonly_tuning_patient_b500_repeat2`: independent-seed ROI repetition of the preceding patient-bootstrap pilot.
+- `roi_xz3_postselect60_inherit_xonly_tuning_row_pilot_b500`: ROI paired-row bootstrap after selecting VF00/VF04/VF60 by nominal significance in the prior 60Z fit; post-selection exploratory only.
 
 ## Historical/supporting
 

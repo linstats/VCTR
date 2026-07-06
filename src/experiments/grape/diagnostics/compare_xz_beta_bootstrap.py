@@ -169,6 +169,7 @@ def main() -> None:
     if not args.no_export:
         output_dir = resolve_path(args.output_root) / str(args.run_name)
         output_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(all_path, output_dir / all_path.name)
         shutil.copy2(significant_path, output_dir / significant_path.name)
         shutil.copy2(run_dir / "comparison_metadata.json", output_dir / "comparison_metadata.json")
         shutil.copy2(run_dir / "README.md", output_dir / "README.md")
@@ -176,6 +177,14 @@ def main() -> None:
             figure_dir = source_run / "figures"
             copy_if_exists(figure_dir / f"{image}_at_pointwise_ci.png", output_dir / f"{image}_at_pointwise_ci.png")
             copy_if_exists(figure_dir / f"{image}_at_pointwise_ci.pdf", output_dir / f"{image}_at_pointwise_ci.pdf")
+            copy_if_exists(
+                figure_dir / f"{image}_sigma_pointwise_ci.png",
+                output_dir / f"{image}_sigma_pointwise_ci.png",
+            )
+            copy_if_exists(
+                figure_dir / f"{image}_sigma_pointwise_ci.pdf",
+                output_dir / f"{image}_sigma_pointwise_ci.pdf",
+            )
         metadata["output_dir"] = rel_to_repo(output_dir)
 
     print(json.dumps(metadata, indent=2, sort_keys=True))
