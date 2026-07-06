@@ -2,6 +2,8 @@
 
 本目录是当前 paired-eye GRAPE 实证分析的主工作区。继承来的 MATLAB/R 代码位于 `code_and_data/real_data`，它是 iid baseline 的参考实现；新的 paired-eye 数据准备、调参和模型运行都应放在这里。
 
+实验结果先查阅 [`EXPERIMENT_INDEX.md`](EXPERIMENT_INDEX.md)；机器可读的完整清单见 [`experiment_registry.csv`](experiment_registry.csv)。两者区分 main、sensitivity、pilot、historical 和 supporting，避免从目录名猜测结果用途。
+
 ```text
 src/experiments/grape/
 ├── data/          # raw/audit/tensors/features 数据层级

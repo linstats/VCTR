@@ -1,0 +1,11 @@
+{
+  "cfp_run": "src/experiments/grape/runs/coefficient_bootstrap/cfp_xz_inherit_xonly_tuning_b2000",
+  "created_at_utc": "2026-07-06T06:49:45.167029+00:00",
+  "interpretation_warning": "Filtered variables are nominally significant; 120 image-by-variable comparisons are not multiplicity-adjusted.",
+  "multiple_testing_adjustment": "none",
+  "n_variables_significant_either_image": 4,
+  "n_variables_total": 60,
+  "roi_run": "src/experiments/grape/runs/coefficient_bootstrap/roi_xz_inherit_xonly_tuning_b2000",
+  "run_dir": "src/experiments/grape/runs/coefficient_bootstrap/xz_inherit_xonly_tuning_b2000_comparison",
+  "selection_rule": "CFP or ROI nominal 95% percentile bootstrap CI excludes zero"
+}

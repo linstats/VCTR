@@ -53,7 +53,8 @@ src/experiments/grape/data/raw/ROIs/
 src/experiments/grape/data/tensors/
 src/experiments/grape/data/splits/
 src/experiments/grape/data/features/
-src/experiments/grape/runs/
+src/experiments/grape/runs/*
+!src/experiments/grape/runs/README.md
 src/experiments/grape/hpc/logs/
 src/experiments/grape/hpc/logs/*.out
 src/experiments/grape/hpc/logs/*.err

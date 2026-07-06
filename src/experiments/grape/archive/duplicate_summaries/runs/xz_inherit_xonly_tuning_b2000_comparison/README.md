@@ -1,0 +1,12 @@
+# xz_inherit_xonly_tuning_b2000_comparison
+
+Joint CFP/ROI regression-coefficient bootstrap summary.
+
+The manuscript-facing table retains a variable when its nominal 95% percentile bootstrap CI excludes zero in CFP or ROI.
+The complete 60-variable table remains available for audit. No multiple-testing adjustment is applied.
+
+## Files
+
+- `beta_summary_all_images.csv`: complete CFP/ROI audit table
+- `beta_summary_significant_either_image.csv`: filtered presentation table
+- `comparison_metadata.json`: provenance and filtering rule
