@@ -58,6 +58,12 @@ def main() -> None:
         with np.load(original_path) as original:
             age_grid = np.asarray(original["age_grid"], dtype=float)
             A_hat = np.asarray(original["A_hat"], dtype=float)
+            local_support_pairs = (
+                np.asarray(original["local_support_pairs"], dtype=int)
+                if "local_support_pairs" in original.files
+                else np.full(age_grid.shape, -1, dtype=int)
+            )
+        min_support = int(config.get("min_local_support_pairs", 0))
         rows: list[dict[str, float | int]] = []
         for grid_idx, age in enumerate(age_grid):
             for rank_idx in range(A_hat.shape[1]):
@@ -68,6 +74,8 @@ def main() -> None:
                             "rank": rank_idx + 1,
                             "block": block_idx + 1,
                             "A_hat": float(A_hat[grid_idx, rank_idx, block_idx]),
+                            "local_support_pairs": int(local_support_pairs[grid_idx]),
+                            "support_ok": bool(local_support_pairs[grid_idx] >= min_support),
                         }
                     )
         summary = pd.DataFrame(rows)
@@ -94,12 +102,14 @@ def main() -> None:
         float(age_meta["age_max"]) - float(age_meta["age_min"])
     )
 
+    supported = summary["support_ok"].astype(bool) if "support_ok" in summary else pd.Series(True, index=summary.index)
+    supported_summary = summary[supported] if supported.any() else summary
     if args.original_only:
-        y_min = min(float(summary["A_hat"].min()), 0.0)
-        y_max = max(float(summary["A_hat"].max()), 0.0)
+        y_min = min(float(supported_summary["A_hat"].min()), 0.0)
+        y_max = max(float(supported_summary["A_hat"].max()), 0.0)
     else:
-        y_min = float(summary["ci_lower_pointwise"].min())
-        y_max = float(summary["ci_upper_pointwise"].max())
+        y_min = float(supported_summary["ci_lower_pointwise"].min())
+        y_max = float(supported_summary["ci_upper_pointwise"].max())
     y_pad = 0.05 * max(y_max - y_min, 1e-8)
     figure, axes = plt.subplots(
         n_rows,
@@ -114,11 +124,27 @@ def main() -> None:
         col = block_idx // n_rows
         axis = axes[row, col]
         block = summary[(summary["block"] == block_idx + 1) & (summary["rank"] == 1)].sort_values("age")
+        block_support = (
+            block["support_ok"].astype(bool).to_numpy()
+            if "support_ok" in block
+            else np.ones(len(block), dtype=bool)
+        )
+        if np.any(~block_support):
+            axis.fill_between(
+                block["age"].to_numpy(),
+                y_min - y_pad,
+                y_max + y_pad,
+                where=~block_support,
+                color="0.9",
+                alpha=0.8,
+                linewidth=0,
+            )
         if not args.original_only:
             axis.fill_between(
                 block["age"].to_numpy(),
                 block["ci_lower_pointwise"].to_numpy(),
                 block["ci_upper_pointwise"].to_numpy(),
+                where=block_support,
                 color="#4C78A8",
                 alpha=0.24,
                 linewidth=0,

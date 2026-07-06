@@ -1,4 +1,4 @@
-"""Run patient-cluster bootstrap inference for GRAPE VCTR coefficients."""
+"""Run configurable row- or patient-bootstrap inference for GRAPE VCTR coefficients."""
 
 from __future__ import annotations
 
@@ -34,6 +34,7 @@ from src.experiments.grape.evaluation.compare_models import (  # noqa: E402
     subset_dataset,
 )
 from src.models import PairedEyeVCTRModel  # noqa: E402
+from src.models.covariance import smooth_variance_curve  # noqa: E402
 
 
 GRAPE_ROOT = Path(__file__).resolve().parents[1]
@@ -92,10 +93,16 @@ def load_config(path: Path) -> dict[str, Any]:
     missing = [key for key in required if key not in config]
     if missing:
         raise ValueError(f"Missing required config keys: {missing}")
-    if str(config["z_mode"]) not in {"none", "full"}:
-        raise ValueError("z_mode must be 'none' or 'full'.")
-    if str(config["resample_unit"]) != "subject_id":
-        raise ValueError("Patient-cluster bootstrap requires resample_unit='subject_id'.")
+    if str(config["z_mode"]) not in {"none", "full", "selected"}:
+        raise ValueError("z_mode must be 'none', 'full', or 'selected'.")
+    if str(config["z_mode"]) == "selected":
+        z_columns = config.get("z_columns")
+        if not isinstance(z_columns, list) or not z_columns:
+            raise ValueError("z_mode='selected' requires a non-empty z_columns list.")
+        if len(z_columns) != len(set(str(value) for value in z_columns)):
+            raise ValueError("z_columns must not contain duplicates.")
+    if str(config["resample_unit"]) not in {"subject_id", "pair_id"}:
+        raise ValueError("resample_unit must be 'subject_id' or 'pair_id'.")
     if not bool(config.get("keep_cp_features_fixed", False)):
         raise ValueError("This workflow requires keep_cp_features_fixed=true.")
     if not bool(config.get("keep_transforms_fixed", False)):
@@ -145,12 +152,28 @@ def fit_coefficients_on_grid(
     model = build_model(config)
     initial = model.initial_fit_iid(dataset)
     covariance = model.estimate_covariance(dataset, initial)
-    if str(config["z_mode"]) == "full":
+    if str(config["z_mode"]) != "none":
         final = model.refit_with_covariance(dataset, covariance, initial)
         beta_hat = np.asarray(final.beta_hat, dtype=float)
     else:
         beta_hat = np.empty(0, dtype=float)
     A_hat, beta_local = model.estimate_stage3_A_at(dataset, covariance, initial, t_grid)
+    if covariance.residual_pairs is None:
+        raise ValueError("Covariance estimate must retain paired residuals.")
+    sigma2_hat_grid = smooth_variance_curve(
+        residual_pairs=covariance.residual_pairs,
+        t=dataset.t,
+        t_eval=t_grid,
+        bandwidth=float(config["variance_hbar"]),
+    )
+    local_support_pairs = np.asarray(
+        [np.count_nonzero(np.abs(dataset.t - t0) < float(config["signal_h"])) for t0 in t_grid],
+        dtype=int,
+    )
+    variance_support_pairs = np.asarray(
+        [np.count_nonzero(np.abs(dataset.t - t0) < float(config["variance_hbar"])) for t0 in t_grid],
+        dtype=int,
+    )
     sigma_min_eigenvalue = float(
         np.min(np.linalg.eigvalsh(np.asarray(covariance.Sigma_hat_blocks, dtype=float)))
     )
@@ -162,6 +185,9 @@ def fit_coefficients_on_grid(
         "sigma_min_eigenvalue": sigma_min_eigenvalue,
         "beta_local_max_abs": float(np.max(np.abs(beta_local))) if beta_local.size else 0.0,
         "beta_hat_max_abs": float(np.max(np.abs(beta_hat))) if beta_hat.size else 0.0,
+        "sigma2_hat_grid": sigma2_hat_grid,
+        "local_support_pairs": local_support_pairs,
+        "variance_support_pairs": variance_support_pairs,
     }
     return A_hat, beta_hat, diagnostics
 
@@ -214,7 +240,7 @@ def patient_cluster_resample(
         )
 
     indices = np.concatenate(index_chunks)
-    bootstrap_dataset = subset_dataset(dataset, indices, z_mode=z_mode)
+    bootstrap_dataset = subset_dataset(dataset, indices, z_mode="none" if z_mode == "none" else "full")
     bootstrap_dataset.subject_ids = np.concatenate(pair_id_chunks)
     bootstrap_dataset.meta.update(
         {
@@ -224,6 +250,69 @@ def patient_cluster_resample(
         }
     )
     return bootstrap_dataset, np.asarray(sampled_patient_ids), int(np.unique(sampled_patient_ids).size)
+
+
+def pair_row_resample(
+    dataset: PairedEyeDataset,
+    manifest: pd.DataFrame,
+    rng: np.random.Generator,
+    *,
+    replicate: int,
+    z_mode: str = "none",
+) -> tuple[PairedEyeDataset, np.ndarray, int]:
+    """Resample paired-visit rows while retaining the OD/OS pair within each row."""
+
+    if len(manifest) != dataset.n_subject:
+        raise ValueError("manifest and dataset must have the same row count.")
+    if "pair_id" not in manifest:
+        raise ValueError("manifest must contain pair_id.")
+
+    indices = rng.choice(np.arange(dataset.n_subject), size=dataset.n_subject, replace=True)
+    pair_ids = manifest["pair_id"].astype(str).to_numpy()
+    sampled_pair_ids = pair_ids[indices]
+    bootstrap_dataset = subset_dataset(dataset, indices, z_mode="none" if z_mode == "none" else "full")
+    bootstrap_dataset.subject_ids = np.asarray(
+        [
+            f"boot{replicate:04d}_draw{draw_idx:04d}_{pair_id}"
+            for draw_idx, pair_id in enumerate(sampled_pair_ids)
+        ],
+        dtype=str,
+    )
+    bootstrap_dataset.meta.update(
+        {
+            "bootstrap_replicate": int(replicate),
+            "bootstrap_resample_unit": "pair_id",
+            "bootstrap_rows": int(indices.size),
+        }
+    )
+    return bootstrap_dataset, sampled_pair_ids, int(np.unique(sampled_pair_ids).size)
+
+
+def select_z_columns(
+    dataset: PairedEyeDataset,
+    z_names: list[str],
+    config: dict[str, Any],
+) -> tuple[PairedEyeDataset, list[str]]:
+    """Apply the configured scalar-covariate subset without rebuilding feature packages."""
+
+    mode = str(config["z_mode"])
+    indices = np.arange(dataset.n_subject)
+    if mode == "none":
+        return subset_dataset(dataset, indices, z_mode="none"), []
+    if dataset.Z.shape[1] != len(z_names):
+        raise ValueError("Feature-package Z columns do not match Z.npy width.")
+    if mode == "full":
+        return subset_dataset(dataset, indices, z_mode="full"), list(z_names)
+
+    requested = [str(value) for value in config["z_columns"]]
+    missing = [name for name in requested if name not in z_names]
+    if missing:
+        raise ValueError(f"Requested z_columns are absent from the feature package: {missing}")
+    column_indices = np.asarray([z_names.index(name) for name in requested], dtype=int)
+    selected = subset_dataset(dataset, indices, z_mode="full")
+    selected.Z = selected.Z[:, column_indices]
+    selected.meta["selected_z_columns"] = requested
+    return selected, requested
 
 
 def replicate_rng(base_seed: int, replicate: int) -> np.random.Generator:
@@ -246,10 +335,14 @@ def original_fit(
     config: dict[str, Any],
     t_grid: np.ndarray,
     meta: dict[str, Any],
+    z_names: list[str],
     output: Path,
 ) -> None:
     if output.exists():
-        return
+        with np.load(output) as existing:
+            required = {"sigma2_hat_grid", "local_support_pairs", "variance_support_pairs"}
+            if required.issubset(existing.files):
+                return
     start = time.perf_counter()
     A_hat, beta_hat, diagnostics = fit_coefficients_on_grid(dataset, config, t_grid)
     age_meta = meta["transforms"]["t"]
@@ -262,7 +355,7 @@ def original_fit(
         age_grid=age_grid,
         A_hat=A_hat,
         beta_hat=beta_hat,
-        Z_names=np.asarray(meta["transforms"]["Z"]["columns"], dtype=str),
+        Z_names=np.asarray(z_names, dtype=str),
         y_sd=np.array(float(meta["transforms"]["y"]["sd"])),
         elapsed_seconds=np.array(time.perf_counter() - start),
         **{key: np.array(value) for key, value in diagnostics.items()},
@@ -281,36 +374,52 @@ def run_replicate(
 ) -> dict[str, Any]:
     start = time.perf_counter()
     rng = replicate_rng(int(config["bootstrap_seed"]), replicate)
-    bootstrap_dataset, sampled_ids, n_unique = patient_cluster_resample(
-        dataset,
-        manifest,
-        rng,
-        replicate=replicate,
-        z_mode=str(config["z_mode"]),
+    resample_unit = str(config["resample_unit"])
+    resampler = patient_cluster_resample if resample_unit == "subject_id" else pair_row_resample
+    bootstrap_dataset, sampled_ids, n_unique = resampler(
+        dataset, manifest, rng, replicate=replicate, z_mode=str(config["z_mode"])
     )
     try:
         A_hat, beta_hat, diagnostics = fit_coefficients_on_grid(bootstrap_dataset, config, t_grid)
         elapsed = time.perf_counter() - start
+        resample_arrays: dict[str, Any] = {
+            "sampled_original_ids": np.asarray(sampled_ids, dtype=str),
+            "n_unique_original_units": np.array(n_unique),
+            "resample_unit": np.array(resample_unit),
+        }
+        if resample_unit == "subject_id":
+            resample_arrays.update(
+                sampled_original_subject_ids=np.asarray(sampled_ids, dtype=str),
+                n_unique_original_subjects=np.array(n_unique),
+            )
+        else:
+            resample_arrays.update(
+                sampled_original_pair_ids=np.asarray(sampled_ids, dtype=str),
+                n_unique_original_pairs=np.array(n_unique),
+            )
         atomic_savez(
             output,
             replicate=np.array(replicate),
             A_hat=A_hat,
             beta_hat=beta_hat,
-            sampled_original_subject_ids=np.asarray(sampled_ids, dtype=str),
-            n_unique_original_subjects=np.array(n_unique),
             n_bootstrap_rows=np.array(bootstrap_dataset.n_subject),
             elapsed_seconds=np.array(elapsed),
+            **resample_arrays,
             **{key: np.array(value) for key, value in diagnostics.items()},
         )
         if failure_output.exists():
             failure_output.unlink()
+        status_diagnostics = {
+            key: value for key, value in diagnostics.items() if np.asarray(value).ndim == 0
+        }
         return {
             "replicate": replicate,
             "status": "success",
             "n_bootstrap_rows": bootstrap_dataset.n_subject,
-            "n_unique_original_subjects": n_unique,
+            "resample_unit": resample_unit,
+            "n_unique_original_units": n_unique,
             "elapsed_seconds": elapsed,
-            **diagnostics,
+            **status_diagnostics,
             "error_type": "",
             "error_message": "",
         }
@@ -320,7 +429,8 @@ def run_replicate(
             "replicate": replicate,
             "status": "failure",
             "n_bootstrap_rows": bootstrap_dataset.n_subject,
-            "n_unique_original_subjects": n_unique,
+            "resample_unit": resample_unit,
+            "n_unique_original_units": n_unique,
             "elapsed_seconds": elapsed,
             "error_type": type(exc).__name__,
             "error_message": str(exc),
@@ -341,7 +451,12 @@ def scan_status(replicate_dir: Path, failure_dir: Path, total: int) -> pd.DataFr
                         "replicate": replicate,
                         "status": "success",
                         "n_bootstrap_rows": int(data["n_bootstrap_rows"]),
-                        "n_unique_original_subjects": int(data["n_unique_original_subjects"]),
+                        "resample_unit": str(data["resample_unit"]) if "resample_unit" in data else "subject_id",
+                        "n_unique_original_units": int(
+                            data["n_unique_original_units"]
+                            if "n_unique_original_units" in data
+                            else data["n_unique_original_subjects"]
+                        ),
                         "rho_hat": float(data["rho_hat"]),
                         "sigma2_hat_mean": float(data["sigma2_hat_mean"]),
                         "sigma2_hat_min": float(data["sigma2_hat_min"]),
@@ -362,7 +477,7 @@ def write_readme(run_dir: Path, config: dict[str, Any], total: int) -> None:
     lines = [
         f"# {config['name']}",
         "",
-        "Patient-cluster bootstrap pilot for fixed-hyperparameter GRAPE coefficient functions.",
+        "Bootstrap pilot for fixed-hyperparameter GRAPE coefficient functions.",
         "",
         "## Fixed model",
         "",
@@ -372,7 +487,12 @@ def write_readme(run_dir: Path, config: dict[str, Any], total: int) -> None:
         f"- `z_mode={config['z_mode']}`",
         f"- `ridge={float(config.get('ridge', 0.0)):.1e}`",
         f"- Requested bootstrap replicates: `{total}`",
-        "- Resampling unit: real patient `subject_id`; all visits and both eyes are retained",
+        f"- Resampling unit: `{config['resample_unit']}`",
+        (
+            "- Each sampled paired-visit row retains its OD/OS outcomes"
+            if str(config["resample_unit"]) == "pair_id"
+            else "- Each sampled patient retains all visits and both eyes"
+        ),
         "- CP features and preprocessing transforms are fixed",
         "",
         "## Outputs",
@@ -382,7 +502,8 @@ def write_readme(run_dir: Path, config: dict[str, Any], total: int) -> None:
         "- `failures/`: persisted exception details",
         "- `replicate_status.csv`: replicate-level numerical diagnostics",
         "- `bootstrap_draws.npz` and `coefficient_summary.csv`: generated by aggregation",
-        "- `beta_summary_all.csv`: full regression-coefficient audit table when `z_mode=full`",
+        "- `beta_summary_all.csv`: regression-coefficient audit table when `z_mode` is not `none`",
+        "- `variance_summary.csv`: fixed-grid sigma-squared/sigma estimates and pointwise intervals",
         "- `figures/`: generated from the aggregated results",
         "",
         (
@@ -429,13 +550,14 @@ def main() -> None:
         int(config["R"]),
     )
     dataset_full, manifest, meta = load_feature_dataset(package_dir)
-    dataset = subset_dataset(
+    all_z_names = [str(value) for value in meta["transforms"]["Z"]["columns"]]
+    dataset, z_names = select_z_columns(
         dataset_full,
-        np.arange(dataset_full.n_subject),
-        z_mode=str(config["z_mode"]),
+        all_z_names,
+        config,
     )
     t_grid = build_t_grid(config)
-    original_fit(dataset, config, t_grid, meta, run_dir / "original_fit.npz")
+    original_fit(dataset, config, t_grid, meta, z_names, run_dir / "original_fit.npz")
     write_readme(run_dir, config, total)
     write_json(
         run_dir / "run_metadata.json",
@@ -450,7 +572,8 @@ def main() -> None:
             "n_patients": int(manifest["subject_id"].nunique()),
             "A_shape_per_fit": [int(t_grid.size), int(config["R"]), int(np.prod([int(x) for x in str(config["S"]).split("x")]))],
             "beta_shape_per_fit": [int(dataset.Z.shape[1])],
-            "Z_names": list(meta["transforms"]["Z"]["columns"]) if str(config["z_mode"]) == "full" else [],
+            "Z_names": z_names,
+            "resample_unit": str(config["resample_unit"]),
         },
     )
 
@@ -478,7 +601,7 @@ def main() -> None:
     def print_row(row: dict[str, Any], completed: int) -> None:
         print(
             f"[{completed}/{total}] {row['status']} replicate={row['replicate']} "
-            f"rows={row['n_bootstrap_rows']} unique_patients={row['n_unique_original_subjects']} "
+            f"rows={row['n_bootstrap_rows']} unique_units={row['n_unique_original_units']} "
             f"elapsed={row['elapsed_seconds']:.2f}s",
             flush=True,
         )

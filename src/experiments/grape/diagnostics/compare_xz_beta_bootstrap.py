@@ -25,7 +25,7 @@ from src.experiments.grape.diagnostics.bootstrap_coefficients import (  # noqa: 
 
 DEFAULT_CFP_RUN = RUN_ROOT / "cfp_xz_inherit_xonly_tuning_b2000"
 DEFAULT_ROI_RUN = RUN_ROOT / "roi_xz_inherit_xonly_tuning_b2000"
-DEFAULT_RUN_NAME = "xz_inherit_xonly_tuning_b2000_comparison"
+DEFAULT_RUN_NAME = "xz_inherit_xonly_tuning_b2000"
 DEFAULT_OUTPUT_ROOT = GRAPE_ROOT / "outputs" / "coefficient_bootstrap"
 
 
@@ -141,7 +141,10 @@ def main() -> None:
         "n_variables_significant_either_image": int(len(significant)),
         "selection_rule": "CFP or ROI nominal 95% percentile bootstrap CI excludes zero",
         "multiple_testing_adjustment": "none",
-        "interpretation_warning": "Filtered variables are nominally significant; 120 image-by-variable comparisons are not multiplicity-adjusted.",
+        "interpretation_warning": (
+            f"Filtered variables are nominally significant; {2 * len(combined)} image-by-variable "
+            "comparisons are not multiplicity-adjusted."
+        ),
     }
     (run_dir / "comparison_metadata.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n",
@@ -150,10 +153,10 @@ def main() -> None:
     readme = [
         f"# {args.run_name}",
         "",
-        "Joint CFP/ROI regression-coefficient summary for X+Z paired VCTR models using inherited X-only tuning.",
+        "Joint CFP/ROI regression-coefficient bootstrap summary.",
         "",
         "The manuscript-facing table retains a variable when its nominal 95% percentile bootstrap CI excludes zero in CFP or ROI.",
-        "The complete 60-variable table remains available for audit. No multiple-testing adjustment is applied.",
+        f"The complete {len(combined)}-variable table remains available for audit. No multiple-testing adjustment is applied.",
         "",
         "## Files",
         "",
@@ -164,7 +167,7 @@ def main() -> None:
     (run_dir / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
 
     if not args.no_export:
-        output_dir = resolve_path(args.output_root) / "xz_inherit_xonly_tuning_b2000"
+        output_dir = resolve_path(args.output_root) / str(args.run_name)
         output_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy2(significant_path, output_dir / significant_path.name)
         shutil.copy2(run_dir / "comparison_metadata.json", output_dir / "comparison_metadata.json")

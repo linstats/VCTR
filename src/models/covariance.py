@@ -62,6 +62,34 @@ def invert_blocks(Sigma_hat_blocks: np.ndarray) -> np.ndarray:
     return np.linalg.inv(Sigma_hat_blocks)
 
 
+def smooth_variance_curve(
+    *,
+    residual_pairs: np.ndarray,
+    t: np.ndarray,
+    t_eval: np.ndarray,
+    bandwidth: float,
+) -> np.ndarray:
+    """Kernel-smooth paired squared residuals on an arbitrary evaluation grid."""
+
+    residual_pairs = np.asarray(residual_pairs, dtype=float)
+    t = np.asarray(t, dtype=float).reshape(-1)
+    t_eval = np.asarray(t_eval, dtype=float).reshape(-1)
+    if residual_pairs.shape != (t.shape[0], 2):
+        raise ValueError("residual_pairs must have shape (len(t), 2).")
+    if bandwidth <= 0:
+        raise ValueError("bandwidth must be positive.")
+
+    squared_pair_sums = np.sum(np.square(residual_pairs), axis=1)
+    sigma2_hat = np.zeros(t_eval.shape[0], dtype=float)
+    for idx, t0 in enumerate(t_eval):
+        kernel = epanechnikov_kernel((t - t0) / bandwidth) / bandwidth
+        denom = 2.0 * np.sum(kernel)
+        if denom <= 0:
+            raise np.linalg.LinAlgError("Variance-kernel denominator is zero.")
+        sigma2_hat[idx] = max(float(np.sum(squared_pair_sums * kernel) / denom), 1e-8)
+    return sigma2_hat
+
+
 def estimate_exchangeable_covariance(initial_result: InitialIidResult) -> CovarianceEstimate:
     """Estimate a shared exchangeable ``2 x 2`` covariance matrix from residuals."""
 
@@ -134,16 +162,12 @@ def estimate_exchangeable_varying_sigma_covariance(
     if residual_pairs.shape[0] != t.shape[0]:
         raise ValueError("t and regrouped residual pairs must have the same subject count.")
 
-    squared_pairs = np.square(residual_pairs)
-    sigma2_hat_t = np.zeros(t.shape[0], dtype=float)
-    for idx, t0 in enumerate(t):
-        scaled = (t - t0) / bandwidth
-        kernel = epanechnikov_kernel(scaled) / bandwidth
-        denom = 2.0 * np.sum(kernel)
-        if denom <= 0:
-            raise np.linalg.LinAlgError("Variance-kernel denominator is zero.")
-        numer = float(np.sum(np.sum(squared_pairs, axis=1) * kernel))
-        sigma2_hat_t[idx] = max(numer / denom, 1e-8)
+    sigma2_hat_t = smooth_variance_curve(
+        residual_pairs=residual_pairs,
+        t=t,
+        t_eval=t,
+        bandwidth=bandwidth,
+    )
 
     rho_clipped = False
     rho_denom = float(np.sum(sigma2_hat_t))

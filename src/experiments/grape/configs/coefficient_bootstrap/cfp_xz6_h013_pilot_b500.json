@@ -1,0 +1,46 @@
+{
+  "name": "cfp_xz6_h013_pilot_b500",
+  "description": "CFP six-covariate paired VCTR pilot with h=0.13 and paired-visit row bootstrap.",
+  "image_type": "cfp",
+  "model_label": "X+Z6 paired VCTR row-bootstrap pilot",
+  "S": "3x4x1",
+  "R": 1,
+  "signal_h": 0.13,
+  "variance_hbar": 0.25,
+  "z_mode": "selected",
+  "z_columns": [
+    "is_female",
+    "z_vf_01_mean",
+    "z_vf_22_mean",
+    "z_vf_25_mean",
+    "z_vf_28_mean",
+    "z_vf_31_mean"
+  ],
+  "covariance_mode": "exchangeable_varying_sigma",
+  "ridge": 1e-6,
+  "bootstrap_replicates": 500,
+  "bootstrap_seed": 20260801,
+  "resample_unit": "pair_id",
+  "keep_cp_features_fixed": true,
+  "keep_transforms_fixed": true,
+  "min_local_support_pairs": 30,
+  "min_variance_support_pairs": 30,
+  "t_grid": {
+    "method": "linear",
+    "min": 0.0,
+    "max": 1.0,
+    "num_points": 101
+  },
+  "confidence_level": 0.95,
+  "ci_method": "percentile",
+  "max_workers": 4,
+  "checkpoint_each_replicate": true,
+  "notes": [
+    "Pilot only; not manuscript-facing inference.",
+    "The six Z columns are sex plus paired-eye mean VF values at locations 1, 22, 25, 28, and 31.",
+    "Paired-visit rows are sampled with replacement; OD and OS remain paired within each sampled row.",
+    "Repeated visits from the same patient are treated as independent by this bootstrap sensitivity design.",
+    "The full grid is computed, but plots mark grid points with fewer than 30 local pairs as low support.",
+    "CP features and all preprocessing transformations remain fixed."
+  ]
+}
