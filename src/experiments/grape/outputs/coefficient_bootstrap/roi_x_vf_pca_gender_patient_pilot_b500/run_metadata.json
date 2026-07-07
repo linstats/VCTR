@@ -1,0 +1,24 @@
+{
+  "A_shape_per_fit": [
+    101,
+    1,
+    12
+  ],
+  "Z_names": [
+    "is_female",
+    "vf_pc_01"
+  ],
+  "beta_shape_per_fit": [
+    2
+  ],
+  "config": "src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_patient_pilot_b500.json",
+  "created_at_utc": "2026-07-07T03:21:00.071052+00:00",
+  "feature_package": "src/experiments/grape/data/features/roi_192_iop_le35/S6x2x1_R1",
+  "max_workers": 4,
+  "n_pairs": 273,
+  "n_patients": 119,
+  "pca_transform_fixed_across_bootstrap": true,
+  "requested_replicates_this_invocation": 500,
+  "resample_unit": "subject_id",
+  "run_dir": "src/experiments/grape/runs/coefficient_bootstrap/roi_x_vf_pca_gender_patient_pilot_b500"
+}

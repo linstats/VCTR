@@ -33,8 +33,9 @@ from src.experiments.grape.evaluation.compare_models import (  # noqa: E402
     load_feature_dataset,
     subset_dataset,
 )
+from src.experiments.grape.evaluation.vf_pca import FoldVFPCATransformer, split_sex_vf  # noqa: E402
 from src.models import PairedEyeVCTRModel  # noqa: E402
-from src.models.covariance import smooth_variance_curve  # noqa: E402
+from src.models.covariance import invert_blocks, smooth_variance_curve  # noqa: E402
 
 
 GRAPE_ROOT = Path(__file__).resolve().parents[1]
@@ -93,14 +94,19 @@ def load_config(path: Path) -> dict[str, Any]:
     missing = [key for key in required if key not in config]
     if missing:
         raise ValueError(f"Missing required config keys: {missing}")
-    if str(config["z_mode"]) not in {"none", "full", "selected"}:
-        raise ValueError("z_mode must be 'none', 'full', or 'selected'.")
+    if str(config["z_mode"]) not in {"none", "full", "selected", "pca_gender"}:
+        raise ValueError("z_mode must be 'none', 'full', 'selected', or 'pca_gender'.")
     if str(config["z_mode"]) == "selected":
         z_columns = config.get("z_columns")
         if not isinstance(z_columns, list) or not z_columns:
             raise ValueError("z_mode='selected' requires a non-empty z_columns list.")
         if len(z_columns) != len(set(str(value) for value in z_columns)):
             raise ValueError("z_columns must not contain duplicates.")
+    if str(config["z_mode"]) == "pca_gender":
+        if int(config.get("pca_components", 0)) <= 0:
+            raise ValueError("z_mode='pca_gender' requires positive pca_components.")
+        if str(config.get("pca_weighting", "subject_equal")) not in {"subject_equal", "row_equal"}:
+            raise ValueError("pca_weighting must be 'subject_equal' or 'row_equal'.")
     if str(config["resample_unit"]) not in {"subject_id", "pair_id"}:
         raise ValueError("resample_unit must be 'subject_id' or 'pair_id'.")
     if not bool(config.get("keep_cp_features_fixed", False)):
@@ -177,6 +183,13 @@ def fit_coefficients_on_grid(
     sigma_min_eigenvalue = float(
         np.min(np.linalg.eigvalsh(np.asarray(covariance.Sigma_hat_blocks, dtype=float)))
     )
+    local_design_condition_numbers = stage3_local_design_condition_numbers(
+        dataset,
+        model,
+        covariance.Sigma_hat_blocks,
+        t_grid,
+        bandwidth=float(config["signal_h"]),
+    )
     diagnostics = {
         "rho_hat": float(covariance.rho_hat),
         "sigma2_hat_mean": float(np.mean(covariance.sigma2_hat_t)),
@@ -188,8 +201,48 @@ def fit_coefficients_on_grid(
         "sigma2_hat_grid": sigma2_hat_grid,
         "local_support_pairs": local_support_pairs,
         "variance_support_pairs": variance_support_pairs,
+        "local_design_condition_numbers": local_design_condition_numbers,
     }
     return A_hat, beta_hat, diagnostics
+
+
+def stage3_local_design_condition_numbers(
+    dataset: PairedEyeDataset,
+    model: PairedEyeVCTRModel,
+    sigma_blocks: np.ndarray,
+    t_grid: np.ndarray,
+    *,
+    bandwidth: float,
+) -> np.ndarray:
+    """Condition numbers of the ridge-stabilized stage-3 GLS systems."""
+
+    x_mat = dataset.X.reshape(dataset.n_subject, 2, -1)
+    n_features = x_mat.shape[2]
+    p0 = dataset.Z.shape[1]
+    dimension = p0 + 2 * n_features
+    sigma_inverse = invert_blocks(sigma_blocks)
+    result = np.empty(len(t_grid), dtype=float)
+    for grid_index, t0 in enumerate(t_grid):
+        lhs = np.zeros((dimension, dimension), dtype=float)
+        for subject in range(dataset.n_subject):
+            kernel_weight = model._kernel_scalar_weight(  # noqa: SLF001 - mirrors public stage-3 calculation.
+                dataset.t[subject],
+                float(t0),
+                bandwidth,
+            )
+            if kernel_weight <= 0:
+                continue
+            scaled_time = (dataset.t[subject] - float(t0)) / bandwidth
+            design = np.zeros((2, dimension), dtype=float)
+            if p0:
+                design[:, :p0] = dataset.Z[subject]
+            design[:, p0 : p0 + n_features] = x_mat[subject]
+            design[:, p0 + n_features :] = x_mat[subject] * scaled_time
+            weight = kernel_weight * sigma_inverse[subject]
+            lhs += design.T @ weight @ design
+        stabilized = lhs + float(model.ridge) * np.eye(dimension)
+        result[grid_index] = float(np.linalg.cond(stabilized))
+    return result
 
 
 def fit_A_on_grid(
@@ -292,8 +345,9 @@ def select_z_columns(
     dataset: PairedEyeDataset,
     z_names: list[str],
     config: dict[str, Any],
+    manifest: pd.DataFrame | None = None,
 ) -> tuple[PairedEyeDataset, list[str]]:
-    """Apply the configured scalar-covariate subset without rebuilding feature packages."""
+    """Apply the configured covariate subset or fixed PCA transform."""
 
     mode = str(config["z_mode"])
     indices = np.arange(dataset.n_subject)
@@ -303,6 +357,38 @@ def select_z_columns(
         raise ValueError("Feature-package Z columns do not match Z.npy width.")
     if mode == "full":
         return subset_dataset(dataset, indices, z_mode="full"), list(z_names)
+
+    if mode == "pca_gender":
+        if manifest is None or "subject_id" not in manifest:
+            raise ValueError("z_mode='pca_gender' requires a manifest with subject_id.")
+        if len(manifest) != dataset.n_subject:
+            raise ValueError("manifest and dataset must have the same row count.")
+        if not z_names or z_names[0] != "is_female":
+            raise ValueError("PCA mode expects is_female followed by VF columns.")
+        sex, vf = split_sex_vf(dataset.Z)
+        transformer = FoldVFPCATransformer.fit(
+            vf,
+            manifest["subject_id"].to_numpy(),
+            n_components=int(config["pca_components"]),
+            weighting=str(config.get("pca_weighting", "subject_equal")),
+        )
+        selected = subset_dataset(dataset, indices, z_mode="full")
+        selected.Z = np.column_stack([sex, transformer.transform(vf)])
+        selected_names = ["is_female"] + [
+            f"vf_pc_{component:02d}" for component in range(1, transformer.n_components + 1)
+        ]
+        selected.meta["vf_pca_transform"] = {
+            "mean": transformer.mean_.copy(),
+            "scale": transformer.scale_.copy(),
+            "components": transformer.components_.copy(),
+            "explained_variance_ratio": transformer.explained_variance_ratio_.copy(),
+            "singular_values": transformer.singular_values_.copy(),
+            "vf_names": np.asarray(z_names[1:], dtype=str),
+            "weighting": str(config.get("pca_weighting", "subject_equal")),
+            "n_training_rows": transformer.n_training_rows_,
+            "n_training_groups": transformer.n_training_groups_,
+        }
+        return selected, selected_names
 
     requested = [str(value) for value in config["z_columns"]]
     missing = [name for name in requested if name not in z_names]
@@ -328,6 +414,41 @@ def atomic_savez(path: Path, **arrays: Any) -> None:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def save_pca_transform(dataset: PairedEyeDataset, run_dir: Path) -> None:
+    """Persist the fixed full-sample PCA basis used by every bootstrap draw."""
+
+    transform = dataset.meta.get("vf_pca_transform")
+    if transform is None:
+        return
+    np.savez_compressed(
+        run_dir / "pca_transform.npz",
+        mean=np.asarray(transform["mean"], dtype=float),
+        scale=np.asarray(transform["scale"], dtype=float),
+        components=np.asarray(transform["components"], dtype=float),
+        explained_variance_ratio=np.asarray(transform["explained_variance_ratio"], dtype=float),
+        singular_values=np.asarray(transform["singular_values"], dtype=float),
+        vf_names=np.asarray(transform["vf_names"], dtype=str),
+        weighting=np.asarray(str(transform["weighting"])),
+        n_training_rows=np.asarray(int(transform["n_training_rows"])),
+        n_training_groups=np.asarray(int(transform["n_training_groups"])),
+    )
+    loading_rows: list[dict[str, Any]] = []
+    components = np.asarray(transform["components"], dtype=float)
+    vf_names = np.asarray(transform["vf_names"], dtype=str)
+    explained = np.asarray(transform["explained_variance_ratio"], dtype=float)
+    for pc_index in range(components.shape[0]):
+        for variable, loading in zip(vf_names, components[pc_index], strict=True):
+            loading_rows.append(
+                {
+                    "pc": pc_index + 1,
+                    "variable": str(variable),
+                    "loading": float(loading),
+                    "explained_variance_ratio": float(explained[pc_index]),
+                }
+            )
+    pd.DataFrame(loading_rows).to_csv(run_dir / "pca_loadings.csv", index=False)
 
 
 def original_fit(
@@ -503,6 +624,7 @@ def write_readme(run_dir: Path, config: dict[str, Any], total: int) -> None:
         "- `replicate_status.csv`: replicate-level numerical diagnostics",
         "- `bootstrap_draws.npz` and `coefficient_summary.csv`: generated by aggregation",
         "- `beta_summary_all.csv`: regression-coefficient audit table when `z_mode` is not `none`",
+        "- `pca_transform.npz` and `pca_loadings.csv`: fixed PCA definition when `z_mode=pca_gender`",
         "- `variance_summary.csv`: fixed-grid sigma-squared/sigma estimates and pointwise intervals",
         "- `figures/`: generated from the aggregated results",
         "",
@@ -555,9 +677,11 @@ def main() -> None:
         dataset_full,
         all_z_names,
         config,
+        manifest,
     )
     t_grid = build_t_grid(config)
     original_fit(dataset, config, t_grid, meta, z_names, run_dir / "original_fit.npz")
+    save_pca_transform(dataset, run_dir)
     write_readme(run_dir, config, total)
     write_json(
         run_dir / "run_metadata.json",
@@ -573,6 +697,7 @@ def main() -> None:
             "A_shape_per_fit": [int(t_grid.size), int(config["R"]), int(np.prod([int(x) for x in str(config["S"]).split("x")]))],
             "beta_shape_per_fit": [int(dataset.Z.shape[1])],
             "Z_names": z_names,
+            "pca_transform_fixed_across_bootstrap": str(config["z_mode"]) == "pca_gender",
             "resample_unit": str(config["resample_unit"]),
         },
     )

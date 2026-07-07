@@ -134,6 +134,24 @@ src/experiments/grape/outputs/final_ablation/
 | CFP | `3x4x1` | 1 | 1.80 | 0.25 |
 | ROI | `6x2x1` | 1 | 0.85 | 0.30 |
 
+## VF PCA 增量预测实验
+
+针对 full 60Z 的 VF 共线性，`evaluation/vf_pca_ablation.py` 使用 fold-local
+PCA 检验 bilateral-mean VF 的整体信息是否能改善 X-only prediction。该实验
+固定上述 CFP/ROI 图像超参数；outer patient-grouped CV 用于评估，inner
+patient-grouped CV 仅选择 PC 数。PCA 对重复随访采用患者等总权重，性别保持
+为 PCA 之外的独立协变量。
+
+配置与精简结果分别位于：
+
+```text
+src/experiments/grape/configs/vf_pca/v1_fixed_x_tuning.json
+src/experiments/grape/outputs/vf_pca/v1_fixed_x_tuning/
+```
+
+该实验不改变 Level-3 feature packages，也不检验 eye-specific VF；当前 VF
+输入仍是每个位置的 OD/OS 均值。
+
 ## 已归档实验线
 
 旧的 stagewise bandwidth CV 已归档到：

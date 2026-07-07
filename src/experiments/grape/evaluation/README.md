@@ -82,6 +82,46 @@ src/experiments/grape/outputs/final_ablation/
 
 当前结果显示 CFP 和 ROI 的最佳 held-out RMSE 都来自 `x_only_paired_vctr`。加入 `Z` 会明显恶化 prediction；paired covariance-aware refit 对 X-only CFP 有小幅收益，对 X-only ROI 的收益很小。
 
+## VF PCA Incremental Prediction
+
+为检验 59 个高度相关 VF 位置的整体信息是否具有额外预测价值，使用独立入口：
+
+```bash
+python src/experiments/grape/evaluation/vf_pca_ablation.py \
+  --config src/experiments/grape/configs/vf_pca/v1_fixed_x_tuning.json
+```
+
+该实验固定现有 X-only-selected CFP/ROI `(S, R, h, hbar)`，使用 nested
+`subject_id` grouped CV：outer folds 评估 prediction，inner folds 仅选择 PC
+数。VF 标准化和 PCA 均只使用对应 training fold；多次随访按患者等总权重
+估计 PCA。性别不进入 PCA，而是作为独立 scalar covariate 比较。
+
+完整结果保存到：
+
+```text
+src/experiments/grape/runs/vf_pca/v1_fixed_x_tuning/
+```
+
+精简结果保存到：
+
+```text
+src/experiments/grape/outputs/vf_pca/v1_fixed_x_tuning/
+```
+
+当前 PCA 输入仍是 OD/OS VF 均值，因此该实验检验 bilateral-mean VF 的增量
+价值，不等同于 eye-specific VF 分析。
+
+ROI-only 的直接五模型比较使用：
+
+```bash
+python src/experiments/grape/evaluation/vf_pca_ablation.py \
+  --config src/experiments/grape/configs/vf_pca/v2_roi_five_model.json
+```
+
+它在完全相同的 outer folds 中比较 `y_bar`、X-only、X+VF-PCA、
+X+VF-PCA+gender 和 X+60Z。60Z 的 59 个 VF 同样只用 training fold
+估计标准化参数。
+
 ## Historical Model Comparison
 
 `compare_models.py` 和 `configs/model_comparison/` 保留为早期开发对比入口。已有 `v2_patient_grouped` 结果基于旧 bandwidth CV 固定候选，不再作为最终 empirical ablation table。

@@ -1,0 +1,6 @@
+image_type,outer_fold,selected_k,selection_model,n_outer_train_pairs,n_outer_holdout_pairs,n_outer_train_subjects
+roi,1,1,x_sex_vf_pca_paired_vctr,196,77,95
+roi,2,1,x_sex_vf_pca_paired_vctr,226,47,95
+roi,3,1,x_sex_vf_pca_paired_vctr,226,47,95
+roi,4,1,x_sex_vf_pca_paired_vctr,223,50,95
+roi,5,1,x_sex_vf_pca_paired_vctr,221,52,96

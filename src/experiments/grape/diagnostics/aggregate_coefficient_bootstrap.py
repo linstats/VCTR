@@ -202,11 +202,19 @@ def main() -> None:
         beta_rows: list[dict[str, object]] = []
         for idx, variable in enumerate(z_names):
             excludes_zero = bool(beta_lower[idx] > 0.0 or beta_upper[idx] < 0.0)
+            variable_text = str(variable)
+            variable_type = (
+                "sex"
+                if variable_text == "is_female"
+                else "vf_pc"
+                if variable_text.startswith("vf_pc_")
+                else "vf"
+            )
             beta_rows.append(
                 {
                     "image_type": str(config["image_type"]),
-                    "variable": str(variable),
-                    "variable_type": "sex" if str(variable) == "is_female" else "vf",
+                    "variable": variable_text,
+                    "variable_type": variable_type,
                     "beta_hat_std": float(beta_original[idx]),
                     "bootstrap_mean_std": float(beta_mean[idx]),
                     "bootstrap_bias_std": float(beta_bias[idx]),

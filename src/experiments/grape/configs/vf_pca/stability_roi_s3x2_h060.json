@@ -1,0 +1,22 @@
+{
+  "name": "stability_roi_s3x2_h060",
+  "description": "ROI reduced-partition X+VF-PC1+gender candidate for A(t) stability sensitivity.",
+  "outer_folds": 5,
+  "inner_folds": 2,
+  "seed": 20260707,
+  "inner_seed_offset": 1000,
+  "split_group": "subject_id",
+  "pca_components": [1],
+  "pca_weighting": "subject_equal",
+  "selection_model": "x_sex_vf_pca_paired_vctr",
+  "contrast_bootstrap_B": 2000,
+  "contrast_bootstrap_seed_offset": 2000,
+  "a_eval_mode": "full",
+  "a_eval_num_points": 80,
+  "ridge": 1e-6,
+  "mape_eps_std": 1e-6,
+  "mape_eps_iop": 1e-6,
+  "image_configs": [{"image_type": "roi", "S": "3x2x1", "R": 1, "signal_h": 0.6, "variance_hbar": 0.25}],
+  "models": ["x_sex_vf_pca_paired_vctr"],
+  "notes": ["Fixed K=1 reduced-partition stability candidate.", "Patient-grouped outer prediction CV."]
+}

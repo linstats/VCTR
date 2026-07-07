@@ -1,0 +1,19 @@
+{
+  "experiment": "stability_roi_s6x2_h120",
+  "config": "src/experiments/grape/configs/vf_pca/stability_roi_s6x2_h120.json",
+  "feature_root": "src/experiments/grape/data/features",
+  "outer_split": "subject_id-grouped",
+  "outer_folds": 5,
+  "inner_folds": 2,
+  "selection_model": "x_sex_vf_pca_paired_vctr",
+  "pca_components": [
+    1
+  ],
+  "pca_weighting": "subject_equal",
+  "contrast_bootstrap_B": 2000,
+  "contrast_bootstrap_scope": "patient-cluster bootstrap of fixed outer-CV predictions",
+  "vf_representation": "59 bilateral OD/OS means shared by both eye outcomes",
+  "sex_in_pca": false,
+  "smoke": false,
+  "elapsed_seconds": 6.605538083007559
+}

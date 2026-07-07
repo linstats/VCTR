@@ -1,0 +1,2 @@
+image_type,S,R,signal_h,variance_hbar,model,n_pairs,n_subjects,pca_selection,pca_weighting,rmse_std,mae_std,mape_std_pct,rmse_iop,mae_iop,mape_iop_pct
+roi,6x2x1,1,0.85,0.3,x_sex_vf_pca_paired_vctr,273,119,nested_patient_grouped_cv,subject_equal,0.9436056029794246,0.7485324535429104,617.6610338894703,3.943263265013506,3.1280659180131516,20.12778593981148

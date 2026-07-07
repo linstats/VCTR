@@ -45,3 +45,36 @@ src/experiments/grape/runs/coefficient_bootstrap/roi_x_only_at_pilot_b100/
 两套 image run 完成后，`compare_xz_beta_bootstrap.py` 合并 CFP/ROI beta summary，并生成只保留“任一 image 的 nominal 95% percentile CI 不含 0”的展示表。该筛选没有进行 multiple-testing adjustment，因此必须描述为 nominally significant。
 
 正式配置默认使用 4 个 process workers，并将每个 worker 的 BLAS 线程限制为 1。建议 CFP 与 ROI 顺序运行，避免两个多进程任务同时争用 CPU。所有 run 均支持 checkpoint/resume。
+
+## X + VF-PCA + gender bootstrap pilot
+
+ROI PCA diagnostics 使用：
+
+```bash
+python src/experiments/grape/diagnostics/bootstrap_coefficients.py \
+  --config src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_patient_pilot_b500.json
+
+python src/experiments/grape/diagnostics/aggregate_coefficient_bootstrap.py \
+  --config src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_patient_pilot_b500.json
+
+python src/experiments/grape/figures/plot_at_bootstrap.py \
+  --config src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_patient_pilot_b500.json
+```
+
+该 pilot 使用 `K=1`、真实患者 cluster bootstrap 和固定 full-sample PCA
+basis。固定 basis 保证所有 replicate 的 `vf_pc_01` beta 含义一致，但区间不
+包含 PCA basis 估计或 K 选择的不确定性。
+
+## A(t) stability sensitivity
+
+`compare_at_stability_candidates.py` 汇总三个预先定义的 ROI 候选：
+
+- `S=6x2x1, h=0.85, hbar=0.30` reference
+- `S=6x2x1, h=1.20, hbar=0.40` smoother bandwidth
+- `S=3x2x1, h=0.60, hbar=0.25` reduced partition
+
+每个候选使用固定 `K=1`、相同 patient-grouped prediction folds 和相同
+`B=200` patient-bootstrap seed。汇总指标包括 prediction RMSE、中央年龄区间
+CI width、curve roughness、bootstrap sign agreement 以及 ridge-stabilized
+stage-3 local-system condition number。不同 `S` 的 roughness 位于不同 CP basis，
+不能直接作为唯一选择标准。

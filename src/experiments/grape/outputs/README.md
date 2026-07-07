@@ -10,6 +10,8 @@ This directory contains compact, human-facing exports. Full checkpoints and boot
 - `coefficient_bootstrap/xz6_inherit_xonly_tuning_patient_b500/`: weekly-report X+Z6 patient-bootstrap pilot export using X-only-selected tuning.
 - `coefficient_bootstrap/roi_xz6_inherit_xonly_tuning_patient_b500_repeat2/`: independent-seed ROI repeatability check for that pilot.
 - `coefficient_bootstrap/roi_xz3_postselect60_inherit_xonly_tuning_row_pilot_b500/`: ROI X+Z3 post-selection paired-row bootstrap pilot.
+- `coefficient_bootstrap/roi_x_vf_pca_gender_patient_pilot_b500/`: ROI X+VF-PC1+gender patient-cluster bootstrap diagnostics.
+- `coefficient_bootstrap/roi_at_stability_sensitivity_b200/`: three-candidate ROI A(t) prediction/stability sensitivity summary.
 - `figures/`: reusable figure assets.
 
 The canonical experiment classification is in `../experiment_registry.csv`.

@@ -1,0 +1,45 @@
+{
+  "name": "v2_roi_five_model",
+  "description": "ROI-only five-model comparison of training-mean, X-only, VF PCA with and without gender, and full 60Z.",
+  "outer_folds": 5,
+  "inner_folds": 4,
+  "seed": 20260707,
+  "inner_seed_offset": 1000,
+  "split_group": "subject_id",
+  "pca_components": [1, 2, 3, 5, 10, 15],
+  "pca_weighting": "subject_equal",
+  "selection_model": "x_sex_vf_pca_paired_vctr",
+  "contrast_bootstrap_B": 2000,
+  "contrast_bootstrap_seed_offset": 2000,
+  "a_eval_mode": "full",
+  "a_eval_num_points": 80,
+  "ridge": 1e-6,
+  "mape_eps_std": 1e-6,
+  "mape_eps_iop": 1e-6,
+  "image_configs": [
+    {
+      "image_type": "roi",
+      "S": "6x2x1",
+      "R": 1,
+      "signal_h": 0.85,
+      "variance_hbar": 0.3
+    }
+  ],
+  "models": [
+    "y_bar",
+    "x_only_paired_vctr",
+    "x_vf_pca_paired_vctr",
+    "x_sex_vf_pca_paired_vctr",
+    "x_full60_paired_vctr"
+  ],
+  "notes": [
+    "The y_bar baseline predicts both holdout eyes with the flattened OD/OS response mean from the outer training fold.",
+    "PCA and all VF standardization are fit independently inside every training fold.",
+    "Each patient receives equal total PCA weight across repeated visits.",
+    "X+VF-PCA excludes gender; X+VF-PCA+gender includes gender as a separate scalar covariate.",
+    "X+60Z contains gender plus all 59 training-fold-standardized bilateral-mean VF variables.",
+    "Inner CV selects only K; ROI S, R, h, and hbar remain fixed at the existing X-only-selected values.",
+    "This experiment tests bilateral OD/OS-mean VF covariates, not eye-specific VF effects.",
+    "ridge=1e-6 is a numerical stabilization choice."
+  ]
+}

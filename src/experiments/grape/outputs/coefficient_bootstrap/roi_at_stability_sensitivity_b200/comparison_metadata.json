@@ -1,0 +1,14 @@
+{
+  "configs": [
+    "/Users/lin/Desktop/Research/2026-tensor/src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_s6x2_h085_stability_pilot_b200.json",
+    "/Users/lin/Desktop/Research/2026-tensor/src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_s6x2_h120_stability_pilot_b200.json",
+    "/Users/lin/Desktop/Research/2026-tensor/src/experiments/grape/configs/coefficient_bootstrap/roi_x_vf_pca_gender_s3x2_h060_stability_pilot_b200.json"
+  ],
+  "age_range": [
+    20.0,
+    68.0
+  ],
+  "selection_warning": "Exploratory diagnostics only; do not select by significance count or visual appearance.",
+  "condition_number": "ridge-stabilized stage-3 GLS normal equation",
+  "sign_agreement": "fraction of bootstrap draws matching the full-sample coefficient sign at each grid point"
+}

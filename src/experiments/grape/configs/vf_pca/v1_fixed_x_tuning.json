@@ -1,0 +1,55 @@
+{
+  "name": "v1_fixed_x_tuning",
+  "description": "Nested patient-grouped CV evaluation of bilateral-mean VF PCA with fixed X-only-selected image hyperparameters.",
+  "outer_folds": 5,
+  "inner_folds": 4,
+  "seed": 20260707,
+  "inner_seed_offset": 1000,
+  "split_group": "subject_id",
+  "pca_components": [1, 2, 3, 5, 10, 15],
+  "pca_weighting": "subject_equal",
+  "selection_model": "x_sex_vf_pca_paired_vctr",
+  "contrast_bootstrap_B": 2000,
+  "contrast_bootstrap_seed_offset": 2000,
+  "a_eval_mode": "full",
+  "a_eval_num_points": 80,
+  "ridge": 1e-6,
+  "mape_eps_std": 1e-6,
+  "mape_eps_iop": 1e-6,
+  "image_configs": [
+    {
+      "image_type": "cfp",
+      "S": "3x4x1",
+      "R": 1,
+      "signal_h": 1.8,
+      "variance_hbar": 0.25
+    },
+    {
+      "image_type": "roi",
+      "S": "6x2x1",
+      "R": 1,
+      "signal_h": 0.85,
+      "variance_hbar": 0.3
+    }
+  ],
+  "models": [
+    "x_only_paired_vctr",
+    "x_sex_paired_vctr",
+    "vf_pca_only_linear",
+    "sex_vf_pca_only_linear",
+    "x_vf_pca_linear",
+    "x_sex_vf_pca_linear",
+    "x_vf_pca_iid_vctr",
+    "x_sex_vf_pca_iid_vctr",
+    "x_vf_pca_paired_vctr",
+    "x_sex_vf_pca_paired_vctr"
+  ],
+  "notes": [
+    "PCA and VF standardization are fit independently inside every training fold.",
+    "Each patient receives equal total PCA weight across repeated visits.",
+    "Sex is excluded from PCA and evaluated separately.",
+    "Inner CV selects only K; CFP/ROI S, R, h, and hbar remain fixed at the existing X-only-selected values.",
+    "This experiment tests bilateral OD/OS-mean VF covariates, not eye-specific VF effects.",
+    "ridge=1e-6 is a numerical stabilization choice."
+  ]
+}

@@ -209,6 +209,39 @@ class SelectedZTest(unittest.TestCase):
         self.assertEqual(selected_names, config["z_columns"])
         np.testing.assert_array_equal(selected.Z, Z[:, [0, 3, 1]])
 
+    def test_pca_gender_builds_fixed_low_dimensional_z(self) -> None:
+        rng = np.random.default_rng(18)
+        names = ["is_female", "z_vf_00_mean", "z_vf_01_mean", "z_vf_02_mean"]
+        Z = np.column_stack([np.tile([0.0, 1.0], 6), rng.normal(size=(12, 3))])
+        dataset = PairedEyeDataset(
+            subject_ids=np.asarray([f"pair_{idx}" for idx in range(12)]),
+            eye_ids=np.asarray(["OD", "OS"]),
+            t=np.linspace(0.0, 1.0, num=12),
+            X=np.ones((12, 2, 1, 1), dtype=float),
+            Z=Z,
+            y=np.ones((12, 2), dtype=float),
+        )
+        manifest = pd.DataFrame(
+            {
+                "subject_id": np.repeat(np.arange(6), 2),
+                "pair_id": dataset.subject_ids,
+            }
+        )
+        config = {
+            "z_mode": "pca_gender",
+            "pca_components": 1,
+            "pca_weighting": "subject_equal",
+        }
+        selected, selected_names = select_z_columns(dataset, names, config, manifest)
+
+        self.assertEqual(selected_names, ["is_female", "vf_pc_01"])
+        self.assertEqual(selected.Z.shape, (12, 2))
+        np.testing.assert_array_equal(selected.Z[:, 0], Z[:, 0])
+        self.assertTrue(np.all(np.isfinite(selected.Z[:, 1])))
+        self.assertIn("vf_pca_transform", selected.meta)
+        transform = selected.meta["vf_pca_transform"]
+        self.assertEqual(np.asarray(transform["components"]).shape, (1, 3))
+
 
 class JointBetaSummaryTest(unittest.TestCase):
     def test_significance_labels(self) -> None:
