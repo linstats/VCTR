@@ -46,5 +46,10 @@ python src/experiments/grape/figures/plot_at_publication.py \
 ```
 
 Both PNG/PDF pairs and their plotting metadata are written into the same
-bootstrap run's `figures/` directory. The main age/y ranges are explicit in
-the bootstrap config; no model or bootstrap refit is performed.
+bootstrap run's `figures/` directory. The script uses documented main age/y
+defaults unless the config provides an optional `publication_figure` section;
+no model or bootstrap refit is performed.
+
+For a coefficient-only panel without bootstrap bands, use
+`plot_at_line_only.py`. The layout is configurable and defaults to 4 rows by
+3 columns; blocks are placed in numerical row-major order.
