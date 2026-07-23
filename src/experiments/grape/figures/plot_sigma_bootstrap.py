@@ -26,10 +26,15 @@ from src.experiments.grape.diagnostics.bootstrap_coefficients import (  # noqa: 
     DEFAULT_CONFIG,
     FEATURE_ROOT,
     RUN_ROOT,
+    fit_coefficients_on_grid,
     load_config,
     resolve_path,
+    select_z_columns,
 )
-from src.experiments.grape.evaluation.compare_models import feature_dir  # noqa: E402
+from src.experiments.grape.evaluation.compare_models import (  # noqa: E402
+    feature_dir,
+    load_feature_dataset,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,15 +58,35 @@ def main() -> None:
         if not path.exists():
             raise FileNotFoundError(f"Fit the full-sample curve first: {path}")
         with np.load(path) as original:
+            t_grid = np.asarray(original["t_grid"], dtype=float)
             age = np.asarray(original["age_grid"], dtype=float)
-            sigma = np.sqrt(np.asarray(original["sigma2_hat_grid"], dtype=float))
             y_sd = float(original["y_sd"])
-            support = np.asarray(original["local_support_pairs"], dtype=int)
-            variance_support = (
-                np.asarray(original["variance_support_pairs"], dtype=int)
-                if "variance_support_pairs" in original.files
-                else support
-            )
+            if {
+                "sigma2_hat_grid",
+                "local_support_pairs",
+                "variance_support_pairs",
+            }.issubset(original.files):
+                sigma2_hat_grid = np.asarray(original["sigma2_hat_grid"], dtype=float)
+                support = np.asarray(original["local_support_pairs"], dtype=int)
+                variance_support = np.asarray(original["variance_support_pairs"], dtype=int)
+            else:
+                package_dir = feature_dir(
+                    resolve_path(args.feature_root),
+                    str(config["image_type"]),
+                    str(config["S"]),
+                    int(config["R"]),
+                )
+                dataset_full, manifest, meta = load_feature_dataset(package_dir)
+                all_z_names = [str(value) for value in meta["transforms"]["Z"]["columns"]]
+                dataset, _ = select_z_columns(dataset_full, all_z_names, config, manifest)
+                _, _, diagnostics = fit_coefficients_on_grid(dataset, config, t_grid)
+                sigma2_hat_grid = np.asarray(diagnostics["sigma2_hat_grid"], dtype=float)
+                support = np.asarray(diagnostics["local_support_pairs"], dtype=int)
+                variance_support = np.asarray(
+                    diagnostics["variance_support_pairs"],
+                    dtype=int,
+                )
+            sigma = np.sqrt(sigma2_hat_grid)
         frame = pd.DataFrame(
             {
                 "age": age,
@@ -114,8 +139,15 @@ def main() -> None:
     age_observed = float(age_meta["age_min"]) + t_observed * (
         float(age_meta["age_max"]) - float(age_meta["age_min"])
     )
-    axis.plot(age_observed, np.zeros_like(age_observed), "|", color="0.45", alpha=0.15, markersize=5)
-    axis.set_ylim(bottom=0.0)
+    axis.plot(
+        age_observed,
+        np.full_like(age_observed, 2.9),
+        "|",
+        color="0.45",
+        alpha=0.15,
+        markersize=5,
+    )
+    axis.set_ylim(2.9, 3.5)
     axis.set_xlabel("Age (years)")
     axis.set_ylabel(r"Estimated $\sigma(t)$ (IOP units)")
     axis.grid(alpha=0.2, linewidth=0.6)

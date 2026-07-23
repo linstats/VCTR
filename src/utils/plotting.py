@@ -139,9 +139,9 @@ def _save_a_plot(
         if include_true and a_true is not None:
             ax.plot(t_sorted, a_true[order, row, col], color="black", linewidth=1.8, label="true")
         if include_initial and a_initial is not None:
-            ax.plot(t_sorted, a_initial[order, row, col], color="#6B7280", linewidth=1.2, linestyle="--", label="stage 1")
-        ax.plot(t_sorted, a_hat[order, row, col], color="#C2410C", linewidth=1.5, label="final")
-        ax.set_title(f"A[{row},{col}](t)")
+            ax.plot(t_sorted, a_initial[order, row, col], color="#6B7280", linewidth=1.2, linestyle="--", label="independence")
+        ax.plot(t_sorted, a_hat[order, row, col], color="#C2410C", linewidth=1.5, label="paired")
+        ax.set_title(rf"$a_{{{row + 1},{col + 1}}}(t)$")
         ax.set_xlabel("t")
         ax.set_ylabel("value")
         ax.grid(alpha=0.25, linewidth=0.6)
